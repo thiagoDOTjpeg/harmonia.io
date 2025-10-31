@@ -1,0 +1,115 @@
+// ============================================
+// HARMONIA.IO - SCHEMA DO BANCO DE DADOS
+// Versão MVP - Simples e funcional
+// ============================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================
+// 1. USUÁRIOS
+// ============================================
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  name      String?
+
+  // Login com email/senha
+  passwordHash     String?  @db.Text
+  emailVerifiedAt  DateTime?
+  
+  // OAuth Spotify (único login por enquanto)
+  spotifyId           String?  @unique
+  spotifyAccessToken  String?  @db.Text
+  spotifyRefreshToken String?  @db.Text
+  spotifyTokenExpiry  DateTime?
+
+   // OAuth Google/YouTube
+  googleId            String?  @unique
+  googleAccessToken   String?  @db.Text
+  googleRefreshToken  String?  @db.Text
+  googleTokenExpiry   DateTime?
+  youtubeChannelId    String?
+  
+  // Relacionamentos
+  playlists SyncedPlaylist[]
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@map("users")
+}
+
+// ============================================
+// 2. PLAYLISTS SINCRONIZADAS
+// ============================================
+
+model SyncedPlaylist {
+  id String @id @default(uuid())
+  
+  // Origem: YouTube
+  youtubePlaylistId String
+  youtubeUrl        String
+  youtubeTitle      String?
+  
+  // Destino: Spotify
+  spotifyPlaylistId String
+  spotifyUrl        String
+  spotifyTitle      String?
+  
+  // Controle de sincronização
+  lastSyncedAt  DateTime?
+  syncStatus    String    @default("pending") // pending, syncing, completed, failed
+  
+  // Dono da playlist
+  userId  String
+  user    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Músicas
+  tracks SyncedTrack[]
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@unique([userId, youtubePlaylistId])
+  @@index([userId])
+  @@map("synced_playlists")
+}
+
+// ============================================
+// 3. MÚSICAS SINCRONIZADAS
+// ============================================
+
+model SyncedTrack {
+  id String @id @default(uuid())
+  
+  // Dados do YouTube
+  youtubeVideoId String
+  youtubeTitle   String
+  
+  // Dados do Spotify (pode ser null se não encontrou)
+  spotifyTrackId String?
+  spotifyUri     String?
+  
+  // Confiança do match (0.0 a 1.0)
+  matchScore Float @default(0)
+  
+  // Status da música
+  status String @default("pending") // pending, matched, added, failed
+  
+  // Pertence a qual playlist
+  playlistId String
+  playlist   SyncedPlaylist @relation(fields: [playlistId], references: [id], onDelete: Cascade)
+  
+  createdAt DateTime @default(now())
+  
+  @@unique([playlistId, youtubeVideoId])
+  @@map("synced_tracks")
+}
