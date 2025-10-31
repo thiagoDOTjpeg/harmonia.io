@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import { signToken } from '../lib/jwt';
 import { prisma } from '../lib/prisma';
-import { GoogleTokenResponse, GoogleUserInfo, OAuthState } from '../types';
+import { GoogleTokenResponse, GoogleUserInfo, OAuthState, YouTubePlaylist, YouTubePlaylistItem } from '../types';
 
 const CLIENT_ID = process.env.GOOGLE_CLIENT_ID!;
 const CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET!;
@@ -163,6 +163,92 @@ const google_oauth = class google_oauth {
         return res.status(409).json({ error: 'conflict', message: 'Conflito de vínculo de conta.' });
       }
       return res.status(500).json({ error: 'auth_failed' });
+    }
+  }
+
+  static async getPlaylistInfo(playlistId: string): Promise<YouTubePlaylist> {
+    const apiKey = process.env.GOOGLE_YOUTUBE_API_KEY!;
+    const params = new URLSearchParams({
+      part: 'snippet,contentDetails',
+      id: playlistId,
+      key: apiKey,
+    });
+
+    const response = await fetch(
+      `https://www.googleapis.com/youtube/v3/playlists?${params}`
+    );
+    // console.log(await response.text());
+
+
+    if (!response.ok) {
+      throw new Error('Failed to get YouTube playlist info');
+    }
+
+    const data = await response.json() as { items: YouTubePlaylist[] };
+
+    if (!data.items || data.items.length === 0) {
+      throw new Error('YouTube playlist not found');
+    }
+
+    return data.items[0];
+  }
+
+  // Pegar itens da playlist
+  static async getPlaylistItems(playlistId: string): Promise<YouTubePlaylistItem[]> {
+    const apiKey = process.env.GOOGLE_YOUTUBE_API_KEY!;
+    const items: YouTubePlaylistItem[] = [];
+    let pageToken: string | undefined;
+
+    do {
+      const params = new URLSearchParams({
+        part: 'snippet',
+        playlistId,
+        maxResults: '50',
+        key: apiKey,
+      });
+
+      if (pageToken) {
+        params.append('pageToken', pageToken);
+      }
+
+      const response = await fetch(
+        `https://www.googleapis.com/youtube/v3/playlistItems?${params}`
+      );
+
+      if (!response.ok) {
+        throw new Error('Failed to get YouTube playlist items');
+      }
+
+      const data = await response.json() as {
+        items: YouTubePlaylistItem[];
+        nextPageToken?: string;
+      };
+
+      items.push(...data.items);
+      pageToken = data.nextPageToken;
+    } while (pageToken);
+
+    return items;
+  }
+
+  // Extrair ID da playlist de uma URL
+  static extractPlaylistId(url: string): string | null {
+    try {
+      const urlObj = new URL(url);
+
+      // youtube.com/playlist?list=XXX
+      if (urlObj.hostname.includes('youtube.com')) {
+        return urlObj.searchParams.get('list');
+      }
+
+      // youtu.be com list parameter
+      if (urlObj.hostname === 'youtu.be') {
+        return urlObj.searchParams.get('list');
+      }
+
+      return null;
+    } catch {
+      return null;
     }
   }
 }

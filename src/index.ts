@@ -3,6 +3,7 @@ import dotenv from 'dotenv';
 import express from 'express';
 import authRoutes from './routes/auth';
 import meRoutes from './routes/me';
+import playlistRoutes from "./routes/playlist";
 
 
 // Carregar variáveis de ambiente
@@ -17,6 +18,7 @@ app.use(express.json());
 
 app.use(authRoutes);
 app.use(meRoutes);
+app.use(playlistRoutes);
 
 // Rota de teste
 app.get('/', (req, res) => {

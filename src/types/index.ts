@@ -5,6 +5,52 @@ export interface OAuthState {
   returnTo?: string;
 }
 
+export interface SpotifyPlaylist {
+  id: string;
+  name: string;
+  description: string | null;
+  external_urls: { spotify: string };
+  images: Array<{ url: string }>;
+  tracks: { total: number };
+}
+
+export interface SpotifyTrack {
+  id: string;
+  uri: string;
+  name: string;
+  artists: Array<{ name: string }>;
+  album: { name: string };
+  duration_ms: number;
+}
+
+export interface SpotifySearchResponse {
+  tracks: {
+    items: SpotifyTrack[];
+  };
+}
+
+export interface YouTubePlaylistItem {
+  id: string;
+  snippet: {
+    title: string;
+    resourceId: { videoId: string };
+    channelTitle: string;
+    publishedAt: string;
+  };
+}
+
+export interface YouTubePlaylist {
+  id: string;
+  snippet: {
+    title: string;
+    description: string;
+    channelTitle: string;
+  };
+  contentDetails: {
+    itemCount: number;
+  };
+}
+
 // Respostas de token
 export interface GoogleTokenResponse {
   access_token: string;

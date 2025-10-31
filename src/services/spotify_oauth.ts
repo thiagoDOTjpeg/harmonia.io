@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import { signToken } from '../lib/jwt';
 import { prisma } from '../lib/prisma';
-import { OAuthState, SpotifyMe, SpotifyTokenResponse } from '../types';
+import { OAuthState, SpotifyMe, SpotifyPlaylist, SpotifySearchResponse, SpotifyTokenResponse, SpotifyTrack } from '../types';
 
 const CLIENT_ID = process.env.SPOTIFY_CLIENT_ID!;
 const CLIENT_SECRET = process.env.SPOTIFY_CLIENT_SECRET!;
@@ -180,6 +180,180 @@ const spotify_oauth = class spotify_oauth {
       }
       return res.status(500).json({ error: 'auth_failed' });
     }
+  }
+
+  static async ensureValidToken(userId: string): Promise<string> {
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+    if (!user || !user.spotifyAccessToken) {
+      throw new Error('User not connected to Spotify');
+    }
+
+    // Se token ainda é válido, retorna
+    if (user.spotifyTokenExpiry && user.spotifyTokenExpiry > new Date()) {
+      return user.spotifyAccessToken;
+    }
+
+    // Refresh token
+    if (!user.spotifyRefreshToken) {
+      throw new Error('No refresh token available');
+    }
+
+    const clientId = process.env.SPOTIFY_CLIENT_ID!;
+    const clientSecret = process.env.SPOTIFY_CLIENT_SECRET!;
+    const basic = Buffer.from(`${clientId}:${clientSecret}`).toString('base64');
+
+    const body = new URLSearchParams({
+      grant_type: 'refresh_token',
+      refresh_token: user.spotifyRefreshToken,
+    });
+
+    const response = await fetch('https://accounts.spotify.com/api/token', {
+      method: 'POST',
+      headers: {
+        Authorization: `Basic ${basic}`,
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body,
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to refresh Spotify token');
+    }
+
+    const data = await response.json() as {
+      access_token: string;
+      expires_in: number;
+      refresh_token?: string;
+    };
+
+    const expiresAt = new Date(Date.now() + (data.expires_in - 60) * 1000);
+
+    await prisma.user.update({
+      where: { id: userId },
+      data: {
+        spotifyAccessToken: data.access_token,
+        spotifyRefreshToken: data.refresh_token ?? user.spotifyRefreshToken,
+        spotifyTokenExpiry: expiresAt,
+      },
+    });
+
+    return data.access_token;
+  }
+
+  // Criar playlist no Spotify
+  static async createPlaylist(
+    accessToken: string,
+    name: string,
+    description?: string
+  ): Promise<SpotifyPlaylist> {
+    // Pegar ID do usuário do Spotify
+    const meRes = await fetch('https://api.spotify.com/v1/me', {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
+    const me = await meRes.json() as { id: string };
+
+    // Criar playlist
+    const response = await fetch(`https://api.spotify.com/v1/users/${me.id}/playlists`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        name,
+        description: description || 'Sincronizada do YouTube via Harmonia.io',
+        public: false,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to create Spotify playlist');
+    }
+
+    return response.json() as Promise<SpotifyPlaylist>;
+  }
+
+  // Buscar música no Spotify
+  static async searchTrack(
+    accessToken: string,
+    query: string
+  ): Promise<SpotifyTrack | null> {
+    const params = new URLSearchParams({
+      q: query,
+      type: 'track',
+      limit: '5',
+    });
+
+    const response = await fetch(`https://api.spotify.com/v1/search?${params}`, {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to search Spotify');
+    }
+
+    const data = await response.json() as SpotifySearchResponse;
+    return data.tracks.items[0] || null;
+  }
+
+  // Adicionar músicas na playlist
+  static async addTracksToPlaylist(
+    accessToken: string,
+    playlistId: string,
+    trackUris: string[]
+  ): Promise<void> {
+    // Spotify aceita no máximo 100 tracks por requisição
+    const chunks = [];
+    for (let i = 0; i < trackUris.length; i += 100) {
+      chunks.push(trackUris.slice(i, i + 100));
+    }
+
+    for (const chunk of chunks) {
+      const response = await fetch(
+        `https://api.spotify.com/v1/playlists/${playlistId}/tracks`,
+        {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ uris: chunk }),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error('Failed to add tracks to Spotify playlist');
+      }
+    }
+  }
+
+  // Pegar tracks de uma playlist
+  static async getPlaylistTracks(
+    accessToken: string,
+    playlistId: string
+  ): Promise<SpotifyTrack[]> {
+    const tracks: SpotifyTrack[] = [];
+    let url: string | null = `https://api.spotify.com/v1/playlists/${playlistId}/tracks?limit=100`;
+
+    while (url) {
+      const response = await fetch(url, {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to get Spotify playlist tracks');
+      }
+
+      const data = await response.json() as {
+        items: Array<{ track: SpotifyTrack }>;
+        next: string | null;
+      };
+
+      tracks.push(...data.items.map((item) => item.track));
+      url = data.next;
+    }
+
+    return tracks;
   }
 };
 
