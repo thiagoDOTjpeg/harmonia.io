@@ -10,6 +10,8 @@ router.get('/me', requireAuth, (_req, res) => {
     email: user.email,
     name: user.name,
     spotifyId: user.spotifyId,
+    googleId: user.googleId,
+    youtubeChannelId: user.youtubeChannelId
   });
 });
 
