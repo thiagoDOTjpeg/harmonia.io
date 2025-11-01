@@ -2,6 +2,8 @@ export interface UserRecord {
   id: string;
   email: string | null;
   name: string | null;
+  passwordHash: string
+  emailVerifiedAt: Date;
   spotifyId?: string | null;
   spotifyAccessToken?: string | null;
   spotifyRefreshToken?: string | null;
@@ -43,6 +45,14 @@ export interface IUserRepository {
     }
   ): Promise<UserRecord>;
 
+  createFromLocal(
+    input: {
+      email: string;
+      name: string | null;
+      passwordHash: string;
+    }
+  ): Promise<UserRecord>;
+
   linkGoogleToUser(
     userId: string,
     input: {
@@ -61,16 +71,6 @@ export interface IUserRepository {
       accessToken: string;
       refreshToken?: string | null;
       tokenExpiry: Date;
-    }
-  ): Promise<UserRecord>;
-
-  updateGoogleTokens(
-    userId: string,
-    input: {
-      accessToken: string;
-      refreshToken?: string | null;
-      tokenExpiry: Date;
-      youtubeChannelId?: string | null;
     }
   ): Promise<UserRecord>;
 

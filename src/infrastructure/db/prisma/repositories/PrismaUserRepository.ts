@@ -9,7 +9,7 @@ export class PrismaUserRepository implements IUserRepository {
   }
 
   async findBySpotifyId(spotifyId: string): Promise<UserRecord | null> {
-    return this.prisma.user.findUnique({ where: { spotifyId } });
+    return this.prisma.user.findUnique({ where: { spotifyId } }) as any;
   }
 
   async findByEmail(email: string): Promise<UserRecord | null> {
@@ -57,6 +57,20 @@ export class PrismaUserRepository implements IUserRepository {
         googleRefreshToken: input.refreshToken ?? null,
         googleTokenExpiry: input.tokenExpiry,
         youtubeChannelId: input.youtubeChannelId ?? null,
+      },
+    }) as any;
+  }
+
+  async createFromLocal(input: {
+    email: string;
+    name: string | null;
+    passwordHash: string;
+  }): Promise<UserRecord> {
+    return this.prisma.user.create({
+      data: {
+        email: input.email.trim().toLowerCase(),
+        name: input.name,
+        passwordHash: input.passwordHash,
       },
     }) as any;
   }

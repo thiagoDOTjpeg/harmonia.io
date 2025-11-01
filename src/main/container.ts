@@ -6,16 +6,17 @@ import { InMemoryStateStore } from '../infrastructure/oauth/InMemoryStateStore';
 import { SpotifyOAuthClient } from '../infrastructure/oauth/SpotifyOAuthClient';
 import { SystemClock } from '../infrastructure/time/SystemClock';
 
-// Use cases
 import { HandleGoogleCallback } from '../application/use_cases/auth/HandleGoogleCallback';
 import { HandleSpotifyCallback } from '../application/use_cases/auth/HandleSpotifyCallback';
 import { StartGoogleLogin } from '../application/use_cases/auth/StartGoogleLogin';
 import { StartGoogleRegister } from '../application/use_cases/auth/StartGoogleRegister';
+import { StartLocalLogin } from '../application/use_cases/auth/StartLocalLogin';
+import { StartLocalRegister } from '../application/use_cases/auth/StartLocalRegister';
 import { StartSpotifyLogin } from '../application/use_cases/auth/StartSpotifyLogin';
 import { StartSpotifyRegister } from '../application/use_cases/auth/StartSpotifyRegister';
+import { BcryptPasswordHasher } from '../infrastructure/crypto/BcryptPasswordHasher';
 
 export class Container {
-  // Infraestrutura (singleton)
   private static googleClient = new GoogleOAuthClient();
   private static spotifyClient = new SpotifyOAuthClient();
   private static stateStore = new InMemoryStateStore();
@@ -24,7 +25,6 @@ export class Container {
   private static passwordHasher = new BcryptPasswordHasher();
   private static clock = new SystemClock();
 
-  // Google Use Cases
   static getStartGoogleLogin() {
     return new StartGoogleLogin(this.stateStore, this.googleClient);
   }
@@ -43,7 +43,6 @@ export class Container {
     );
   }
 
-  // Spotify Use Cases
   static getStartSpotifyLogin() {
     return new StartSpotifyLogin(this.stateStore, this.spotifyClient);
   }
@@ -62,7 +61,6 @@ export class Container {
     );
   }
 
-  // Local Auth Use Cases
   static getStartLocalRegister() {
     return new StartLocalRegister(
       this.userRepository,
@@ -79,7 +77,6 @@ export class Container {
     );
   }
 
-  // Getters para infraestrutura (middlewares, etc)
   static getUserRepository() {
     return this.userRepository;
   }

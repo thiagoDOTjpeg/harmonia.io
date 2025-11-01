@@ -86,6 +86,7 @@ export interface SpotifyMe {
 
 // Respostas da API
 export type AuthErrorCode =
+  | 'invalid_credentials'
   | 'invalid_state_or_code'
   | 'token_exchange_failed'
   | 'userinfo_failed'
