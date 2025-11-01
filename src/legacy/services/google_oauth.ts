@@ -177,8 +177,6 @@ const google_oauth = class google_oauth {
     const response = await fetch(
       `https://www.googleapis.com/youtube/v3/playlists?${params}`
     );
-    // console.log(await response.text());
-
 
     if (!response.ok) {
       throw new Error('Failed to get YouTube playlist info');
