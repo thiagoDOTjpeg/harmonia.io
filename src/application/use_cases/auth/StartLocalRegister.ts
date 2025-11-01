@@ -1,4 +1,5 @@
 import { AuthResponse } from '../../../shared/types/oauth/oauth';
+import { IPasswordHasher } from '../../ports/crypto/IPasswordHasher';
 import { ITokenManager } from '../../ports/crypto/ITokenManager';
 import { IUserRepository } from '../../repositories/IUserRepository';
 
@@ -43,6 +44,8 @@ export class StartLocalRegister {
           id: user.id,
           email: user.email,
           name: user.name,
+          googleId: user.googleId,
+          spotifyId: user.spotifyId
         },
       };
     } catch (error: any) {

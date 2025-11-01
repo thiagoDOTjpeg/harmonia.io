@@ -1,85 +1,61 @@
-export interface UserRecord {
-  id: string;
-  email: string | null;
-  name: string | null;
-  passwordHash: string
-  emailVerifiedAt: Date;
-  spotifyId?: string | null;
-  spotifyAccessToken?: string | null;
-  spotifyRefreshToken?: string | null;
-  spotifyTokenExpiry?: Date | null;
-  googleId?: string | null;
-  googleAccessToken?: string | null;
-  googleRefreshToken?: string | null;
-  googleTokenExpiry?: Date | null;
-  youtubeChannelId?: string | null;
-}
+import { User } from '../../domain/entities/User';
 
 export interface IUserRepository {
-  findBySpotifyId(spotifyId: string): Promise<UserRecord | null>;
+  findBySpotifyId(spotifyId: string): Promise<User | null>;
+  findByGoogleId(googleId: string): Promise<User | null>;
+  findByEmail(email: string): Promise<User | null>;
+  findByUserId(userId: string): Promise<User | null>;
 
-  findByGoogleId(googleId: string): Promise<UserRecord | null>;
+  createFromSpotify(input: {
+    email: string;
+    name: string | null;
+    spotifyId: string;
+    accessToken: string;
+    refreshToken?: string | null;
+    tokenExpiry: Date;
+  }): Promise<User>;
 
-  findByEmail(email: string): Promise<UserRecord | null>;
+  createFromGoogle(input: {
+    email: string;
+    name: string | null;
+    googleId: string;
+    accessToken: string;
+    refreshToken?: string | null;
+    tokenExpiry: Date;
+    youtubeChannelId?: string | null;
+  }): Promise<User>;
 
-  createFromSpotify(
-    input: {
-      email: string;
-      name: string | null;
-      spotifyId: string;
-      accessToken: string;
-      refreshToken?: string | null;
-      tokenExpiry: Date;
-    }
-  ): Promise<UserRecord>;
+  createFromLocal(input: {
+    email: string;
+    name: string | null;
+    passwordHash: string;
+  }): Promise<User>;
 
-  createFromGoogle(
-    input: {
-      email: string;
-      name: string | null;
-      googleId: string;
-      accessToken: string;
-      refreshToken?: string | null;
-      tokenExpiry: Date;
-      youtubeChannelId?: string | null;
-    }
-  ): Promise<UserRecord>;
+  linkGoogleToUser(userId: string, input: {
+    googleId: string;
+    accessToken: string;
+    refreshToken?: string | null;
+    tokenExpiry: Date;
+    youtubeChannelId?: string | null;
+  }): Promise<User>;
 
-  createFromLocal(
-    input: {
-      email: string;
-      name: string | null;
-      passwordHash: string;
-    }
-  ): Promise<UserRecord>;
+  linkToSpotifyToUser(userId: string, input: {
+    spotifyId: string;
+    accessToken: string;
+    refreshToken?: string | null;
+    tokenExpiry: Date;
+  }): Promise<User>;
 
-  linkGoogleToUser(
-    userId: string,
-    input: {
-      googleId: string;
-      accessToken: string;
-      refreshToken?: string | null;
-      tokenExpiry: Date;
-      youtubeChannelId?: string | null;
-    }
-  ): Promise<UserRecord>;
+  updateSpotifyTokens(userId: string, input: {
+    accessToken: string;
+    refreshToken?: string | null;
+    tokenExpiry: Date;
+  }): Promise<User>;
 
-  linkToSpotifyToUser(
-    userId: string,
-    input: {
-      spotifyId: string;
-      accessToken: string;
-      refreshToken?: string | null;
-      tokenExpiry: Date;
-    }
-  ): Promise<UserRecord>;
-
-  updateSpotifyTokens(
-    userId: string,
-    input: {
-      accessToken: string;
-      refreshToken?: string | null;
-      tokenExpiry: Date;
-    }
-  ): Promise<UserRecord>;
+  updateGoogleTokens(userId: string, input: {
+    accessToken: string;
+    refreshToken?: string | null;
+    tokenExpiry: Date;
+    youtubeChannelId?: string | null;
+  }): Promise<User>;
 }
