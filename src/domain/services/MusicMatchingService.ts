@@ -14,7 +14,6 @@ export class MusicMatchingService {
       .replace(/\s+/g, ' ')
       .trim();
 
-    // Tentar extrair artista - título
     const patterns = [
       /^(.+?)\s*-\s*(.+)$/,  // "Artist - Title"
       /^(.+?)\s*–\s*(.+)$/,  // "Artist – Title" (em dash)
@@ -34,33 +33,28 @@ export class MusicMatchingService {
     return { title: cleaned };
   }
 
-  // Normalizar string para comparação
   static normalize(str: string): string {
     return str
       .toLowerCase()
       .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '') // Remove acentos
-      .replace(/[^\w\s]/g, '') // Remove pontuação
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^\w\s]/g, '')
       .replace(/\s+/g, ' ')
       .trim();
   }
 
-  // Calcular similaridade entre duas strings (Levenshtein)
   static similarity(s1: string, s2: string): number {
     const str1 = this.normalize(s1);
     const str2 = this.normalize(s2);
 
-    // Match exato
     if (str1 === str2) return 1.0;
 
-    // Uma contém a outra
     if (str1.includes(str2) || str2.includes(str1)) {
       const longer = Math.max(str1.length, str2.length);
       const shorter = Math.min(str1.length, str2.length);
       return shorter / longer;
     }
 
-    // Levenshtein distance
     const matrix: number[][] = [];
 
     for (let i = 0; i <= str2.length; i++) {
@@ -90,39 +84,129 @@ export class MusicMatchingService {
     return 1 - distance / maxLength;
   }
 
-  // Gerar query de busca para o Spotify
-  static generateSpotifyQuery(youtubeTitle: string): string {
-    const { title, artist } = this.cleanYouTubeTitle(youtubeTitle);
+  static generateSpotifyQuery(youtubeTitle: string, channelTitle: string): string {
+    const { title, artist: artistFromTitle } = this.cleanYouTubeTitle(youtubeTitle);
 
-    if (artist) {
-      return `track:${title} artist:${artist}`;
+    // 1º CASO: Artista extraído do título (mais confiável)
+    if (artistFromTitle) {
+      console.log(`[Query] Artista no título: track:"${title}" artist:"${artistFromTitle}"`);
+      return `track:"${title}" artist:"${artistFromTitle}"`;
     }
 
-    return `track:${title}`;
+    const topicMatch = channelTitle.match(/^(.+?)\s*-\s*Topic$/i);
+    if (topicMatch) {
+      const artist = topicMatch[1].trim();
+      console.log(`[Query] Canal Topic oficial: track:"${title}" artist:"${artist}"`);
+      return `track:"${title}" artist:"${artist}"`;
+    }
+
+    const vevoMatch = channelTitle.match(/^(.+?)\s*VEVO$/i);
+    if (vevoMatch) {
+      const artist = vevoMatch[1].trim();
+      console.log(`[Query] Canal VEVO oficial: track:"${title}" artist:"${artist}"`);
+      return `track:"${title}" artist:"${artist}"`;
+    }
+
+    if (!this.isLikelyDistributor(channelTitle)) {
+      console.log(`[Query] Canal do artista: track:"${title}" artist:"${channelTitle}"`);
+      return `track:"${title}" artist:"${channelTitle}"`;
+    }
+
+    console.log(`[Query] Distribuidora detectada (${channelTitle}), buscando só por: track:"${title}"`);
+    return `track:"${title}"`;
   }
 
-  // Calcular score de match entre YouTube e Spotify
   static calculateMatchScore(
-    youtubeTitle: string,
+    youtubeData: { title: string; channelTitle: string },
     spotifyTrack: { name: string; artists: Array<{ name: string }> }
   ): number {
-    const ytCleaned = this.cleanYouTubeTitle(youtubeTitle);
+    const ytCleaned = this.cleanYouTubeTitle(youtubeData.title);
     const spotifyArtists = spotifyTrack.artists.map((a) => a.name).join(' ');
 
-    // Score do título (peso 0.7)
     const titleScore = this.similarity(ytCleaned.title, spotifyTrack.name);
 
-    // Score do artista (peso 0.3)
-    let artistScore = 0;
-    if (ytCleaned.artist) {
-      artistScore = this.similarity(ytCleaned.artist, spotifyArtists);
+    let potentialYouTubeArtist: string | undefined = ytCleaned.artist;
+
+    if (!potentialYouTubeArtist) {
+      const topicMatch = youtubeData.channelTitle.match(/^(.+?)\s*-\s*Topic$/i);
+      if (topicMatch) {
+        potentialYouTubeArtist = topicMatch[1].trim();
+      }
+      else {
+        const vevoMatch = youtubeData.channelTitle.match(/^(.+?)\s*VEVO$/i);
+        if (vevoMatch) {
+          potentialYouTubeArtist = vevoMatch[1].trim();
+        }
+        else if (!this.isLikelyDistributor(youtubeData.channelTitle)) {
+          potentialYouTubeArtist = youtubeData.channelTitle;
+        }
+      }
     }
 
-    // Se não tem artista no YouTube, só considera título
-    if (!ytCleaned.artist) {
-      return titleScore;
+    if (potentialYouTubeArtist) {
+      const artistScore = this.similarity(potentialYouTubeArtist, spotifyArtists);
+
+      console.log(`[Match] Título: ${titleScore.toFixed(2)} | Artista: ${artistScore.toFixed(2)} | Final: ${(titleScore * 0.7 + artistScore * 0.3).toFixed(2)}`);
+      console.log(`[Match] YT: "${ytCleaned.title}" by "${potentialYouTubeArtist}" <-> Spotify: "${spotifyTrack.name}" by "${spotifyArtists}"`);
+
+      return titleScore * 0.7 + artistScore * 0.3;
     }
 
-    return titleScore * 0.7 + artistScore * 0.3;
+    console.log(`[Match] Só título (distribuidora): ${titleScore.toFixed(2)}`);
+    console.log(`[Match] YT: "${ytCleaned.title}" (canal: ${youtubeData.channelTitle}) <-> Spotify: "${spotifyTrack.name}" by "${spotifyArtists}"`);
+
+    return titleScore;
+  }
+
+  static isLikelyDistributor(channelTitle: string): boolean {
+    const normalized = channelTitle.toLowerCase();
+
+    const distributorTerms = [
+      'records',
+      'recordings',
+      'music',
+      'label',
+      'entertainment',
+
+      'spinnin',
+      'monstercat',
+      'proximity',
+      'mrsuicidesheep',
+      'ultra',
+      'armada',
+      'revealed',
+      'sony music',
+      'warner',
+      'universal',
+      'atlantic',
+      'interscope',
+      'capitol',
+      'columbia',
+
+      'official',
+      'official music',
+      'official audio',
+      'officialvideo',
+    ];
+
+    if (/(-\s*topic|vevo)$/i.test(channelTitle)) {
+      return false;
+    }
+
+    return distributorTerms.some(term => normalized.includes(term));
+  }
+
+  static extractArtistFromChannel(channelTitle: string): string | null {
+    const topicMatch = channelTitle.match(/^(.+?)\s*-\s*Topic$/i);
+    if (topicMatch) {
+      return topicMatch[1].trim();
+    }
+
+    const vevoMatch = channelTitle.match(/^(.+?)\s*VEVO$/i);
+    if (vevoMatch) {
+      return vevoMatch[1].trim();
+    }
+
+    return null;
   }
 }

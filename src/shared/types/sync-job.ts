@@ -23,6 +23,7 @@ export interface SyncResult {
   totalTracks: number;
   syncedTracks: number;
   failedTracks: number;
+  duplicates: number;
   newTracks: number;
   status: 'completed' | 'partial' | 'failed';
   duration: number; // em ms

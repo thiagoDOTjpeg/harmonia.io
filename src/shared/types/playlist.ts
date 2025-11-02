@@ -20,6 +20,8 @@ export interface YouTubePlaylistResponse {
     id: string;
     snippet: {
       title: string;
+      channelTitle: string;
+      videoOwnerChannelTitle: string;
       description?: string;
     };
     contentDetails: {
@@ -36,6 +38,7 @@ export interface YouTubePlaylistItemsResponse {
         videoId: string;
       };
       channelTitle?: string;
+      videoOwnerChannelTitle: string;
     };
   }>;
   nextPageToken?: string;

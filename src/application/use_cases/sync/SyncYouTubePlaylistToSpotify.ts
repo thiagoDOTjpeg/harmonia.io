@@ -84,7 +84,7 @@ export class SyncYouTubePlaylistToSpotify {
         }
 
         if (!track.hasSpotifyMatch()) {
-          const spotifyMatch = await spotifyClient.searchTrack(video.title);
+          const spotifyMatch = await spotifyClient.searchTrack(video.title, video.videoOwnerChannelTitle);
 
           if (spotifyMatch) {
             track = await this.trackRepository.updateSpotifyMatch(track.id, {

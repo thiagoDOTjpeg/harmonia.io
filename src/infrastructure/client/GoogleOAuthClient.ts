@@ -1,6 +1,6 @@
-import { IGoogleOAuthClient, YouTubePlaylistInfo, YouTubeVideo } from '../../application/ports/oauth/IGoogleOAuthClient';
+import { IGoogleOAuthClient } from '../../application/ports/oauth/IGoogleOAuthClient';
 import { GoogleTokenResponse, GoogleUserInfo } from '../../legacy/types';
-import { GoogleExchangeResult } from '../../shared/types/google';
+import { GoogleExchangeResult, YouTubePlaylistInfo, YouTubeVideo } from '../../shared/types/google';
 import { YouTubePlaylistItemsResponse, YouTubePlaylistResponse } from '../../shared/types/playlist';
 
 export class GoogleOAuthClient implements IGoogleOAuthClient {
@@ -57,7 +57,6 @@ export class GoogleOAuthClient implements IGoogleOAuthClient {
     }
     const profile = (await uRes.json()) as GoogleUserInfo;
 
-    // Opcional: YouTube channel
     let youtubeChannelId: string | undefined;
     const ytRes = await fetch('https://www.googleapis.com/youtube/v3/channels?part=id&mine=true', {
       headers: { Authorization: `Bearer ${tokens.access_token}` },
@@ -98,6 +97,7 @@ export class GoogleOAuthClient implements IGoogleOAuthClient {
     return {
       id: playlist.id,
       title: playlist.snippet.title,
+      channelTile: playlist.snippet.channelTitle,
       description: playlist.snippet.description || '',
       itemCount: playlist.contentDetails.itemCount,
     };
@@ -138,6 +138,8 @@ export class GoogleOAuthClient implements IGoogleOAuthClient {
           videoId: item.snippet.resourceId.videoId,
           title: item.snippet.title,
           channelTitle: item.snippet.channelTitle || 'Unknown',
+          videoOwnerChannelTitle: item.snippet.videoOwnerChannelTitle
+
         });
       }
 

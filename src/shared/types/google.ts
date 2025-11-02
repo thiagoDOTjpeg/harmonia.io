@@ -49,6 +49,7 @@ export interface GoogleExchangeResult {
 export interface YouTubePlaylistInfo {
   id: string;
   title: string;
+  channelTile: string;
   description: string;
   itemCount: number;
 }
@@ -57,4 +58,5 @@ export interface YouTubeVideo {
   videoId: string;
   title: string;
   channelTitle: string;
+  videoOwnerChannelTitle: string;
 }

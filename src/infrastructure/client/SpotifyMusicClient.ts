@@ -1,6 +1,6 @@
-import { ISpotifyMusicClient, SpotifySearchResult } from '../../application/ports/spotify/ISpotifyMusicClient';
+import { ISpotifyMusicClient } from '../../application/ports/spotify/ISpotifyMusicClient';
 import { MusicMatchingService } from '../../domain/services/MusicMatchingService';
-import { SpotifyCreatePlaylistResponse, SpotifySearchResponse } from '../../shared/types/spotify';
+import { SpotifyCreatePlaylistResponse, SpotifySearchResponse, SpotifySearchResult } from '../../shared/types/spotify';
 
 
 export class SpotifyMusicClient implements ISpotifyMusicClient {
@@ -9,16 +9,14 @@ export class SpotifyMusicClient implements ISpotifyMusicClient {
     private readonly spotifyId: string
   ) { }
 
-  async searchTrack(youtubeTitle: string): Promise<SpotifySearchResult | null> {
-    // 1. Gerar query otimizada usando o matching service
-    const query = MusicMatchingService.generateSpotifyQuery(youtubeTitle);
+  async searchTrack(youtubeTitle: string, channelTitle: string): Promise<SpotifySearchResult | null> {
+    const query = MusicMatchingService.generateSpotifyQuery(youtubeTitle, channelTitle);
 
-    // 2. Buscar no Spotify (pega top 5 para comparar)
     const response = await fetch(
       `https://api.spotify.com/v1/search?${new URLSearchParams({
         q: query,
         type: 'track',
-        limit: '5', // Pega 5 para escolher o melhor match
+        limit: '5',
       })}`,
       {
         headers: {
@@ -40,12 +38,11 @@ export class SpotifyMusicClient implements ISpotifyMusicClient {
       return null;
     }
 
-    // 3. Calcular score para cada resultado e pegar o melhor
     let bestMatch: SpotifySearchResult | null = null;
     let bestScore = 0;
 
     for (const track of tracks) {
-      const score = MusicMatchingService.calculateMatchScore(youtubeTitle, {
+      const score = MusicMatchingService.calculateMatchScore({ title: youtubeTitle, channelTitle }, {
         name: track.name,
         artists: track.artists || [],
       });
@@ -63,7 +60,6 @@ export class SpotifyMusicClient implements ISpotifyMusicClient {
       }
     }
 
-    // 4. Só retorna se o match for razoável (score > 0.6)
     if (bestMatch && bestMatch.matchScore > 0.6) {
       console.log(
         `✅ Match found: "${youtubeTitle}" → "${bestMatch.name}" by ${bestMatch.artist} (score: ${bestMatch.matchScore.toFixed(2)})`
@@ -122,7 +118,6 @@ export class SpotifyMusicClient implements ISpotifyMusicClient {
         throw new Error(`Failed to add tracks: ${await response.text()}`);
       }
 
-      // Rate limiting: aguardar 500ms entre batches
       await new Promise((resolve) => setTimeout(resolve, 500));
     }
   }
