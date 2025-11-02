@@ -1,14 +1,20 @@
 import { Request, Response } from 'express';
 import { User } from '../../../../domain/entities/User';
 import { Container } from '../../../../main/container';
+import { PlaylistSyncQueue } from '../../../queue/PlaylistSyncQueue';
 import { AuthMiddleware } from '../middlewares/AuthMiddleware';
+
+// Instância global da fila
+const syncQueue = new PlaylistSyncQueue();
 
 export class SyncController {
   static async syncPlaylist(req: Request, res: Response) {
     try {
+      // 1. Pegar usuário autenticado
       const user = await AuthMiddleware.getAuthenticatedUser(req, res) as User;
       if (!user) return;
 
+      // 2. Validar que usuário tem Google e Spotify conectados
       if (!user.googleAccessToken || !user.spotifyAccessToken) {
         return res.status(400).json({
           error: 'missing_oauth',
@@ -23,7 +29,8 @@ export class SyncController {
         });
       }
 
-      const { youtubePlaylistId } = req.body;
+      // 3. Pegar playlist ID do YouTube
+      const { youtubePlaylistId, priority } = req.body;
 
       if (!youtubePlaylistId) {
         return res.status(400).json({
@@ -32,25 +39,140 @@ export class SyncController {
         });
       }
 
-      const useCase = Container.getSyncYouTubePlaylistToSpotify();
-      const result = await useCase.execute({
+      // 4. Verificar se playlist já existe
+      const playlistRepository = Container.getPlaylistRepository();
+      let playlist = await playlistRepository.findByYoutubePlaylistId(
+        user.id,
+        youtubePlaylistId
+      );
+
+      // 5. Adicionar job na fila
+      const job = await syncQueue.addSyncJob({
+        playlistId: playlist?.id || `temp-${Date.now()}`, // Se não existe, será criado
         userId: user.id,
         youtubePlaylistId,
         googleAccessToken: user.googleAccessToken,
         spotifyAccessToken: user.spotifyAccessToken,
         spotifyUserId: user.spotifyId,
+        priority: priority || 10,
       });
 
+      console.log(`[API] Job ${job.id} adicionado para sincronização`);
+
+      // 6. Retornar ID do job para o cliente acompanhar
       return res.json({
         success: true,
-        data: result,
+        data: {
+          jobId: job.id,
+          playlistId: playlist?.id,
+          status: 'pending',
+          message: 'Sincronização iniciada. Use /sync/status/:jobId para acompanhar',
+        },
       });
     } catch (error) {
       console.error('Sync playlist error:', error);
       return res.status(500).json({
         error: 'sync_failed',
-        message: 'Erro ao sincronizar playlist',
+        message: 'Erro ao iniciar sincronização',
         details: error instanceof Error ? error.message : 'Unknown error',
+      });
+    }
+  }
+
+  static async getSyncStatus(req: Request, res: Response) {
+    try {
+      const user = await AuthMiddleware.getAuthenticatedUser(req, res);
+      if (!user) return;
+
+      const { jobId } = req.params;
+
+      // Buscar status do job
+      const job = await syncQueue.getQueue().getJob(jobId);
+
+      if (!job) {
+        return res.status(404).json({
+          error: 'job_not_found',
+          message: 'Job não encontrado',
+        });
+      }
+
+      const state = await job.getState();
+      const progress = job.progress();
+
+      return res.json({
+        success: true,
+        data: {
+          jobId: job.id,
+          state,
+          progress,
+          finishedOn: job.finishedOn,
+          processedOn: job.processedOn,
+          returnvalue: job.returnvalue,
+        },
+      });
+    } catch (error) {
+      console.error('Get sync status error:', error);
+      return res.status(500).json({
+        error: 'fetch_failed',
+        message: 'Erro ao buscar status',
+      });
+    }
+  }
+
+  static async cancelSync(req: Request, res: Response) {
+    try {
+      const user = await AuthMiddleware.getAuthenticatedUser(req, res);
+      if (!user) return;
+
+      const { jobId } = req.params;
+
+      const cancelled = await syncQueue.cancelSync(jobId);
+
+      if (!cancelled) {
+        return res.status(404).json({
+          error: 'job_not_found',
+          message: 'Job não encontrado ou já finalizado',
+        });
+      }
+
+      return res.json({
+        success: true,
+        message: 'Sincronização cancelada',
+      });
+    } catch (error) {
+      console.error('Cancel sync error:', error);
+      return res.status(500).json({
+        error: 'cancel_failed',
+        message: 'Erro ao cancelar sincronização',
+      });
+    }
+  }
+
+  static async retrySync(req: Request, res: Response) {
+    try {
+      const user = await AuthMiddleware.getAuthenticatedUser(req, res);
+      if (!user) return;
+
+      const { jobId } = req.params;
+
+      const retried = await syncQueue.retrySync(jobId);
+
+      if (!retried) {
+        return res.status(404).json({
+          error: 'job_not_found',
+          message: 'Job não encontrado',
+        });
+      }
+
+      return res.json({
+        success: true,
+        message: 'Sincronização reiniciada',
+      });
+    } catch (error) {
+      console.error('Retry sync error:', error);
+      return res.status(500).json({
+        error: 'retry_failed',
+        message: 'Erro ao reiniciar sincronização',
       });
     }
   }
@@ -65,7 +187,7 @@ export class SyncController {
 
       return res.json({
         success: true,
-        data: playlists.map(p => ({
+        data: playlists.map((p) => ({
           id: p.id,
           youtubeTitle: p.youtubeTitle,
           spotifyTitle: p.spotifyTitle,
@@ -85,66 +207,47 @@ export class SyncController {
     }
   }
 
-  static async getPlaylistTracks(req: Request, res: Response) {
+  static async getQueueStats(req: Request, res: Response) {
+    try {
+      const user = await AuthMiddleware.getAuthenticatedUser(req, res);
+      if (!user) return;
+
+      const stats = await syncQueue.getStats();
+
+      return res.json({
+        success: true,
+        data: stats,
+      });
+    } catch (error) {
+      console.error('Get queue stats error:', error);
+      return res.status(500).json({
+        error: 'fetch_failed',
+        message: 'Erro ao buscar estatísticas',
+      });
+    }
+  }
+
+  static async getMyJobs(req: Request, res: Response) {
     try {
       const user = await AuthMiddleware.getAuthenticatedUser(req, res) as User;
       if (!user) return;
 
-      const { playlistId } = req.params;
+      const { states } = req.query;
+      const stateFilter = states
+        ? (states as string).split(',')
+        : ['waiting', 'active', 'completed', 'failed'];
 
-      const playlistRepository = Container.getPlaylistRepository();
-      const playlist = await playlistRepository.findByYoutubePlaylistId(user.id, playlistId);
-
-      if (!playlist) {
-        return res.status(404).json({
-          error: 'playlist_not_found',
-          message: 'Playlist não encontrada',
-        });
-      }
-
-      const playlistTrackRepository = Container.getPlaylistTrackRepository();
-      const playlistTracks = await playlistTrackRepository.findByPlaylistId(playlist.id);
-
-      const trackRepository = Container.getTrackRepository();
-      const tracksData = await Promise.all(
-        playlistTracks.map(async (pt) => {
-          const track = await trackRepository.findByYoutubeVideoId(pt.trackId);
-          return {
-            playlistTrackId: pt.id,
-            status: pt.status,
-            position: pt.position,
-            track: track ? {
-              id: track.id,
-              youtubeVideoId: track.youtubeVideoId,
-              youtubeTitle: track.youtubeTitle,
-              youtubeChannel: track.youtubeChannel,
-              spotifyTrackId: track.spotifyTrackId,
-              spotifyArtist: track.spotifyArtist,
-              spotifyAlbum: track.spotifyAlbum,
-              matchScore: track.matchScore,
-              hasMatch: track.hasSpotifyMatch(),
-            } : null,
-          };
-        })
-      );
+      const jobs = await syncQueue.getUserJobs(user.id, stateFilter as any);
 
       return res.json({
         success: true,
-        data: {
-          playlist: {
-            id: playlist.id,
-            youtubeTitle: playlist.youtubeTitle,
-            spotifyTitle: playlist.spotifyTitle,
-            syncStatus: playlist.syncStatus,
-          },
-          tracks: tracksData,
-        },
+        data: jobs,
       });
     } catch (error) {
-      console.error('Get playlist tracks error:', error);
+      console.error('Get user jobs error:', error);
       return res.status(500).json({
         error: 'fetch_failed',
-        message: 'Erro ao buscar tracks da playlist',
+        message: 'Erro ao buscar jobs do usuário',
       });
     }
   }

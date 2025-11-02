@@ -150,7 +150,6 @@ export class SyncYouTubePlaylistToSpotify {
       }
     }
 
-    // 5. Adicionar tracks no Spotify (batch) - somente as novas
     if (tracksToAdd.length > 0) {
       console.log(`[Sync] Adicionando ${tracksToAdd.length} músicas novas no Spotify...`);
 
@@ -164,7 +163,6 @@ export class SyncYouTubePlaylistToSpotify {
       console.log(`[Sync] Nenhuma música nova para adicionar`);
     }
 
-    // 6. Atualizar status da playlist
     const finalStatus =
       failedCount === 0 ? 'completed' :
         failedCount === youtubeVideos.length ? 'failed' :

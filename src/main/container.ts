@@ -4,6 +4,7 @@ import { PrismaPlaylistTrackRepository } from '../infrastructure/db/prisma/repos
 import { PrismaTrackRepository } from '../infrastructure/db/prisma/repositories/PrismaTrackRepository';
 import { PrismaUserRepository } from '../infrastructure/db/prisma/repositories/PrismaUserRepository';
 
+import { GoogleOAuthClient } from '../infrastructure/client/GoogleOAuthClient';
 
 import { BcryptPasswordHasher } from '../infrastructure/crypto/BcryptPasswordHasher';
 import { JwtTokenManager } from '../infrastructure/crypto/JwtTokenManager';
@@ -18,26 +19,37 @@ import { StartLocalLogin } from '../application/use_cases/auth/StartLocalLogin';
 import { StartLocalRegister } from '../application/use_cases/auth/StartLocalRegister';
 import { StartSpotifyLogin } from '../application/use_cases/auth/StartSpotifyLogin';
 import { StartSpotifyRegister } from '../application/use_cases/auth/StartSpotifyRegister';
-
-// Use case Sync
-import { SyncYouTubePlaylistToSpotify } from '../application/use_cases/sync/SyncYouTubePlaylistToSpotify';
-import { GoogleOAuthClient } from '../infrastructure/client/GoogleOAuthClient';
 import { SpotifyOAuthClient } from '../infrastructure/client/SpotifyOAuthClient';
 import { RedisStateStore } from '../infrastructure/state/RedisStateStore';
 
 export class Container {
+  // Infra
   private static googleClient = new GoogleOAuthClient();
   private static spotifyClient = new SpotifyOAuthClient();
   private static stateStore = new RedisStateStore();
 
+  // Repositories
   private static userRepository = new PrismaUserRepository(prisma);
   private static playlistRepository = new PrismaPlaylistRepository(prisma);
   private static trackRepository = new PrismaTrackRepository(prisma);
   private static playlistTrackRepository = new PrismaPlaylistTrackRepository(prisma);
 
+  // Crypto & Time
   private static tokenManager = new JwtTokenManager();
   private static passwordHasher = new BcryptPasswordHasher();
   private static clock = new SystemClock();
+
+  // ===== GETTERS - CLIENTS =====
+
+  static getGoogleClient() {
+    return this.googleClient;
+  }
+
+  static getSpotifyClient() {
+    return this.spotifyClient;
+  }
+
+  // ===== GETTERS - REPOSITORIES =====
 
   static getUserRepository() {
     return this.userRepository;
@@ -55,6 +67,8 @@ export class Container {
     return this.playlistTrackRepository;
   }
 
+  // ===== GETTERS - INFRA =====
+
   static getTokenManager() {
     return this.tokenManager;
   }
@@ -62,6 +76,8 @@ export class Container {
   static getPasswordHasher() {
     return this.passwordHasher;
   }
+
+  // ===== GETTERS - USE CASES AUTH =====
 
   static getStartGoogleLogin() {
     return new StartGoogleLogin(this.stateStore, this.googleClient);
@@ -112,15 +128,6 @@ export class Container {
       this.userRepository,
       this.passwordHasher,
       this.tokenManager,
-    );
-  }
-
-  static getSyncYouTubePlaylistToSpotify() {
-    return new SyncYouTubePlaylistToSpotify(
-      this.playlistRepository,
-      this.trackRepository,
-      this.playlistTrackRepository,
-      this.googleClient,
     );
   }
 }

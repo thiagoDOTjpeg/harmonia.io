@@ -3,7 +3,9 @@ import dotenv from 'dotenv';
 import express from 'express';
 
 import authRoutes from '../infrastructure/http/express/routes/auth.routes';
+import bullBoardRoutes from '../infrastructure/http/express/routes/bull-board.routes';
 import syncRoutes from '../infrastructure/http/express/routes/sync.routes';
+import { startWorkers } from '../infrastructure/queue/workers';
 import meRoutes from '../legacy/routes/me';
 
 dotenv.config();
@@ -17,6 +19,7 @@ app.use(express.json());
 app.use(authRoutes);
 app.use(meRoutes);
 app.use(syncRoutes);
+app.use(bullBoardRoutes);
 
 app.get('/health', (_req, res) => {
   res.json({
@@ -32,6 +35,8 @@ app.get('/', (_req, res) => {
     version: '1.0.0'
   });
 });
+
+startWorkers();
 
 app.listen(PORT, () => {
   console.log('');
