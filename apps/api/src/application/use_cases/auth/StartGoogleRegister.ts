@@ -1,0 +1,16 @@
+import { IGoogleOAuthClient } from "../../ports/oauth/IGoogleOAuthClient";
+import { IOAuthStateStore } from "../../ports/oauth/IOAuthStateStore";
+
+export class StartGoogleRegister {
+  constructor(
+    private readonly stateStore: IOAuthStateStore,
+    private readonly google: IGoogleOAuthClient,
+  ) { }
+
+  async execute(returnTo?: string) {
+    const state = Math.random().toString(36).slice(2);
+    await this.stateStore.set(state, { mode: 'register', returnTo });
+    const redirectTo = this.google.buildAuthUrl(state);
+    return { redirectTo };
+  }
+}

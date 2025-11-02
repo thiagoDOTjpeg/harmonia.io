@@ -1,0 +1,44 @@
+{
+  "name": "@harmonia/api",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "dotenv -e ../../.env -- tsx watch src/main/index.ts",
+    "worker": "dotenv -e ../../.env -- tsx watch src/main/worker.ts",
+    "build": "tsc && tsc-alias",
+    "start": "node dist/main/index.js",
+    "db:generate": "dotenv -e ../../.env -- prisma generate --schema=../../packages/database/prisma/schema.prisma",
+    "db:push": "dotenv -e ../../.env -- prisma db push --schema=../../packages/database/prisma/schema.prisma",
+    "db:migrate": "dotenv -e ../../.env -- prisma migrate dev --schema=../../packages/database/prisma/schema.prisma",
+    "db:studio": "dotenv -e ../../.env -- prisma studio --schema=../../packages/database/prisma/schema.prisma"
+  },
+  "dependencies": {
+    "@harmonia/shared": "*",
+    "@harmonia/database": "*",
+    "@prisma/client": "^6.18.0",
+    "bcrypt": "^5.1.1",
+    "bull": "^4.12.0",
+    "@bull-board/api": "^5.10.0",
+    "@bull-board/express": "^5.10.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "ioredis": "^5.3.2",
+    "jsonwebtoken": "^9.0.2",
+    "zod": "^3.22.4"
+  },
+  "devDependencies": {
+    "@harmonia/config-typescript": "*",
+    "@types/bcrypt": "^5.0.2",
+    "@types/bull": "^4.10.0",
+    "@types/cors": "^2.8.17",
+    "@types/express": "^4.17.21",
+    "@types/jsonwebtoken": "^9.0.5",
+    "@types/node": "^20.10.0",
+    "prisma": "^6.18.0",
+    "tsc-alias": "^1.8.8",
+    "tsx": "^4.7.0",
+    "typescript": "^5.3.3"
+  }
+}
