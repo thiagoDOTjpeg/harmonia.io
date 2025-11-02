@@ -1,50 +1,37 @@
 {
-  "name": "harmonia.io",
+  "name": "harmonia-monorepo",
   "version": "1.0.0",
-  "description": "Sincronize playlists do YouTube com Spotify",
-  "main": "dist/index.js",
-  "scripts": {
-    "dev": "tsx --watch src/main/index.ts",
-    "build": "tsc",
-    "start": "node dist/index.js",
-    "db:start": "docker compose up -d",
-    "db:stop": "docker compose down",
-    "db:migrate": "prisma migrate dev",
-    "db:studio": "prisma studio",
-    "db:generate": "prisma generate"
-  },
-  "keywords": [
-    "playlist",
-    "sync",
-    "spotify",
-    "youtube"
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
   ],
-  "author": "Você",
-  "license": "MIT",
-  "dependencies": {
-    "@bull-board/api": "^6.14.0",
-    "@bull-board/express": "^6.14.0",
-    "@prisma/client": "^6.18.0",
-    "@types/ioredis": "^4.28.10",
-    "bcryptjs": "^3.0.2",
-    "bull": "^4.16.5",
-    "bull-board": "^1.7.2",
-    "cors": "^2.8.5",
-    "dotenv": "^17.2.3",
-    "express": "^5.1.0",
-    "ioredis": "^5.8.2",
-    "jsonwebtoken": "^9.0.2",
-    "zod": "^4.1.12"
+  "scripts": {
+    "dev": "turbo dev",
+    "dev:api": "turbo dev --filter=@harmonia/api",
+    "dev:web": "turbo dev --filter=@harmonia/web",
+    "worker": "turbo worker --filter=@harmonia/api",
+    "build": "turbo build",
+    "build:api": "turbo build --filter=@harmonia/api",
+    "build:web": "turbo build --filter=@harmonia/web",
+    "lint": "turbo lint",
+    "test": "turbo test",
+    "db:generate": "turbo db:generate --filter=@harmonia/database",
+    "db:push": "turbo db:push --filter=@harmonia/api",
+    "db:migrate": "turbo db:migrate --filter=@harmonia/api",
+    "clean": "turbo clean && rm -rf node_modules",
+    "format": "prettier --write \"**/*.{ts,tsx,md,json}\""
   },
   "devDependencies": {
-    "@types/bcryptjs": "^2.4.6",
-    "@types/bull": "^3.15.9",
-    "@types/cors": "^2.8.19",
-    "@types/express": "^5.0.5",
-    "@types/jsonwebtoken": "^9.0.10",
-    "@types/node": "^24.9.2",
-    "prisma": "^6.18.0",
-    "tsx": "^4.20.6",
-    "typescript": "^5.9.3"
-  }
+    "@turbo/gen": "^2.4.0",
+    "dotenv-cli": "11.0.0",
+    "prettier": "^3.0.0",
+    "turbo": "^2.4.0",
+    "typescript": "^5.3.3"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=7.0.0"
+  },
+  "packageManager": "npm@10.9.3"
 }
