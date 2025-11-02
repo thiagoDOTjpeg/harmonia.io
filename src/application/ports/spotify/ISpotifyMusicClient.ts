@@ -1,11 +1,5 @@
-export interface SpotifySearchResult {
-  trackId: string;
-  uri: string;
-  name: string;
-  artist: string;
-  album: string;
-  matchScore: number;
-}
+import { SpotifySearchResult } from "../../../shared/types/spotify";
+
 
 export interface ISpotifyMusicClient {
   searchTrack(query: string): Promise<SpotifySearchResult | null>;

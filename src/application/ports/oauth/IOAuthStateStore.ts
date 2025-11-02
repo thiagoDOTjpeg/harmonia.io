@@ -1,4 +1,4 @@
-import { OAuthState } from "../../../shared/types/oauth/oauth";
+import { OAuthState } from "../../../shared/types/oauth";
 
 export interface IOAuthStateStore {
   get(state: string): Promise<OAuthState | undefined>;

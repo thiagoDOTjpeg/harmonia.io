@@ -1,6 +1,6 @@
 import jwt from 'jsonwebtoken';
 import { ITokenManager } from '../../application/ports/crypto/ITokenManager';
-import { TokenResponse } from '../../shared/types/oauth/token';
+import { TokenResponse } from '../../shared/types/token';
 
 export class JwtTokenManager implements ITokenManager {
   private readonly secret = process.env.JWT_SECRET || 'dev-secret';

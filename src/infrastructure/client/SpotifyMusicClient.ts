@@ -1,21 +1,7 @@
 import { ISpotifyMusicClient, SpotifySearchResult } from '../../application/ports/spotify/ISpotifyMusicClient';
 import { MusicMatchingService } from '../../domain/services/MusicMatchingService';
+import { SpotifyCreatePlaylistResponse, SpotifySearchResponse } from '../../shared/types/spotify';
 
-interface SpotifySearchResponse {
-  tracks?: {
-    items?: Array<{
-      id: string;
-      uri: string;
-      name: string;
-      artists?: Array<{ name: string }>;
-      album?: { name: string };
-    }>;
-  };
-}
-
-interface SpotifyCreatePlaylistResponse {
-  id: string;
-}
 
 export class SpotifyMusicClient implements ISpotifyMusicClient {
   constructor(

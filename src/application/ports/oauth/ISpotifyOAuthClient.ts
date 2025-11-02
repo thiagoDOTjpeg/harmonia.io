@@ -1,4 +1,4 @@
-import { SpotifyExchangeResult } from "../../../shared/types/oauth/spotify";
+import { SpotifyExchangeResult } from "../../../shared/types/spotify";
 
 export interface ISpotifyOAuthClient {
   buildAuthUrl(state: string): string;

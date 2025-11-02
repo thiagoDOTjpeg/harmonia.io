@@ -1,5 +1,5 @@
 import { ISpotifyOAuthClient } from "../../application/ports/oauth/ISpotifyOAuthClient";
-import { SpotifyExchangeResult, SpotifyMe, SpotifyTokenResponse } from "../../shared/types/oauth/spotify";
+import { SpotifyExchangeResult, SpotifyMe, SpotifyTokenResponse } from "../../shared/types/spotify";
 
 export class SpotifyOAuthClient implements ISpotifyOAuthClient {
   constructor(

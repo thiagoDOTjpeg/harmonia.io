@@ -1,25 +1,9 @@
 import { SpotifyMusicClient } from "../../../infrastructure/client/SpotifyMusicClient";
+import { SyncPlaylistInput, SyncPlaylistResult } from "../../../shared/types/playlist";
 import { IGoogleOAuthClient } from "../../ports/oauth/IGoogleOAuthClient";
 import { IPlaylistRepository } from "../../repositories/IPlaylistRepository";
 import { IPlaylistTrackRepository } from "../../repositories/IPlaylistTrackRepository";
 import { ITrackRepository } from "../../repositories/ITrackRepository";
-
-export interface SyncPlaylistInput {
-  userId: string;
-  youtubePlaylistId: string;
-  googleAccessToken: string;
-  spotifyAccessToken: string;
-  spotifyUserId: string;
-}
-
-export interface SyncPlaylistResult {
-  playlistId: string;
-  totalTracks: number;
-  syncedTracks: number;
-  failedTracks: number;
-  newTracks: number;
-  status: 'completed' | 'partial' | 'failed';
-}
 
 export class SyncYouTubePlaylistToSpotify {
   constructor(

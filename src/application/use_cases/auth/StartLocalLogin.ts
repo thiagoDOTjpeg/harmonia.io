@@ -1,12 +1,8 @@
 import { AuthResponse } from '../../../legacy/types';
+import { LoginInput } from '../../../shared/types/auth';
 import { IPasswordHasher } from '../../ports/crypto/IPasswordHasher';
 import { ITokenManager } from '../../ports/crypto/ITokenManager';
 import { IUserRepository } from '../../repositories/IUserRepository';
-
-export interface LoginInput {
-  email: string;
-  password: string;
-}
 
 export class StartLocalLogin {
   constructor(

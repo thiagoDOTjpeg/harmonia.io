@@ -1,4 +1,4 @@
-import { AuthResponse } from '../../../shared/types/oauth/oauth';
+import { AuthResponse } from '../../../shared/types/oauth';
 import { IClock } from '../../ports/clock/IClock';
 import { ITokenManager } from '../../ports/crypto/ITokenManager';
 import { IGoogleOAuthClient } from '../../ports/oauth/IGoogleOAuthClient';

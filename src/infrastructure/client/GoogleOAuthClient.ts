@@ -1,32 +1,7 @@
 import { IGoogleOAuthClient, YouTubePlaylistInfo, YouTubeVideo } from '../../application/ports/oauth/IGoogleOAuthClient';
 import { GoogleTokenResponse, GoogleUserInfo } from '../../legacy/types';
-import { GoogleExchangeResult } from '../../shared/types/oauth/google';
-
-interface YouTubePlaylistResponse {
-  items?: Array<{
-    id: string;
-    snippet: {
-      title: string;
-      description?: string;
-    };
-    contentDetails: {
-      itemCount: number;
-    };
-  }>;
-}
-
-interface YouTubePlaylistItemsResponse {
-  items?: Array<{
-    snippet: {
-      title: string;
-      resourceId: {
-        videoId: string;
-      };
-      channelTitle?: string;
-    };
-  }>;
-  nextPageToken?: string;
-}
+import { GoogleExchangeResult } from '../../shared/types/google';
+import { YouTubePlaylistItemsResponse, YouTubePlaylistResponse } from '../../shared/types/playlist';
 
 export class GoogleOAuthClient implements IGoogleOAuthClient {
   constructor(

@@ -1,4 +1,4 @@
-import { TokenResponse } from "../../../shared/types/oauth/token";
+import { TokenResponse } from "../../../shared/types/token";
 
 export interface ITokenManager {
   sign(payload: object): string;

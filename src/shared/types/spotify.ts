@@ -40,3 +40,17 @@ export interface SpotifyExchangeResult {
   tokens: SpotifyTokenResponse;
   profile: SpotifyMe;
 }
+
+export interface SpotifyCreatePlaylistResponse {
+  id: string;
+}
+
+export interface SpotifySearchResult {
+  trackId: string;
+  uri: string;
+  name: string;
+  artist: string;
+  album: string;
+  matchScore: number;
+}
+

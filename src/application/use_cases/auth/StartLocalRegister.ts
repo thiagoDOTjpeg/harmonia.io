@@ -1,13 +1,8 @@
-import { AuthResponse } from '../../../shared/types/oauth/oauth';
+import { RegisterInput } from '../../../shared/types/auth';
+import { AuthResponse } from '../../../shared/types/oauth';
 import { IPasswordHasher } from '../../ports/crypto/IPasswordHasher';
 import { ITokenManager } from '../../ports/crypto/ITokenManager';
 import { IUserRepository } from '../../repositories/IUserRepository';
-
-export interface RegisterInput {
-  email: string;
-  password: string;
-  name?: string;
-}
 
 export class StartLocalRegister {
   constructor(

@@ -1,5 +1,5 @@
 import { IOAuthStateStore } from '../../application/ports/oauth/IOAuthStateStore';
-import { OAuthState } from '../../shared/types/oauth/oauth';
+import { OAuthState } from '../../shared/types/oauth';
 
 export class InMemoryStateStore implements IOAuthStateStore {
   private store = new Map<string, OAuthState>();

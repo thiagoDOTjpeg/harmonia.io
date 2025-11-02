@@ -45,3 +45,16 @@ export interface GoogleExchangeResult {
   profile: GoogleUserInfo;
   youtubeChannelId?: string;
 }
+
+export interface YouTubePlaylistInfo {
+  id: string;
+  title: string;
+  description: string;
+  itemCount: number;
+}
+
+export interface YouTubeVideo {
+  videoId: string;
+  title: string;
+  channelTitle: string;
+}
