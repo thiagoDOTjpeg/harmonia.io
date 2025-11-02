@@ -3,6 +3,7 @@ import dotenv from 'dotenv';
 import express from 'express';
 
 import authRoutes from '../infrastructure/http/express/routes/auth.routes';
+import syncRoutes from '../infrastructure/http/express/routes/sync.routes';
 import meRoutes from '../legacy/routes/me';
 
 dotenv.config();
@@ -15,6 +16,7 @@ app.use(express.json());
 
 app.use(authRoutes);
 app.use(meRoutes);
+app.use(syncRoutes);
 
 app.get('/health', (_req, res) => {
   res.json({

@@ -1,11 +1,15 @@
-import { JwtTokenManager } from '../infrastructure/crypto/JwtTokenManager';
 import { prisma } from '../infrastructure/db/prisma/client';
+import { PrismaPlaylistRepository } from '../infrastructure/db/prisma/repositories/PrismaPlaylistRepository';
+import { PrismaPlaylistTrackRepository } from '../infrastructure/db/prisma/repositories/PrismaPlaylistTrackRepository';
+import { PrismaTrackRepository } from '../infrastructure/db/prisma/repositories/PrismaTrackRepository';
 import { PrismaUserRepository } from '../infrastructure/db/prisma/repositories/PrismaUserRepository';
-import { GoogleOAuthClient } from '../infrastructure/oauth/GoogleOAuthClient';
-import { InMemoryStateStore } from '../infrastructure/oauth/InMemoryStateStore';
-import { SpotifyOAuthClient } from '../infrastructure/oauth/SpotifyOAuthClient';
+
+
+import { BcryptPasswordHasher } from '../infrastructure/crypto/BcryptPasswordHasher';
+import { JwtTokenManager } from '../infrastructure/crypto/JwtTokenManager';
 import { SystemClock } from '../infrastructure/time/SystemClock';
 
+// Use cases Auth
 import { HandleGoogleCallback } from '../application/use_cases/auth/HandleGoogleCallback';
 import { HandleSpotifyCallback } from '../application/use_cases/auth/HandleSpotifyCallback';
 import { StartGoogleLogin } from '../application/use_cases/auth/StartGoogleLogin';
@@ -14,17 +18,50 @@ import { StartLocalLogin } from '../application/use_cases/auth/StartLocalLogin';
 import { StartLocalRegister } from '../application/use_cases/auth/StartLocalRegister';
 import { StartSpotifyLogin } from '../application/use_cases/auth/StartSpotifyLogin';
 import { StartSpotifyRegister } from '../application/use_cases/auth/StartSpotifyRegister';
-import { BcryptPasswordHasher } from '../infrastructure/crypto/BcryptPasswordHasher';
-import { RedisStateStore } from '../infrastructure/oauth/RedisStateStore';
+
+// Use case Sync
+import { SyncYouTubePlaylistToSpotify } from '../application/use_cases/sync/SyncYouTubePlaylistToSpotify';
+import { GoogleOAuthClient } from '../infrastructure/client/GoogleOAuthClient';
+import { SpotifyOAuthClient } from '../infrastructure/client/SpotifyOAuthClient';
+import { RedisStateStore } from '../infrastructure/state/RedisStateStore';
 
 export class Container {
   private static googleClient = new GoogleOAuthClient();
   private static spotifyClient = new SpotifyOAuthClient();
-  private static stateStore = process.env.USE_REDIS === 'true' ? new RedisStateStore() : new InMemoryStateStore();
+  private static stateStore = new RedisStateStore();
+
   private static userRepository = new PrismaUserRepository(prisma);
+  private static playlistRepository = new PrismaPlaylistRepository(prisma);
+  private static trackRepository = new PrismaTrackRepository(prisma);
+  private static playlistTrackRepository = new PrismaPlaylistTrackRepository(prisma);
+
   private static tokenManager = new JwtTokenManager();
   private static passwordHasher = new BcryptPasswordHasher();
   private static clock = new SystemClock();
+
+  static getUserRepository() {
+    return this.userRepository;
+  }
+
+  static getPlaylistRepository() {
+    return this.playlistRepository;
+  }
+
+  static getTrackRepository() {
+    return this.trackRepository;
+  }
+
+  static getPlaylistTrackRepository() {
+    return this.playlistTrackRepository;
+  }
+
+  static getTokenManager() {
+    return this.tokenManager;
+  }
+
+  static getPasswordHasher() {
+    return this.passwordHasher;
+  }
 
   static getStartGoogleLogin() {
     return new StartGoogleLogin(this.stateStore, this.googleClient);
@@ -40,7 +77,7 @@ export class Container {
       this.googleClient,
       this.userRepository,
       this.tokenManager,
-      this.clock
+      this.clock,
     );
   }
 
@@ -58,15 +95,7 @@ export class Container {
       this.spotifyClient,
       this.userRepository,
       this.tokenManager,
-      this.clock
-    );
-  }
-
-  static getStartLocalRegister() {
-    return new StartLocalRegister(
-      this.userRepository,
-      this.passwordHasher,
-      this.tokenManager
+      this.clock,
     );
   }
 
@@ -74,15 +103,24 @@ export class Container {
     return new StartLocalLogin(
       this.userRepository,
       this.passwordHasher,
-      this.tokenManager
+      this.tokenManager,
     );
   }
 
-  static getUserRepository() {
-    return this.userRepository;
+  static getStartLocalRegister() {
+    return new StartLocalRegister(
+      this.userRepository,
+      this.passwordHasher,
+      this.tokenManager,
+    );
   }
 
-  static getTokenManager() {
-    return this.tokenManager;
+  static getSyncYouTubePlaylistToSpotify() {
+    return new SyncYouTubePlaylistToSpotify(
+      this.playlistRepository,
+      this.trackRepository,
+      this.playlistTrackRepository,
+      this.googleClient,
+    );
   }
 }
