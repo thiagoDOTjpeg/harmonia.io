@@ -15,7 +15,7 @@ export class HandleSpotifyCallback {
   ) { }
 
   async execute(input: { code: string; state: string }): Promise<AuthResponse> {
-    const stateData = this.stateStore.get(input.state);
+    const stateData = await this.stateStore.get(input.state);
     if (!stateData) return { error: "invalid_state_or_code" }
     this.stateStore.delete(input.state);
     const { mode, returnTo } = stateData;

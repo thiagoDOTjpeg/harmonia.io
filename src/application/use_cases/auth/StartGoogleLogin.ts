@@ -7,9 +7,9 @@ export class StartGoogleLogin {
     private readonly google: IGoogleOAuthClient,
   ) { }
 
-  execute(returnTo?: string) {
+  async execute(returnTo?: string) {
     const state = Math.random().toString(36).slice(2);
-    this.stateStore.set(state, { mode: 'login', returnTo });
+    await this.stateStore.set(state, { mode: 'login', returnTo });
     const redirectTo = this.google.buildAuthUrl(state);
     return { redirectTo };
   }

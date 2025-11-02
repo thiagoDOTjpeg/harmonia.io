@@ -4,13 +4,15 @@ import { OAuthState } from '../../shared/types/oauth/oauth';
 export class InMemoryStateStore implements IOAuthStateStore {
   private store = new Map<string, OAuthState>();
 
-  get(state: string): OAuthState | undefined {
+  async get(state: string): Promise<OAuthState | undefined> {
     return this.store.get(state);
   }
-  set(state: string, value: OAuthState): void {
+
+  async set(state: string, value: OAuthState): Promise<void> {
     this.store.set(state, value);
   }
-  delete(state: string): void {
+
+  async delete(state: string): Promise<void> {
     this.store.delete(state);
   }
 }

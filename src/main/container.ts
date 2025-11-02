@@ -15,11 +15,12 @@ import { StartLocalRegister } from '../application/use_cases/auth/StartLocalRegi
 import { StartSpotifyLogin } from '../application/use_cases/auth/StartSpotifyLogin';
 import { StartSpotifyRegister } from '../application/use_cases/auth/StartSpotifyRegister';
 import { BcryptPasswordHasher } from '../infrastructure/crypto/BcryptPasswordHasher';
+import { RedisStateStore } from '../infrastructure/oauth/RedisStateStore';
 
 export class Container {
   private static googleClient = new GoogleOAuthClient();
   private static spotifyClient = new SpotifyOAuthClient();
-  private static stateStore = new InMemoryStateStore();
+  private static stateStore = process.env.USE_REDIS === 'true' ? new RedisStateStore() : new InMemoryStateStore();
   private static userRepository = new PrismaUserRepository(prisma);
   private static tokenManager = new JwtTokenManager();
   private static passwordHasher = new BcryptPasswordHasher();

@@ -1,7 +1,7 @@
-import { OAuthState } from "../../../legacy/types";
+import { OAuthState } from "../../../shared/types/oauth/oauth";
 
 export interface IOAuthStateStore {
-  get(state: string): OAuthState | undefined;
-  set(state: string, value: OAuthState): void;
-  delete(state: string): void;
+  get(state: string): Promise<OAuthState | undefined>;
+  set(state: string, value: OAuthState): Promise<void>;
+  delete(state: string): Promise<void>;
 }

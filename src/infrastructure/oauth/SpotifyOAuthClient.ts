@@ -29,8 +29,9 @@ export class SpotifyOAuthClient implements ISpotifyOAuthClient {
     const body = new URLSearchParams({
       grant_type: 'authorization_code',
       code,
-      redirect_url: this.redirectUri,
+      redirect_uri: this.redirectUri,
     })
+
     const basic = Buffer.from(`${this.clientId}:${this.clientSecret}`).toString('base64');
 
     const tokenRes = await fetch('https://accounts.spotify.com/api/token', {

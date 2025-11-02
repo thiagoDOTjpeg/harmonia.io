@@ -1,12 +1,13 @@
 import { Request, Response } from 'express';
+import { OAuthQueryDto } from '../../../../application/dto/auth/schemas';
 import { Container } from '../../../../main/container';
 
 export class AuthController {
   static async googleLogin(req: Request, res: Response) {
     try {
-      const returnTo = typeof req.query.returnTo === 'string' ? req.query.returnTo : undefined;
+      const { returnTo } = req.query as OAuthQueryDto;
       const useCase = Container.getStartGoogleLogin();
-      const { redirectTo } = useCase.execute(returnTo);
+      const { redirectTo } = await useCase.execute(returnTo);
       res.redirect(redirectTo);
     } catch (error) {
       console.error('Google login error:', error);
@@ -16,9 +17,9 @@ export class AuthController {
 
   static async googleRegister(req: Request, res: Response) {
     try {
-      const returnTo = typeof req.query.returnTo === 'string' ? req.query.returnTo : undefined;
+      const { returnTo } = req.query as OAuthQueryDto;
       const useCase = Container.getStartGoogleRegister();
-      const { redirectTo } = useCase.execute(returnTo);
+      const { redirectTo } = await useCase.execute(returnTo);
       res.redirect(redirectTo);
     } catch (error) {
       console.error('Google register error:', error);
@@ -56,9 +57,9 @@ export class AuthController {
 
   static async spotifyLogin(req: Request, res: Response) {
     try {
-      const returnTo = typeof req.query.returnTo === 'string' ? req.query.returnTo : undefined;
+      const { returnTo } = req.query as OAuthQueryDto;
       const useCase = Container.getStartSpotifyLogin();
-      const { redirectTo } = useCase.execute(returnTo);
+      const { redirectTo } = await useCase.execute(returnTo);
       res.redirect(redirectTo);
     } catch (error) {
       console.error('Spotify login error:', error);
@@ -68,9 +69,9 @@ export class AuthController {
 
   static async spotifyRegister(req: Request, res: Response) {
     try {
-      const returnTo = typeof req.query.returnTo === 'string' ? req.query.returnTo : undefined;
+      const { returnTo } = req.query as OAuthQueryDto;
       const useCase = Container.getStartSpotifyRegister();
-      const { redirectTo } = useCase.execute(returnTo);
+      const { redirectTo } = await useCase.execute(returnTo);
       res.redirect(redirectTo);
     } catch (error) {
       console.error('Spotify register error:', error);
