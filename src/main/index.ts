@@ -2,7 +2,6 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import express from 'express';
 
-// Importar rotas
 import authRoutes from '../infrastructure/http/express/routes/auth.routes';
 import meRoutes from '../legacy/routes/me';
 
@@ -11,15 +10,12 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Middlewares
 app.use(cors({ origin: true }));
 app.use(express.json());
 
-// Registrar rotas
 app.use(authRoutes);
 app.use(meRoutes);
 
-// Health check
 app.get('/health', (_req, res) => {
   res.json({
     status: 'ok',

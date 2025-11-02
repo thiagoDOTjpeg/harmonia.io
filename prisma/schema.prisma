@@ -1,6 +1,6 @@
 // ============================================
 // HARMONIA.IO - SCHEMA DO BANCO DE DADOS
-// Versão MVP - Simples e funcional
+// Versão 2.0 - Modelo Normalizado com Tracks separadas
 // ============================================
 
 generator client {
@@ -18,20 +18,20 @@ datasource db {
 
 model User {
   id        String   @id @default(uuid())
-  email     String   @unique
+  email     String?  @unique
   name      String?
 
   // Login com email/senha
   passwordHash     String?  @db.Text
   emailVerifiedAt  DateTime?
   
-  // OAuth Spotify (único login por enquanto)
+  // OAuth Spotify
   spotifyId           String?  @unique
   spotifyAccessToken  String?  @db.Text
   spotifyRefreshToken String?  @db.Text
   spotifyTokenExpiry  DateTime?
 
-   // OAuth Google/YouTube
+  // OAuth Google/YouTube
   googleId            String?  @unique
   googleAccessToken   String?  @db.Text
   googleRefreshToken  String?  @db.Text
@@ -72,8 +72,8 @@ model SyncedPlaylist {
   userId  String
   user    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
   
-  // Músicas
-  tracks SyncedTrack[]
+  // Relacionamento N:N com Tracks através de PlaylistTrack
+  playlistTracks PlaylistTrack[]
   
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -84,32 +84,67 @@ model SyncedPlaylist {
 }
 
 // ============================================
-// 3. MÚSICAS SINCRONIZADAS
+// 3. TRACKS (MÚSICAS ÚNICAS - MASTER DATA)
 // ============================================
 
-model SyncedTrack {
+model Track {
   id String @id @default(uuid())
   
-  // Dados do YouTube
-  youtubeVideoId String
+  // YouTube (identificador único)
+  youtubeVideoId String  @unique
   youtubeTitle   String
+  youtubeChannel String?
   
-  // Dados do Spotify (pode ser null se não encontrou)
-  spotifyTrackId String?
+  // Spotify (melhor match encontrado)
+  spotifyTrackId String? @unique
   spotifyUri     String?
+  spotifyArtist  String?
+  spotifyAlbum   String?
   
-  // Confiança do match (0.0 a 1.0)
-  matchScore Float @default(0)
+  // Metadados de match
+  matchScore    Float    @default(0)
+  matchedAt     DateTime?
+  matchSource   String?  // "manual", "auto", "ai"
   
-  // Status da música
-  status String @default("pending") // pending, matched, added, failed
+  // Machine Learning (futuro)
+  isOfficialVideo Boolean @default(false)
+  isVisualizer    Boolean @default(false)
+  isLive          Boolean @default(false)
+  aiConfidence    Float?
   
-  // Pertence a qual playlist
+  // Relacionamento N:N com Playlists
+  playlistTracks PlaylistTrack[]
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@index([youtubeVideoId])
+  @@index([spotifyTrackId])
+  @@map("tracks")
+}
+
+// ============================================
+// 4. PLAYLIST_TRACKS (JOIN TABLE N:N)
+// ============================================
+
+model PlaylistTrack {
+  id String @id @default(uuid())
+  
+  // Referências
   playlistId String
   playlist   SyncedPlaylist @relation(fields: [playlistId], references: [id], onDelete: Cascade)
   
-  createdAt DateTime @default(now())
+  trackId String
+  track   Track @relation(fields: [trackId], references: [id], onDelete: Cascade)
   
-  @@unique([playlistId, youtubeVideoId])
-  @@map("synced_tracks")
+  // Controle específico dessa música nessa playlist
+  status   String   @default("pending") // pending, synced, failed
+  addedAt  DateTime @default(now())
+  position Int? // ordem na playlist (opcional)
+  
+  // Evita duplicatas
+  @@unique([playlistId, trackId])
+  @@index([playlistId])
+  @@index([trackId])
+  @@map("playlist_tracks")
 }
