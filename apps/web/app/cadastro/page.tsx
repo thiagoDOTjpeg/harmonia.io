@@ -1,29 +1,67 @@
-"use client"
+"use client";
 
-import type React from "react"
+import { Footer } from "@/components/footer";
+import { Header } from "@/components/header";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { useRegister } from "@/hooks/use-register";
+import { RegisterSchema } from "@harmonia/shared";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { AlertCircle } from "lucide-react";
+import Link from "next/link";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
 
-import { Header } from "@/components/header"
-import { Footer } from "@/components/footer"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Checkbox } from "@/components/ui/checkbox"
-import Link from "next/link"
-import { useState } from "react"
+type RegisterFormData = z.infer<typeof RegisterSchema> & {
+  acceptTerms: boolean;
+};
+
+const RegisterFormSchema = RegisterSchema.extend({
+  acceptTerms: z.boolean().refine((val) => val === true, {
+    message: "Você deve aceitar os termos de serviço",
+  }),
+});
 
 export default function CadastroPage() {
-  const [name, setName] = useState("")
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
-  const [acceptTerms, setAcceptTerms] = useState(false)
+  const { register: registerUser, isSubmitting } = useRegister();
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    // Simulate registration - in real app, this would call an API
-    console.log("Register:", { name, email, password, acceptTerms })
-    window.location.href = "/dashboard"
-  }
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    watch,
+    setValue,
+  } = useForm<RegisterFormData>({
+    resolver: zodResolver(RegisterFormSchema),
+    defaultValues: {
+      name: "",
+      email: "",
+      password: "",
+      acceptTerms: false,
+    },
+  });
+
+  const acceptTerms = watch("acceptTerms");
+
+  const onSubmit = async (data: RegisterFormData) => {
+    const { acceptTerms: _, ...registerData } = data;
+    await registerUser(registerData);
+  };
+
+  const handleOAuthLogin = (provider: "google" | "spotify") => {
+    window.location.href = `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api"}/auth/${provider}/register`;
+  };
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -33,54 +71,78 @@ export default function CadastroPage() {
         <Card className="w-full max-w-md mx-4">
           <CardHeader className="space-y-1">
             <CardTitle className="text-2xl">Criar sua conta</CardTitle>
-            <CardDescription>Comece gratuitamente. Não é necessário cartão de crédito.</CardDescription>
+            <CardDescription>
+              Comece gratuitamente. Não é necessário cartão de crédito.
+            </CardDescription>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+              {/* Nome */}
               <div className="space-y-2">
                 <Label htmlFor="name">Nome completo</Label>
                 <Input
                   id="name"
                   type="text"
                   placeholder="João Silva"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  required
+                  {...register("name")}
+                  disabled={isSubmitting}
                 />
+                {errors.name && (
+                  <p className="text-sm text-destructive">
+                    {errors.name.message}
+                  </p>
+                )}
               </div>
+
+              {/* Email */}
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
                 <Input
                   id="email"
                   type="email"
                   placeholder="seu@email.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
+                  {...register("email")}
+                  disabled={isSubmitting}
                 />
+                {errors.email && (
+                  <p className="text-sm text-destructive">
+                    {errors.email.message}
+                  </p>
+                )}
               </div>
+
+              {/* Senha */}
               <div className="space-y-2">
                 <Label htmlFor="password">Senha</Label>
                 <Input
                   id="password"
                   type="password"
-                  placeholder="Mínimo 8 caracteres"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  minLength={8}
+                  placeholder="Mínimo 6 caracteres"
+                  {...register("password")}
+                  disabled={isSubmitting}
                 />
+                {errors.password && (
+                  <p className="text-sm text-destructive">
+                    {errors.password.message}
+                  </p>
+                )}
               </div>
-              <div className="flex items-center space-x-2">
+
+              {/* Termos */}
+              <div className="flex items-start space-x-2">
                 <Checkbox
                   id="terms"
                   checked={acceptTerms}
-                  onCheckedChange={(checked) => setAcceptTerms(checked as boolean)}
-                  required
+                  onCheckedChange={(checked) =>
+                    setValue("acceptTerms", checked as boolean, {
+                      shouldValidate: true,
+                    })
+                  }
+                  disabled={isSubmitting}
                 />
                 <label
                   htmlFor="terms"
-                  className="text-sm text-muted-foreground leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                  className="text-sm text-muted-foreground leading-tight cursor-pointer"
                 >
                   Aceito os{" "}
                   <Link href="#" className="text-primary hover:underline">
@@ -92,8 +154,22 @@ export default function CadastroPage() {
                   </Link>
                 </label>
               </div>
-              <Button type="submit" className="w-full">
-                Criar Conta
+              {errors.acceptTerms && (
+                <p className="text-sm text-destructive">
+                  {errors.acceptTerms.message}
+                </p>
+              )}
+
+              {/* Erro geral */}
+              {errors.root && (
+                <Alert variant="destructive">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertDescription>{errors.root.message}</AlertDescription>
+                </Alert>
+              )}
+
+              <Button type="submit" className="w-full" disabled={isSubmitting}>
+                {isSubmitting ? "Criando conta..." : "Criar Conta"}
               </Button>
             </form>
 
@@ -102,12 +178,19 @@ export default function CadastroPage() {
                 <span className="w-full border-t border-border" />
               </div>
               <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-card px-2 text-muted-foreground">Ou cadastre-se com</span>
+                <span className="bg-card px-2 text-muted-foreground">
+                  Ou cadastre-se com
+                </span>
               </div>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
-              <Button variant="outline" type="button">
+              <Button
+                variant="outline"
+                type="button"
+                onClick={() => handleOAuthLogin("google")}
+                disabled={isSubmitting}
+              >
                 <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
                   <path
                     fill="currentColor"
@@ -116,11 +199,20 @@ export default function CadastroPage() {
                 </svg>
                 Google
               </Button>
-              <Button variant="outline" type="button">
-                <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M12 2C6.477 2 2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.879V14.89h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.989C18.343 21.129 22 16.99 22 12c0-5.523-4.477-10-10-10z" />
+              <Button
+                variant="outline"
+                type="button"
+                onClick={() => handleOAuthLogin("spotify")}
+                disabled={isSubmitting}
+              >
+                <svg
+                  className="mr-2 h-4 w-4"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                >
+                  <path d="M12 0c-6.627 0-12 5.373-12 12s5.373 12 12 12 12-5.373 12-12-5.373-12-12-12zm6.273 17.15c-.273.409-.773.545-1.182.273-2.682-1.636-6.091-2-10.045-1.091-.455.091-.818-.273-.909-.727-.091-.455.273-.818.727-.909 4.364-1 8.273-.545 11.273 1.364.409.273.545.773.273 1.182zm1.636-3.818c-.364.545-.909.727-1.455.364-3.182-1.909-7.273-2.364-11.818-1.091-.545.091-.909-.364-1-.909-.091-.545.364-.909.909-1 4.727-1.364 9.364-.818 12.818 1.364.545.273.727.818.364 1.364zm.455-4.091c-.455.636-1.182.818-1.818.364-3.636-2.182-8.182-2.727-12.727-1.455-.636.091-1.091-.364-1.182-.909-.091-.636.364-1.091.909-1.182 5.091-1.364 10.182-.818 14.364 1.727.636.273.818.909.455 1.545z" />
                 </svg>
-                Facebook
+                Spotify
               </Button>
             </div>
           </CardContent>
@@ -137,5 +229,5 @@ export default function CadastroPage() {
 
       <Footer />
     </div>
-  )
+  );
 }
