@@ -47,10 +47,10 @@ export function getOAuthCallbackHTML(data: OAuthCallbackData, returnTo?: string)
           window.opener.postMessage(message, targetOrigin);
 
           // Dê tempo para a mensagem ser processada antes de fechar.
-          // setTimeout(() => {
-          //   console.log('🚪 Fechando popup.');
-          //   window.close();
-          // }, 500); // 500ms é um tempo seguro.
+          setTimeout(() => {
+            console.log('🚪 Fechando popup.');
+            window.close();
+          }, 1000); // 500ms é um tempo seguro.
 
         } else {
           console.error('❌ A janela principal (opener) não foi encontrada ou está fechada.');

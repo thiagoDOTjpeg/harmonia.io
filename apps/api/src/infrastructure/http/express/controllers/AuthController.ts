@@ -41,7 +41,7 @@ export class AuthController {
       }
 
       const stateManager = Container.getStateManager();
-      const stateData = await stateManager.get(`oauth:state:${state}`);
+      const stateData = await stateManager.get(state);
       const returnTo = stateData?.returnTo;
       const useCase = Container.getHandleGoogleCallback();
       const result = await useCase.execute({ code, state });
@@ -88,8 +88,10 @@ export class AuthController {
       }
 
       const stateManager = Container.getStateManager();
-      const stateData = await stateManager.get(`oauth:state:${state}`);
-      const returnTo = stateData?.returnTo || 'http://localhost:3001';
+      const stateData = await stateManager.get(state);
+      const returnTo = stateData?.returnTo;
+      console.log(returnTo);
+
 
       const useCase = Container.getHandleSpotifyCallback();
       const result = await useCase.execute({ code, state });
