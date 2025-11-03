@@ -15,10 +15,11 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useOAuth } from "@/hooks/use-oauth";
 import { useRegister } from "@/hooks/use-register";
 import { RegisterSchema } from "@harmonia/shared";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { AlertCircle } from "lucide-react";
+import { AlertCircle, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -35,6 +36,7 @@ const RegisterFormSchema = RegisterSchema.extend({
 
 export default function CadastroPage() {
   const { register: registerUser, isSubmitting } = useRegister();
+  const { openOAuthPopup, isLoading: isOAuthLoading } = useOAuth();
 
   const {
     register,
@@ -54,13 +56,13 @@ export default function CadastroPage() {
 
   const acceptTerms = watch("acceptTerms");
 
-  const onSubmit = async (data: RegisterFormData) => {
+  const onSubmit = async (
+    data: RegisterFormData,
+    e?: React.BaseSyntheticEvent
+  ) => {
+    e?.preventDefault();
     const { acceptTerms: _, ...registerData } = data;
     await registerUser(registerData);
-  };
-
-  const handleOAuthLogin = (provider: "google" | "spotify") => {
-    window.location.href = `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api"}/auth/${provider}/register`;
   };
 
   return (
@@ -76,7 +78,13 @@ export default function CadastroPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleSubmit(onSubmit)(e);
+              }}
+              className="space-y-4"
+            >
               {/* Nome */}
               <div className="space-y-2">
                 <Label htmlFor="name">Nome completo</Label>
@@ -84,8 +92,9 @@ export default function CadastroPage() {
                   id="name"
                   type="text"
                   placeholder="João Silva"
+                  autoComplete="name"
                   {...register("name")}
-                  disabled={isSubmitting}
+                  disabled={isSubmitting || isOAuthLoading}
                 />
                 {errors.name && (
                   <p className="text-sm text-destructive">
@@ -101,8 +110,9 @@ export default function CadastroPage() {
                   id="email"
                   type="email"
                   placeholder="seu@email.com"
+                  autoComplete="email"
                   {...register("email")}
-                  disabled={isSubmitting}
+                  disabled={isSubmitting || isOAuthLoading}
                 />
                 {errors.email && (
                   <p className="text-sm text-destructive">
@@ -118,8 +128,9 @@ export default function CadastroPage() {
                   id="password"
                   type="password"
                   placeholder="Mínimo 6 caracteres"
+                  autoComplete="new-password"
                   {...register("password")}
-                  disabled={isSubmitting}
+                  disabled={isSubmitting || isOAuthLoading}
                 />
                 {errors.password && (
                   <p className="text-sm text-destructive">
@@ -138,7 +149,7 @@ export default function CadastroPage() {
                       shouldValidate: true,
                     })
                   }
-                  disabled={isSubmitting}
+                  disabled={isSubmitting || isOAuthLoading}
                 />
                 <label
                   htmlFor="terms"
@@ -168,8 +179,19 @@ export default function CadastroPage() {
                 </Alert>
               )}
 
-              <Button type="submit" className="w-full" disabled={isSubmitting}>
-                {isSubmitting ? "Criando conta..." : "Criar Conta"}
+              <Button
+                type="submit"
+                className="w-full"
+                disabled={isSubmitting || isOAuthLoading}
+              >
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Criando conta...
+                  </>
+                ) : (
+                  "Criar Conta"
+                )}
               </Button>
             </form>
 
@@ -188,30 +210,40 @@ export default function CadastroPage() {
               <Button
                 variant="outline"
                 type="button"
-                onClick={() => handleOAuthLogin("google")}
-                disabled={isSubmitting}
+                onClick={() => openOAuthPopup("google", { method: "register" })}
+                disabled={isSubmitting || isOAuthLoading}
               >
-                <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
-                  <path
-                    fill="currentColor"
-                    d="M12 0C5.372 0 0 5.373 0 12s5.372 12 12 12c6.627 0 12-5.373 12-12S18.627 0 12 0zm.14 19.018c-3.868 0-7-3.14-7-7.018c0-3.878 3.132-7.018 7-7.018c1.89 0 3.47.697 4.682 1.829l-1.974 1.978v-.004c-.735-.702-1.667-1.062-2.708-1.062c-2.31 0-4.187 1.956-4.187 4.273c0 2.315 1.877 4.277 4.187 4.277c2.096 0 3.522-1.202 3.816-2.852H12.14v-2.737h6.585c.088.47.135.96.135 1.474c0 4.01-2.677 6.86-6.72 6.86z"
-                  />
-                </svg>
+                {isOAuthLoading ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
+                    <path
+                      fill="currentColor"
+                      d="M12 0C5.372 0 0 5.373 0 12s5.372 12 12 12c6.627 0 12-5.373 12-12S18.627 0 12 0zm.14 19.018c-3.868 0-7-3.14-7-7.018c0-3.878 3.132-7.018 7-7.018c1.89 0 3.47.697 4.682 1.829l-1.974 1.978v-.004c-.735-.702-1.667-1.062-2.708-1.062c-2.31 0-4.187 1.956-4.187 4.273c0 2.315 1.877 4.277 4.187 4.277c2.096 0 3.522-1.202 3.816-2.852H12.14v-2.737h6.585c.088.47.135.96.135 1.474c0 4.01-2.677 6.86-6.72 6.86z"
+                    />
+                  </svg>
+                )}
                 Google
               </Button>
               <Button
                 variant="outline"
                 type="button"
-                onClick={() => handleOAuthLogin("spotify")}
-                disabled={isSubmitting}
+                onClick={() =>
+                  openOAuthPopup("spotify", { method: "register" })
+                }
+                disabled={isSubmitting || isOAuthLoading}
               >
-                <svg
-                  className="mr-2 h-4 w-4"
-                  viewBox="0 0 24 24"
-                  fill="currentColor"
-                >
-                  <path d="M12 0c-6.627 0-12 5.373-12 12s5.373 12 12 12 12-5.373 12-12-5.373-12-12-12zm6.273 17.15c-.273.409-.773.545-1.182.273-2.682-1.636-6.091-2-10.045-1.091-.455.091-.818-.273-.909-.727-.091-.455.273-.818.727-.909 4.364-1 8.273-.545 11.273 1.364.409.273.545.773.273 1.182zm1.636-3.818c-.364.545-.909.727-1.455.364-3.182-1.909-7.273-2.364-11.818-1.091-.545.091-.909-.364-1-.909-.091-.545.364-.909.909-1 4.727-1.364 9.364-.818 12.818 1.364.545.273.727.818.364 1.364zm.455-4.091c-.455.636-1.182.818-1.818.364-3.636-2.182-8.182-2.727-12.727-1.455-.636.091-1.091-.364-1.182-.909-.091-.636.364-1.091.909-1.182 5.091-1.364 10.182-.818 14.364 1.727.636.273.818.909.455 1.545z" />
-                </svg>
+                {isOAuthLoading ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <svg
+                    className="mr-2 h-4 w-4"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                  >
+                    <path d="M12 0c-6.627 0-12 5.373-12 12s5.373 12 12 12 12-5.373 12-12-5.373-12-12-12zm6.273 17.15c-.273.409-.773.545-1.182.273-2.682-1.636-6.091-2-10.045-1.091-.455.091-.818-.273-.909-.727-.091-.455.273-.818.727-.909 4.364-1 8.273-.545 11.273 1.364.409.273.545.773.273 1.182zm1.636-3.818c-.364.545-.909.727-1.455.364-3.182-1.909-7.273-2.364-11.818-1.091-.545.091-.909-.364-1-.909-.091-.545.364-.909.909-1 4.727-1.364 9.364-.818 12.818 1.364.545.273.727.818.364 1.364zm.455-4.091c-.455.636-1.182.818-1.818.364-3.636-2.182-8.182-2.727-12.727-1.455-.636.091-1.091-.364-1.182-.909-.091-.636.364-1.091.909-1.182 5.091-1.364 10.182-.818 14.364 1.727.636.273.818.909.455 1.545z" />
+                  </svg>
+                )}
                 Spotify
               </Button>
             </div>

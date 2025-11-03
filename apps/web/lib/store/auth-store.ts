@@ -1,60 +1,61 @@
+import { AuthResponse } from '@/lib/types/auth';
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { AuthResponse } from '../types/auth';
 
 interface AuthState {
-  // State
-  user: AuthResponse['user'] | null;
   token: string | null;
-  refreshToken: string | null;
+  user: AuthResponse['user'] | null;
+  isAuthenticated: boolean;
   isLoading: boolean;
   error: string | null;
-
-  // Actions
   setAuth: (data: AuthResponse) => void;
-  clearAuth: () => void;
+  logout: () => void;
   setLoading: (loading: boolean) => void;
   setError: (error: string | null) => void;
-  isAuthenticated: () => boolean;
 }
 
 export const useAuthStore = create<AuthState>()(
   persist(
-    (set, get) => ({
-      user: null,
+    (set) => ({
       token: null,
-      refreshToken: null,
+      user: null,
+      isAuthenticated: false,
       isLoading: false,
       error: null,
 
-      setAuth: (data) =>
+      setAuth: (data: AuthResponse) => {
+        localStorage.setItem('auth-token', data.token);
+        localStorage.setItem('auth-user', JSON.stringify(data.user));
+
         set({
-          user: data.user,
           token: data.token,
-          refreshToken: data.refreshToken,
+          user: data.user,
+          isAuthenticated: true,
           error: null,
-        }),
+        });
+      },
 
-      clearAuth: () =>
+      logout: () => {
+        localStorage.removeItem('auth-token');
+        localStorage.removeItem('auth-user');
+
         set({
-          user: null,
           token: null,
-          refreshToken: null,
+          user: null,
+          isAuthenticated: false,
           error: null,
-        }),
+        });
+      },
 
-      setLoading: (loading) => set({ isLoading: loading }),
-
-      setError: (error) => set({ error }),
-
-      isAuthenticated: () => !!get().token,
+      setLoading: (loading: boolean) => set({ isLoading: loading }),
+      setError: (error: string | null) => set({ error }),
     }),
     {
       name: 'auth-storage',
       partialize: (state) => ({
-        user: state.user,
         token: state.token,
-        refreshToken: state.refreshToken,
+        user: state.user,
+        isAuthenticated: state.isAuthenticated,
       }),
     }
   )

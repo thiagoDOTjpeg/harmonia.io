@@ -1,5 +1,4 @@
-import { LoginInput } from '@harmonia/shared';
-import { AuthResponse } from '@harmonia/shared/types';
+import { AuthResponse, LoginInput } from '@harmonia/shared';
 import { IPasswordHasher } from '../../ports/crypto/IPasswordHasher';
 import { ITokenManager } from '../../ports/crypto/ITokenManager';
 import { IUserRepository } from '../../repositories/IUserRepository';

@@ -69,6 +69,10 @@ export class Container {
 
   // ===== GETTERS - INFRA =====
 
+  static getStateManager() {
+    return this.stateStore;
+  }
+
   static getTokenManager() {
     return this.tokenManager;
   }

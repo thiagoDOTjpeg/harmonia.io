@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation';
 
 export function useLogout() {
   const router = useRouter();
-  const { clearAuth } = useAuthStore();
+  const { logout: clearAuth } = useAuthStore();
 
   const logout = () => {
     try {

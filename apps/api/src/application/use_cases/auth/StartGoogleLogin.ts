@@ -9,7 +9,7 @@ export class StartGoogleLogin {
 
   async execute(returnTo?: string) {
     const state = Math.random().toString(36).slice(2);
-    await this.stateStore.set(state, { mode: 'login', returnTo });
+    await this.stateStore.set(state, { mode: 'login', returnTo: returnTo });
     const redirectTo = this.google.buildAuthUrl(state);
     return { redirectTo };
   }

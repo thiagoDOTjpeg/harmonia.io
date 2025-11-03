@@ -25,7 +25,13 @@ export function Toaster() {
         ...props
       }) {
         return (
-          <Toast key={id} duration={duration} {...props}>
+          <Toast
+            key={id}
+            duration={duration}
+            open={props.open}
+            onOpenChange={props.onOpenChange}
+            variant={props.variant}
+          >
             <div className="flex flex-col w-full overflow-hidden">
               {duration && duration !== Infinity && (
                 <ProgressBar duration={duration} />
@@ -54,7 +60,6 @@ export function Toaster() {
                   </svg>
                 )}
 
-                {/* Textos */}
                 <div className="flex-1 grid gap-1">
                   {title && <ToastTitle>{title}</ToastTitle>}
                   {description && (
