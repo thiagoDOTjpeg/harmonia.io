@@ -1,9 +1,16 @@
-import { Header } from "@/components/header"
-import { Footer } from "@/components/footer"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Check, X } from "lucide-react"
-import Link from "next/link"
+import { Footer } from "@/components/footer";
+import { Header } from "@/components/header";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Check, X } from "lucide-react";
+import Link from "next/link";
 
 const plans = [
   {
@@ -26,7 +33,7 @@ const plans = [
   },
   {
     name: "Pro",
-    price: "R$ 19,90",
+    price: "R$ 9,90",
     period: "/mês",
     description: "Para usuários frequentes",
     features: [
@@ -44,7 +51,7 @@ const plans = [
   },
   {
     name: "Premium",
-    price: "R$ 39,90",
+    price: "R$ 19,90",
     period: "/mês",
     description: "Para power users",
     features: [
@@ -60,19 +67,22 @@ const plans = [
     href: "/cadastro?plan=premium",
     highlighted: false,
   },
-]
+];
 
 export default function PlanosPage() {
   return (
     <div className="flex min-h-screen flex-col">
       <Header />
 
-      <main className="flex-1">
+      <main className="flex-1 m-auto">
         <section className="container py-16 md:py-24">
           <div className="mx-auto max-w-6xl space-y-12">
             <div className="text-center space-y-4">
-              <h1 className="text-4xl md:text-5xl font-bold">Escolha o plano ideal para você</h1>
-              <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+              <h1 className="text-4xl md:text-6xl font-bold font-display tracking-tight">
+                Escolha o plano <span className="text-gradient">ideal</span>{" "}
+                para você
+              </h1>
+              <p className="text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
                 Comece grátis e faça upgrade quando precisar de mais recursos
               </p>
             </div>
@@ -81,24 +91,34 @@ export default function PlanosPage() {
               {plans.map((plan) => (
                 <Card
                   key={plan.name}
-                  className={`relative flex flex-col ${
-                    plan.highlighted ? "border-primary shadow-lg shadow-primary/20" : "border-border"
+                  className={`relative flex flex-col card-neo transition-all duration-300 hover:-translate-y-2 ${
+                    plan.highlighted
+                      ? "border-primary/50 shadow-xl shadow-primary/20"
+                      : ""
                   }`}
                 >
                   {plan.highlighted && (
-                    <div className="absolute -top-4 left-1/2 -translate-x-1/2">
-                      <span className="bg-primary text-primary-foreground text-sm font-semibold px-4 py-1 rounded-full">
+                    <div className="absolute -top-[0.2] left-1/2 -translate-x-1/2">
+                      <span className="bg-linear-to-r from-primary to-secondary text-primary-foreground text-sm font-bold px-6 py-1.5 rounded-full font-display uppercase tracking-wider shadow-lg shadow-primary/30">
                         Recomendado
                       </span>
                     </div>
                   )}
 
                   <CardHeader>
-                    <CardTitle className="text-2xl">{plan.name}</CardTitle>
-                    <CardDescription>{plan.description}</CardDescription>
+                    <CardTitle className="text-2xl font-display">
+                      {plan.name}
+                    </CardTitle>
+                    <CardDescription className="leading-relaxed">
+                      {plan.description}
+                    </CardDescription>
                     <div className="mt-4">
-                      <span className="text-4xl font-bold">{plan.price}</span>
-                      <span className="text-muted-foreground">{plan.period}</span>
+                      <span className="text-5xl font-bold font-display text-gradient">
+                        {plan.price}
+                      </span>
+                      <span className="text-muted-foreground">
+                        {plan.period}
+                      </span>
                     </div>
                   </CardHeader>
 
@@ -109,9 +129,15 @@ export default function PlanosPage() {
                           {feature.included ? (
                             <Check className="h-5 w-5 text-primary shrink-0 mt-0.5" />
                           ) : (
-                            <X className="h-5 w-5 text-muted-foreground shrink-0 mt-0.5" />
+                            <X className="h-5 w-5 text-muted-foreground/50 shrink-0 mt-0.5" />
                           )}
-                          <span className={feature.included ? "text-foreground" : "text-muted-foreground"}>
+                          <span
+                            className={
+                              feature.included
+                                ? "text-foreground leading-relaxed"
+                                : "text-muted-foreground/70 leading-relaxed"
+                            }
+                          >
                             {feature.text}
                           </span>
                         </li>
@@ -120,7 +146,15 @@ export default function PlanosPage() {
                   </CardContent>
 
                   <CardFooter>
-                    <Button className="w-full" variant={plan.highlighted ? "default" : "outline"} asChild>
+                    <Button
+                      className={`w-full font-display uppercase tracking-wider ${
+                        plan.highlighted
+                          ? "bg-linear-to-r from-primary to-secondary text-primary-foreground hover:opacity-90 glow-primary"
+                          : ""
+                      }`}
+                      variant={plan.highlighted ? "default" : "outline"}
+                      asChild
+                    >
                       <Link href={plan.href}>{plan.cta}</Link>
                     </Button>
                   </CardFooter>
@@ -128,17 +162,26 @@ export default function PlanosPage() {
               ))}
             </div>
 
-            {/* Comparison Table */}
             <div className="mt-16">
-              <h2 className="text-2xl font-bold text-center mb-8">Comparação Detalhada</h2>
+              <h2 className="text-3xl font-bold font-display text-center mb-8 tracking-tight">
+                Comparação Detalhada
+              </h2>
               <div className="overflow-x-auto">
                 <table className="w-full border-collapse">
                   <thead>
                     <tr className="border-b border-border">
-                      <th className="text-left py-4 px-4 font-semibold">Funcionalidade</th>
-                      <th className="text-center py-4 px-4 font-semibold">Gratuito</th>
-                      <th className="text-center py-4 px-4 font-semibold">Pro</th>
-                      <th className="text-center py-4 px-4 font-semibold">Premium</th>
+                      <th className="text-left py-4 px-4 font-semibold font-display uppercase tracking-wider text-sm">
+                        Funcionalidade
+                      </th>
+                      <th className="text-center py-4 px-4 font-semibold font-display uppercase tracking-wider text-sm">
+                        Gratuito
+                      </th>
+                      <th className="text-center py-4 px-4 font-semibold font-display uppercase tracking-wider text-sm">
+                        Pro
+                      </th>
+                      <th className="text-center py-4 px-4 font-semibold font-display uppercase tracking-wider text-sm">
+                        Premium
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
@@ -161,7 +204,9 @@ export default function PlanosPage() {
                       <td className="text-center py-4 px-4">Automática</td>
                     </tr>
                     <tr className="border-b border-border">
-                      <td className="py-4 px-4">Sincronia de Vídeos "Gostei"</td>
+                      <td className="py-4 px-4">
+                        Sincronia de Vídeos "Gostei"
+                      </td>
                       <td className="text-center py-4 px-4">
                         <X className="h-5 w-5 text-muted-foreground mx-auto" />
                       </td>
@@ -206,5 +251,5 @@ export default function PlanosPage() {
 
       <Footer />
     </div>
-  )
+  );
 }

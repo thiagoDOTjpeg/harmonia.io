@@ -1,41 +1,59 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { Header } from "@/components/header"
-import { Footer } from "@/components/footer"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import Link from "next/link"
-import { useState } from "react"
+import { Footer } from "@/components/footer";
+import { Header } from "@/components/header";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import Link from "next/link";
+import { useState } from "react";
 
 export default function LoginPage() {
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
 
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
     // Simulate login - in real app, this would call an API
-    console.log("Login:", { email, password })
-    window.location.href = "/dashboard"
-  }
+    console.log("Login:", { email, password });
+    window.location.href = "/dashboard";
+  };
 
   return (
     <div className="flex min-h-screen flex-col">
       <Header />
 
-      <main className="flex-1 flex items-center justify-center py-16">
-        <Card className="w-full max-w-md mx-4">
+      <main className="flex-1 flex items-center justify-center py-16 relative overflow-hidden">
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary/5 rounded-full blur-[100px] pointer-events-none" />
+
+        <Card className="w-full max-w-md mx-4 card-neo relative z-10">
           <CardHeader className="space-y-1">
-            <CardTitle className="text-2xl">Entrar na sua conta</CardTitle>
-            <CardDescription>Digite seu email e senha para acessar o dashboard</CardDescription>
+            <CardTitle className="text-3xl font-display tracking-tight">
+              Entrar na sua conta
+            </CardTitle>
+            <CardDescription className="leading-relaxed">
+              Digite seu email e senha para acessar o dashboard
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
+                <Label
+                  htmlFor="email"
+                  className="font-display uppercase tracking-wider text-xs"
+                >
+                  Email
+                </Label>
                 <Input
                   id="email"
                   type="email"
@@ -43,12 +61,21 @@ export default function LoginPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
+                  className="bg-muted/50 border-border focus:border-primary transition-colors"
                 />
               </div>
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <Label htmlFor="password">Senha</Label>
-                  <Link href="#" className="text-sm text-primary hover:underline">
+                  <Label
+                    htmlFor="password"
+                    className="font-display uppercase tracking-wider text-xs"
+                  >
+                    Senha
+                  </Label>
+                  <Link
+                    href="#"
+                    className="text-sm text-primary hover:text-primary/80 transition-colors"
+                  >
                     Esqueceu a senha?
                   </Link>
                 </div>
@@ -58,9 +85,13 @@ export default function LoginPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
+                  className="bg-muted/50 border-border focus:border-primary transition-colors"
                 />
               </div>
-              <Button type="submit" className="w-full">
+              <Button
+                type="submit"
+                className="w-full bg-gradient-to-r from-primary to-secondary text-primary-foreground hover:opacity-90 glow-primary font-display uppercase tracking-wider"
+              >
                 Entrar
               </Button>
             </form>
@@ -70,12 +101,18 @@ export default function LoginPage() {
                 <span className="w-full border-t border-border" />
               </div>
               <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-card px-2 text-muted-foreground">Ou continue com</span>
+                <span className="bg-card px-2 text-muted-foreground font-display tracking-wider">
+                  Ou continue com
+                </span>
               </div>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
-              <Button variant="outline" type="button">
+              <Button
+                variant="outline"
+                type="button"
+                className="hover:border-primary/50 hover:bg-primary/5 transition-colors bg-transparent"
+              >
                 <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
                   <path
                     fill="currentColor"
@@ -84,8 +121,16 @@ export default function LoginPage() {
                 </svg>
                 Google
               </Button>
-              <Button variant="outline" type="button">
-                <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
+              <Button
+                variant="outline"
+                type="button"
+                className="hover:border-primary/50 hover:bg-primary/5 transition-colors bg-transparent"
+              >
+                <svg
+                  className="mr-2 h-4 w-4"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                >
                   <path d="M12 2C6.477 2 2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.879V14.89h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.989C18.343 21.129 22 16.99 22 12c0-5.523-4.477-10-10-10z" />
                 </svg>
                 Facebook
@@ -95,7 +140,10 @@ export default function LoginPage() {
           <CardFooter className="flex flex-col space-y-4">
             <div className="text-sm text-muted-foreground text-center">
               Não tem uma conta?{" "}
-              <Link href="/cadastro" className="text-primary hover:underline">
+              <Link
+                href="/cadastro"
+                className="text-primary hover:text-primary/80 transition-colors font-medium"
+              >
                 Cadastre-se gratuitamente
               </Link>
             </div>
@@ -105,5 +153,5 @@ export default function LoginPage() {
 
       <Footer />
     </div>
-  )
+  );
 }
