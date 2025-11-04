@@ -2,7 +2,10 @@
 
 @custom-variant dark (&:is(.dark *));
 
-/* Updated to Harmonia.io brand colors - neon green, cyan, purple on void black */
+* {
+  scroll-behavior: smooth;
+}
+
 :root {
   --background: oklch(0.98 0 0);
   --foreground: oklch(0.15 0 0);
@@ -74,7 +77,6 @@
   --sidebar-ring: oklch(0.75 0.25 155);
 }
 
-/* Updated fonts to Space Grotesk and Inter per brand guidelines */
 @theme inline {
   --font-sans: "Inter", "Inter Fallback", system-ui, sans-serif;
   --font-display:
@@ -126,7 +128,6 @@
     @apply bg-background text-foreground;
   }
 
-  /* Added grid background pattern per brand identity */
   body::before {
     content: "";
     position: fixed;
@@ -144,7 +145,6 @@
   }
 }
 
-/* Added custom utility classes for brand styling */
 @layer utilities {
   .font-display {
     font-family: var(--font-display);
@@ -201,9 +201,24 @@
   .card-neo:hover::before {
     opacity: 1;
   }
+
+  .animate-pulse-smooth {
+    animation: pulse-smooth 8s ease-in-out infinite;
+  }
 }
 
-/* Added shimmer animation for progress bars */
+@keyframes pulse-smooth {
+  0%,
+  100% {
+    opacity: 0.3;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.5;
+    transform: scale(1.05);
+  }
+}
+
 @keyframes shimmer {
   0% {
     transform: translateX(-100%);

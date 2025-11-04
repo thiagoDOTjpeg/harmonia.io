@@ -10,14 +10,14 @@ export default function HomePage() {
     <div className="flex min-h-screen flex-col">
       <Header />
 
-      <main className="flex-1 m-auto ">
+      <main className="flex-1 m-auto scroll-smooth">
         {/* Hero Section */}
         <section className="container py-24 md:py-32 relative overflow-hidden">
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-primary/10 rounded-full blur-[120px] animate-pulse pointer-events-none" />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-primary/10 rounded-full blur-[120px] animate-pulse-smooth pointer-events-none" />
 
           <div className="mx-auto max-w-4xl text-center space-y-8 relative z-10">
             <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/5 px-4 py-1.5 text-sm backdrop-blur-sm">
-              <span className="h-2 w-2 rounded-full bg-primary animate-pulse" />
+              <span className="h-2 w-2 rounded-full bg-primary animate-pulse-smooth" />
               <span className="text-primary font-medium uppercase tracking-wider">
                 Sincronização automática disponível
               </span>
@@ -37,7 +37,7 @@ export default function HomePage() {
               <Button
                 size="lg"
                 asChild
-                className="text-base bg-gradient-to-r from-primary to-secondary text-primary-foreground hover:opacity-90 transition-all glow-primary font-display uppercase tracking-wider"
+                className="text-base bg-linear-to-r from-primary to-secondary text-primary-foreground hover:opacity-90 transition-all glow-primary font-display uppercase tracking-wider"
               >
                 <Link href="/cadastro">
                   Começar Grátis

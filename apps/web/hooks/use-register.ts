@@ -23,7 +23,7 @@ export function useRegister() {
 
       toast({
         title: "Conta criada com sucesso!",
-        description: "Bem-vindo ao Harmonia.io",
+        description: "Bem-vindo(a) ao Harmonia.io",
         duration: 3000
       });
 

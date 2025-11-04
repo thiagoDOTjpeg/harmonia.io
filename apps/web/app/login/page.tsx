@@ -1,7 +1,5 @@
 "use client";
 
-import type React from "react";
-
 import { Footer } from "@/components/footer";
 import { Header } from "@/components/header";
 import { Button } from "@/components/ui/button";
@@ -15,18 +13,41 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useLogin } from "@/hooks/use-login";
+import { useOAuth } from "@/hooks/use-oauth";
+import { LoginSchema } from "@harmonia/shared";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Loader2 } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
+import { useForm } from "react-hook-form";
+import z from "zod";
+
+type LoginFormData = z.infer<typeof LoginSchema>;
 
 export default function LoginPage() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const { login, isSubmitting } = useLogin();
+  const { openOAuthPopup, isLoading: isOAuthLoading } = useOAuth();
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    // Simulate login - in real app, this would call an API
-    console.log("Login:", { email, password });
-    window.location.href = "/dashboard";
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    watch,
+    setValue,
+  } = useForm<LoginFormData>({
+    resolver: zodResolver(LoginSchema),
+    defaultValues: {
+      email: "",
+      password: "",
+    },
+  });
+
+  const onSubmit = async (
+    data: LoginFormData,
+    e?: React.BaseSyntheticEvent
+  ) => {
+    e?.preventDefault();
+    await login(data);
   };
 
   return (
@@ -34,7 +55,7 @@ export default function LoginPage() {
       <Header />
 
       <main className="flex-1 flex items-center justify-center py-16 relative overflow-hidden">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary/5 rounded-full blur-[100px] pointer-events-none" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-primary/10 rounded-full blur-[120px] animate-pulse-smooth pointer-events-none" />
 
         <Card className="w-full max-w-md mx-4 card-neo relative z-10">
           <CardHeader className="space-y-1">
@@ -46,7 +67,13 @@ export default function LoginPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleSubmit(onSubmit)(e);
+              }}
+              className="space-y-4"
+            >
               <div className="space-y-2">
                 <Label
                   htmlFor="email"
@@ -58,11 +85,17 @@ export default function LoginPage() {
                   id="email"
                   type="email"
                   placeholder="seu@email.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  autoComplete="email"
+                  {...register("email")}
+                  disabled={isSubmitting || isOAuthLoading}
                   required
                   className="bg-muted/50 border-border focus:border-primary transition-colors"
                 />
+                {errors.email && (
+                  <p className="text-sm text-destructive">
+                    {errors.email.message}
+                  </p>
+                )}
               </div>
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
@@ -82,15 +115,21 @@ export default function LoginPage() {
                 <Input
                   id="password"
                   type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  autoComplete="current-password"
+                  {...register("password")}
+                  disabled={isSubmitting || isOAuthLoading}
                   required
                   className="bg-muted/50 border-border focus:border-primary transition-colors"
                 />
+                {errors.password && (
+                  <p className="text-sm text-destructive">
+                    {errors.password.message}
+                  </p>
+                )}
               </div>
               <Button
                 type="submit"
-                className="w-full bg-gradient-to-r from-primary to-secondary text-primary-foreground hover:opacity-90 glow-primary font-display uppercase tracking-wider"
+                className="w-full bg-linear-to-r from-primary to-secondary text-primary-foreground hover:opacity-90 glow-primary font-display uppercase tracking-wider"
               >
                 Entrar
               </Button>
@@ -112,28 +151,40 @@ export default function LoginPage() {
                 variant="outline"
                 type="button"
                 className="hover:border-primary/50 hover:bg-primary/5 transition-colors bg-transparent"
+                onClick={() => openOAuthPopup("google", { method: "login" })}
+                disabled={isSubmitting || isOAuthLoading}
               >
-                <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
-                  <path
-                    fill="currentColor"
-                    d="M12 0C5.372 0 0 5.373 0 12s5.372 12 12 12c6.627 0 12-5.373 12-12S18.627 0 12 0zm.14 19.018c-3.868 0-7-3.14-7-7.018c0-3.878 3.132-7.018 7-7.018c1.89 0 3.47.697 4.682 1.829l-1.974 1.978v-.004c-.735-.702-1.667-1.062-2.708-1.062c-2.31 0-4.187 1.956-4.187 4.273c0 2.315 1.877 4.277 4.187 4.277c2.096 0 3.522-1.202 3.816-2.852H12.14v-2.737h6.585c.088.47.135.96.135 1.474c0 4.01-2.677 6.86-6.72 6.86z"
-                  />
-                </svg>
+                {isOAuthLoading ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
+                    <path
+                      fill="currentColor"
+                      d="M12 0C5.372 0 0 5.373 0 12s5.372 12 12 12c6.627 0 12-5.373 12-12S18.627 0 12 0zm.14 19.018c-3.868 0-7-3.14-7-7.018c0-3.878 3.132-7.018 7-7.018c1.89 0 3.47.697 4.682 1.829l-1.974 1.978v-.004c-.735-.702-1.667-1.062-2.708-1.062c-2.31 0-4.187 1.956-4.187 4.273c0 2.315 1.877 4.277 4.187 4.277c2.096 0 3.522-1.202 3.816-2.852H12.14v-2.737h6.585c.088.47.135.96.135 1.474c0 4.01-2.677 6.86-6.72 6.86z"
+                    />
+                  </svg>
+                )}
                 Google
               </Button>
               <Button
                 variant="outline"
                 type="button"
                 className="hover:border-primary/50 hover:bg-primary/5 transition-colors bg-transparent"
+                onClick={() => openOAuthPopup("spotify", { method: "login" })}
+                disabled={isSubmitting || isOAuthLoading}
               >
-                <svg
-                  className="mr-2 h-4 w-4"
-                  viewBox="0 0 24 24"
-                  fill="currentColor"
-                >
-                  <path d="M12 2C6.477 2 2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.879V14.89h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.989C18.343 21.129 22 16.99 22 12c0-5.523-4.477-10-10-10z" />
-                </svg>
-                Facebook
+                {isOAuthLoading ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <svg
+                    className="mr-2 h-4 w-4"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                  >
+                    <path d="M12 0c-6.627 0-12 5.373-12 12s5.373 12 12 12 12-5.373 12-12-5.373-12-12-12zm6.273 17.15c-.273.409-.773.545-1.182.273-2.682-1.636-6.091-2-10.045-1.091-.455.091-.818-.273-.909-.727-.091-.455.273-.818.727-.909 4.364-1 8.273-.545 11.273 1.364.409.273.545.773.273 1.182zm1.636-3.818c-.364.545-.909.727-1.455.364-3.182-1.909-7.273-2.364-11.818-1.091-.545.091-.909-.364-1-.909-.091-.545.364-.909.909-1 4.727-1.364 9.364-.818 12.818 1.364.545.273.727.818.364 1.364zm.455-4.091c-.455.636-1.182.818-1.818.364-3.636-2.182-8.182-2.727-12.727-1.455-.636.091-1.091-.364-1.182-.909-.091-.636.364-1.091.909-1.182 5.091-1.364 10.182-.818 14.364 1.727.636.273.818.909.455 1.545z" />
+                  </svg>
+                )}
+                Spotify
               </Button>
             </div>
           </CardContent>

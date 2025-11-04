@@ -12,6 +12,9 @@ export const metadata: Metadata = {
   title: "Harmonia.io - Sincronize YouTube para Spotify",
   description:
     "Sincronize suas playlists do YouTube para o Spotify em segundos",
+  icons: {
+    icon: "/favicon.ico",
+  },
 };
 
 export default function RootLayout({
