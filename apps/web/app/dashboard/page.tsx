@@ -1,5 +1,6 @@
 "use client";
 
+import DashboardSkeleton from "@/components/skeleton/dashboard-skeleton";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -9,23 +10,25 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { useDashboard } from "@/hooks/use-dashboard";
-import { UserDashboardData } from "@/lib/types/user";
+import { useDashboardStore } from "@/lib/store/dashboard-store";
+import { formatTimeAgo } from "@/lib/utils";
 import { Clock, Music2, TrendingUp, Zap } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 
 export default function DashboardPage() {
   const { dashboard, isLoading } = useDashboard();
-  const [summary, setSummary] = useState<UserDashboardData | null>(null);
-
-  const handleSummaryData = async () => {
-    const res = await dashboard();
-    if (res) setSummary(res);
-  };
+  const { dashboardData, _hasHydrated } = useDashboardStore();
 
   useEffect(() => {
-    handleSummaryData();
-  }, []);
+    if (_hasHydrated && !dashboardData) {
+      dashboard();
+    }
+  }, [_hasHydrated, dashboardData]);
+
+  if (!_hasHydrated) {
+    return <DashboardSkeleton />;
+  }
 
   return (
     <div className="p-8 space-y-8">
@@ -47,7 +50,7 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {summary?.total_playlists ?? 0}
+              {dashboardData?.total_playlists ?? 0}
             </div>
           </CardContent>
         </Card>
@@ -61,7 +64,7 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {summary?.synced_songs ?? 0}
+              {dashboardData?.synced_songs ?? 0}
             </div>
             <p className="text-xs text-muted-foreground mt-1">
               +23 esta semana
@@ -77,7 +80,9 @@ export default function DashboardPage() {
             <Clock className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">2h</div>
+            <div className="text-2xl font-bold">
+              {formatTimeAgo(dashboardData?.last_sync_at)}
+            </div>
             <p className="text-xs text-muted-foreground mt-1">atrás</p>
           </CardContent>
         </Card>
@@ -147,7 +152,7 @@ export default function DashboardPage() {
                   <p className="text-xs text-muted-foreground">
                     {isLoading
                       ? "Carregando..."
-                      : summary?.is_youtube_connected
+                      : dashboardData?.is_youtube_connected
                         ? "Conectado"
                         : "Desconectado"}
                   </p>
@@ -174,7 +179,7 @@ export default function DashboardPage() {
                   <p className="text-xs text-muted-foreground">
                     {isLoading
                       ? "Carregando..."
-                      : summary?.is_spotify_connected
+                      : dashboardData?.is_spotify_connected
                         ? "Conectado"
                         : "Desconectado"}
                   </p>

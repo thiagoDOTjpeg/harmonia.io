@@ -15,6 +15,7 @@ export class UserController {
       }
       const summary = await Container.getUserRepository().getUserDashboard(user.id);
 
+
       if (!summary) {
         return res.status(400).json({
           error: "summary_dashboard_not_found",
@@ -22,22 +23,15 @@ export class UserController {
         })
       }
 
-      const convertBigInt = (value: any): any => {
-        if (typeof value === "bigint") return value.toString();
-        if (Array.isArray(value)) return value.map(convertBigInt);
-        if (value && typeof value === "object") {
-          const out: Record<string, any> = {};
-          for (const key of Object.keys(value)) {
-            out[key] = convertBigInt(value[key]);
-          }
-          return out;
-        }
-        return value;
+      const responseSafeData = {
+        ...summary,
+        total_playlists: summary.total_playlists.toString(),
+        total_songs: summary.total_songs.toString(),
+        synced_songs: summary.synced_songs.toString(),
       };
 
-      const safeSummary = convertBigInt(summary);
 
-      return res.json(safeSummary)
+      return res.json(responseSafeData)
     } catch (error) {
       console.error("Ocorreu um erro ao buscar o resumo", error);
       return res.status(500).json({

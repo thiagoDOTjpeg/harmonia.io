@@ -1,22 +1,20 @@
-import { ApiError } from '@/lib/services/api';
-import { useAuthStore } from '@/lib/store/auth-store';
-import { useRouter } from 'next/navigation';
+import { useAuthStore } from "@/lib/store/auth-store";
+import { useDashboardStore } from "@/lib/store/dashboard-store";
+import { useUserStore } from "@/lib/store/user-store";
+import { useRouter } from "next/navigation";
 
 export function useLogout() {
+  const { clearAuth } = useAuthStore();
+  const { clearUser } = useUserStore();
+  const { clearDashboardData } = useDashboardStore();
   const router = useRouter();
-  const { logout: clearAuth } = useAuthStore();
 
   const logout = () => {
-    try {
-      clearAuth();
-      router.push('/');
-    } catch (error) {
-      if (error instanceof ApiError) {
-        return { success: false, error: error.message };
-      }
-
-      return { success: false, error: error };
-    }
+    clearAuth();
+    clearUser();
+    clearDashboardData();
+    router.push("/login");
   };
+
   return { logout };
 }

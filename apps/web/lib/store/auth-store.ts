@@ -1,56 +1,47 @@
-import { AuthResponse } from '@/lib/types/auth';
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
 interface AuthState {
   token: string | null;
-  user: AuthResponse['user'] | null;
   isAuthenticated: boolean;
-  isLoading: boolean;
-  error: string | null;
-  setAuth: (data: AuthResponse) => void;
-  logout: () => void;
-  setLoading: (loading: boolean) => void;
-  setError: (error: string | null) => void;
+  _hasHydrated: boolean;
+  setToken: (token: string) => void;
+  clearAuth: () => void;
+  setHasHydrated: (state: boolean) => void;
 }
 
 export const useAuthStore = create<AuthState>()(
   persist(
     (set) => ({
       token: null,
-      user: null,
       isAuthenticated: false,
-      isLoading: false,
-      error: null,
+      _hasHydrated: false,
 
-      setAuth: (data: AuthResponse) => {
+      setToken: (token: string) => {
         set({
-          token: data.token,
-          user: data.user,
+          token,
           isAuthenticated: true,
-          error: null,
         });
       },
 
-      logout: () => {
+      clearAuth: () => {
         set({
           token: null,
-          user: null,
           isAuthenticated: false,
-          error: null,
         });
       },
 
-      setLoading: (loading: boolean) => set({ isLoading: loading }),
-      setError: (error: string | null) => set({ error }),
+      setHasHydrated: (state: boolean) => set({ _hasHydrated: state }),
     }),
     {
       name: 'auth-storage',
       partialize: (state) => ({
         token: state.token,
-        user: state.user,
         isAuthenticated: state.isAuthenticated,
       }),
+      onRehydrateStorage: () => (state) => {
+        state?.setHasHydrated(true);
+      },
     }
   )
 );
