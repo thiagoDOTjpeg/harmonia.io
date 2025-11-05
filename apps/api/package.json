@@ -10,6 +10,7 @@
     "start": "node dist/main/index.js",
     "db:generate": "dotenv -e ../../.env -- prisma generate --schema=../../packages/database/prisma/schema.prisma",
     "db:push": "dotenv -e ../../.env -- prisma db push --schema=../../packages/database/prisma/schema.prisma",
+    "db:pull": "dotenv -e ../../.env -- prisma db pull --schema=../../packages/database/prisma/schema.prisma",
     "db:migrate": "dotenv -e ../../.env -- prisma migrate dev --schema=../../packages/database/prisma/schema.prisma",
     "db:studio": "dotenv -e ../../.env -- prisma studio --schema=../../packages/database/prisma/schema.prisma"
   },

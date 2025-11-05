@@ -1,8 +1,3 @@
-// ============================================
-// HARMONIA.IO - SCHEMA DO BANCO DE DADOS
-// Versão 2.0 - Modelo Normalizado com Tracks separadas
-// ============================================
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -12,139 +7,99 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// ============================================
-// 1. USUÁRIOS
-// ============================================
-
 model User {
-  id        String   @id @default(uuid())
-  email     String?  @unique
-  name      String?
-
-  // Login com email/senha
-  passwordHash     String?  @db.Text
-  emailVerifiedAt  DateTime?
-  
-  // OAuth Spotify
-  spotifyId           String?  @unique
-  spotifyAccessToken  String?  @db.Text
-  spotifyRefreshToken String?  @db.Text
+  id                  String           @id @default(uuid())
+  email               String?          @unique
+  name                String?
+  spotifyId           String?          @unique
+  spotifyAccessToken  String?
+  spotifyRefreshToken String?
   spotifyTokenExpiry  DateTime?
-
-  // OAuth Google/YouTube
-  googleId            String?  @unique
-  googleAccessToken   String?  @db.Text
-  googleRefreshToken  String?  @db.Text
+  createdAt           DateTime         @default(now())
+  updatedAt           DateTime         @updatedAt
+  emailVerifiedAt     DateTime?
+  googleAccessToken   String?
+  googleId            String?          @unique
+  googleRefreshToken  String?
   googleTokenExpiry   DateTime?
+  passwordHash        String?
   youtubeChannelId    String?
-  
-  // Relacionamentos
-  playlists SyncedPlaylist[]
-  
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  
+  playlists           SyncedPlaylist[]
+
   @@map("users")
 }
 
-// ============================================
-// 2. PLAYLISTS SINCRONIZADAS
-// ============================================
-
 model SyncedPlaylist {
-  id String @id @default(uuid())
-  
-  // Origem: YouTube
+  id                String          @id @default(uuid())
   youtubePlaylistId String
   youtubeUrl        String
   youtubeTitle      String?
-  
-  // Destino: Spotify
   spotifyPlaylistId String
   spotifyUrl        String
   spotifyTitle      String?
-  
-  // Controle de sincronização
-  lastSyncedAt  DateTime?
-  syncStatus    String    @default("pending") // pending, syncing, completed, failed
-  
-  // Dono da playlist
-  userId  String
-  user    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
-  // Relacionamento N:N com Tracks através de PlaylistTrack
-  playlistTracks PlaylistTrack[]
-  
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  
+  lastSyncedAt      DateTime?
+  syncStatus        String          @default("pending")
+  userId            String
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+  playlistTracks    PlaylistTrack[]
+  user              User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   @@unique([userId, youtubePlaylistId])
   @@index([userId])
   @@map("synced_playlists")
 }
 
-// ============================================
-// 3. TRACKS (MÚSICAS ÚNICAS - MASTER DATA)
-// ============================================
-
 model Track {
-  id String @id @default(uuid())
-  
-  // YouTube (identificador único)
-  youtubeVideoId String  @unique
-  youtubeTitle   String
-  youtubeChannel String?
-  
-  // Spotify (melhor match encontrado)
-  spotifyTrackId String? @unique
-  spotifyUri     String?
-  spotifyArtist  String?
-  spotifyAlbum   String?
-  
-  // Metadados de match
-  matchScore    Float    @default(0)
-  matchedAt     DateTime?
-  matchSource   String?  // "manual", "auto", "ai"
-  
-  // Machine Learning (futuro)
-  isOfficialVideo Boolean @default(false)
-  isVisualizer    Boolean @default(false)
-  isLive          Boolean @default(false)
+  id              String          @id @default(uuid())
+  youtubeVideoId  String          @unique
+  youtubeTitle    String
+  youtubeChannel  String?
+  spotifyTrackId  String?         @unique
+  spotifyUri      String?
+  spotifyArtist   String?
+  spotifyAlbum    String?
+  matchScore      Float           @default(0)
+  matchedAt       DateTime?
+  matchSource     String?
+  isOfficialVideo Boolean         @default(false)
+  isVisualizer    Boolean         @default(false)
+  isLive          Boolean         @default(false)
   aiConfidence    Float?
-  
-  // Relacionamento N:N com Playlists
-  playlistTracks PlaylistTrack[]
-  
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  playlistTracks  PlaylistTrack[]
+
   @@index([youtubeVideoId])
   @@index([spotifyTrackId])
   @@map("tracks")
 }
 
-// ============================================
-// 4. PLAYLIST_TRACKS (JOIN TABLE N:N)
-// ============================================
-
 model PlaylistTrack {
-  id String @id @default(uuid())
-  
-  // Referências
+  id         String         @id @default(uuid())
   playlistId String
+  trackId    String
+  status     String         @default("pending")
+  addedAt    DateTime       @default(now())
+  position   Int?
   playlist   SyncedPlaylist @relation(fields: [playlistId], references: [id], onDelete: Cascade)
-  
-  trackId String
-  track   Track @relation(fields: [trackId], references: [id], onDelete: Cascade)
-  
-  // Controle específico dessa música nessa playlist
-  status   String   @default("pending") // pending, synced, failed
-  addedAt  DateTime @default(now())
-  position Int? // ordem na playlist (opcional)
-  
-  // Evita duplicatas
+  track      Track          @relation(fields: [trackId], references: [id], onDelete: Cascade)
+
   @@unique([playlistId, trackId])
   @@index([playlistId])
   @@index([trackId])
   @@map("playlist_tracks")
+}
+
+model UserDashboard {
+  user_id            String    @id @map("user_id")
+  email              String
+  is_spotify_connected Boolean   @map("is_spotify_connected")
+  is_youtube_connected Boolean   @map("is_youtube_connected")
+  total_playlists    BigInt    @map("total_playlists")
+  total_songs        BigInt    @map("total_songs")
+  synced_songs       BigInt    @map("synced_songs")
+  last_sync_at       DateTime? @map("last_sync_at")
+
+  @@map("user_dashboard")
 }

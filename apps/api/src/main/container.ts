@@ -1,4 +1,3 @@
-import { prisma } from '../infrastructure/db/prisma/client';
 import { PrismaPlaylistRepository } from '../infrastructure/db/prisma/repositories/PrismaPlaylistRepository';
 import { PrismaPlaylistTrackRepository } from '../infrastructure/db/prisma/repositories/PrismaPlaylistTrackRepository';
 import { PrismaTrackRepository } from '../infrastructure/db/prisma/repositories/PrismaTrackRepository';
@@ -11,6 +10,7 @@ import { JwtTokenManager } from '../infrastructure/crypto/JwtTokenManager';
 import { SystemClock } from '../infrastructure/time/SystemClock';
 
 // Use cases Auth
+import { prisma } from '@/infrastructure/db/prisma/client';
 import { HandleGoogleCallback } from '../application/use_cases/auth/HandleGoogleCallback';
 import { HandleSpotifyCallback } from '../application/use_cases/auth/HandleSpotifyCallback';
 import { StartGoogleLogin } from '../application/use_cases/auth/StartGoogleLogin';

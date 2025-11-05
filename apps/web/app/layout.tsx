@@ -13,7 +13,7 @@ export const metadata: Metadata = {
   description:
     "Sincronize suas playlists do YouTube para o Spotify em segundos",
   icons: {
-    icon: "/favicon.ico",
+    icon: "/favicon-16x16.png",
   },
 };
 

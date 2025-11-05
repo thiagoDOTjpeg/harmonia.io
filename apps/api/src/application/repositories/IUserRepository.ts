@@ -1,3 +1,4 @@
+import { UserDashboard } from '@prisma/client';
 import { User } from '../../domain/entities/User';
 
 export interface IUserRepository {
@@ -5,6 +6,7 @@ export interface IUserRepository {
   findByGoogleId(googleId: string): Promise<User | null>;
   findByEmail(email: string): Promise<User | null>;
   findByUserId(userId: string): Promise<User | null>;
+  getUserDashboard(userId: string): Promise<UserDashboard | null>
 
   createFromSpotify(input: {
     email: string;

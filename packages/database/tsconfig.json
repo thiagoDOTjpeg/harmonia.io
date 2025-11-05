@@ -1,10 +1,14 @@
 {
   "extends": "@harmonia/config-typescript/base.json",
   "compilerOptions": {
-    "composite": true,
+    "target": "ES2022",
+    "module": "ES2022",
     "outDir": "dist",
-    "rootDir": "src"
+    "declaration": true,
+    "sourceMap": false,
+    "esModuleInterop": true,
+    "skipLibCheck": true
   },
-  "include": ["src/**/*", "prisma/schema.prisma"],
-  "exclude": ["node_modules", "dist"]
+  "include": ["src/**/*", "prisma/schema.prisma"]
+  // "exclude": ["node_modules", "dist"]
 }

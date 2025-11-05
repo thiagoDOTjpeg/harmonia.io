@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, UserDashboard } from '@prisma/client';
 import { IUserRepository } from '../../../../application/repositories/IUserRepository';
 import { User } from '../../../../domain/entities/User';
 import { UserMapper } from '../mapper/UserMapper';
@@ -28,6 +28,13 @@ export class PrismaUserRepository implements IUserRepository {
       where: { id: userId }
     });
     return user ? UserMapper.toDomain(user) : null;
+  }
+
+  async getUserDashboard(userId: string): Promise<UserDashboard | null> {
+    const summary = await this.prisma.userDashboard.findUnique({
+      where: { user_id: userId }
+    });
+    return summary;
   }
 
   async createFromLocal(input: {

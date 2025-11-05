@@ -1,16 +1,10 @@
 export class MusicMatchingService {
-  // Limpar título do YouTube
   static cleanYouTubeTitle(title: string): { title: string; artist?: string } {
     let cleaned = title
-      .replace(/\(official.*?\)/gi, '')
-      .replace(/\[official.*?\]/gi, '')
-      .replace(/official\s+(video|audio|music\s+video)/gi, '')
-      .replace(/\(.*?lyric.*?\)/gi, '')
-      .replace(/\[.*?lyric.*?\]/gi, '')
-      .replace(/\(.*?audio.*?\)/gi, '')
-      .replace(/\[.*?audio.*?\]/gi, '')
-      .replace(/\(hd\)/gi, '')
-      .replace(/\[hd\]/gi, '')
+      .replace(/\([^)]*\)/g, '')
+      .replace(/\[[^\]]*\]/g, '')
+      .replace(/official\s*(video|audio|music\s*video)/gi, '')
+      .replace(/\bhd\b/gi, '')
       .replace(/\s+/g, ' ')
       .trim();
 

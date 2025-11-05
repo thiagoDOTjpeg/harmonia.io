@@ -74,7 +74,7 @@ export class SyncController {
       return res.status(500).json({
         error: 'sync_failed',
         message: 'Erro ao iniciar sincronização',
-        details: error instanceof Error ? error.message : 'Unknown error',
+        details: error instanceof Error ? error.message : 'Erro desconhecido',
       });
     }
   }
