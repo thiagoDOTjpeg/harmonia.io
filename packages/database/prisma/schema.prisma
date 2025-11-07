@@ -8,40 +8,32 @@ datasource db {
 }
 
 model User {
-  id                  String           @id @default(uuid())
-  email               String?          @unique
+  id                  String              @id @default(uuid())
+  email               String?             @unique
   name                String?
-  spotifyId           String?          @unique
-  spotifyAccessToken  String?
-  spotifyRefreshToken String?
-  spotifyTokenExpiry  DateTime?
-  createdAt           DateTime         @default(now())
-  updatedAt           DateTime         @updatedAt
-  emailVerifiedAt     DateTime?
-  googleAccessToken   String?
-  googleId            String?          @unique
-  googleRefreshToken  String?
-  googleTokenExpiry   DateTime?
-  passwordHash        String?
-  youtubeChannelId    String?
+  passwordHash        String?             @map("password_hash")
+  createdAt           DateTime            @default(now()) @map("created_at")
+  updatedAt           DateTime            @updatedAt @map("updated_at")
+  emailVerifiedAt     DateTime?           @map("email_verified_at")
   playlists           SyncedPlaylist[]
+  servicesConnections ServiceConnection[]
 
   @@map("users")
 }
 
 model SyncedPlaylist {
   id                String          @id @default(uuid())
-  youtubePlaylistId String
-  youtubeUrl        String
-  youtubeTitle      String?
-  spotifyPlaylistId String
-  spotifyUrl        String
-  spotifyTitle      String?
-  lastSyncedAt      DateTime?
-  syncStatus        String          @default("pending")
-  userId            String
-  createdAt         DateTime        @default(now())
-  updatedAt         DateTime        @updatedAt
+  youtubePlaylistId String          @map("youtube_playlist_id")
+  youtubeUrl        String          @map("youtube_url")
+  youtubeTitle      String?         @map("youtube_title")
+  spotifyPlaylistId String          @map("spotify_playlist_id")
+  spotifyUrl        String          @map("spotify_url")
+  spotifyTitle      String?         @map("spotify_title")
+  lastSyncedAt      DateTime?       @map("last_synced_at")
+  syncStatus        String          @default("pending") @map("sync_status")
+  userId            String          @map("user_id")
+  createdAt         DateTime        @default(now()) @map("created_at")
+  updatedAt         DateTime        @updatedAt @map("updated_at")
   playlistTracks    PlaylistTrack[]
   user              User            @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -52,22 +44,22 @@ model SyncedPlaylist {
 
 model Track {
   id              String          @id @default(uuid())
-  youtubeVideoId  String          @unique
-  youtubeTitle    String
-  youtubeChannel  String?
-  spotifyTrackId  String?         @unique
-  spotifyUri      String?
-  spotifyArtist   String?
-  spotifyAlbum    String?
-  matchScore      Float           @default(0)
-  matchedAt       DateTime?
-  matchSource     String?
-  isOfficialVideo Boolean         @default(false)
-  isVisualizer    Boolean         @default(false)
-  isLive          Boolean         @default(false)
-  aiConfidence    Float?
-  createdAt       DateTime        @default(now())
-  updatedAt       DateTime        @updatedAt
+  youtubeVideoId  String          @unique @map("youtube_video_id")
+  youtubeTitle    String          @map("youtube_title")
+  youtubeChannel  String?         @map("youtube_channel")
+  spotifyTrackId  String?         @unique @map("spotify_track_id")
+  spotifyUri      String?         @map("spotify_uri")
+  spotifyArtist   String?         @map("spotify_artist")
+  spotifyAlbum    String?         @map("spotify_album")
+  matchScore      Float           @default(0) @map("match_score")
+  matchedAt       DateTime?       @map("matched_at")
+  matchSource     String?         @map("match_source")
+  isOfficialVideo Boolean         @default(false) @map("is_official_video")
+  isVisualizer    Boolean         @default(false) @map("is_visualizer")
+  isLive          Boolean         @default(false) @map("is_live")
+  aiConfidence    Float?          @map("ai_confidence")
+  createdAt       DateTime        @default(now()) @map("created_at")
+  updatedAt       DateTime        @updatedAt @map("updated_at")
   playlistTracks  PlaylistTrack[]
 
   @@index([youtubeVideoId])
@@ -77,10 +69,10 @@ model Track {
 
 model PlaylistTrack {
   id         String         @id @default(uuid())
-  playlistId String
-  trackId    String
+  playlistId String         @map("playlist_id")
+  trackId    String         @map("track_id")
   status     String         @default("pending")
-  addedAt    DateTime       @default(now())
+  addedAt    DateTime       @default(now()) @map("added_at")
   position   Int?
   playlist   SyncedPlaylist @relation(fields: [playlistId], references: [id], onDelete: Cascade)
   track      Track          @relation(fields: [trackId], references: [id], onDelete: Cascade)
@@ -91,15 +83,42 @@ model PlaylistTrack {
   @@map("playlist_tracks")
 }
 
-model UserDashboard {
-  user_id            String    @id @map("user_id")
+model UserSummary {
+  userId             String    @id @map("user_id")
   email              String
-  is_spotify_connected Boolean   @map("is_spotify_connected")
-  is_youtube_connected Boolean   @map("is_youtube_connected")
-  total_playlists    BigInt    @map("total_playlists")
-  total_songs        BigInt    @map("total_songs")
-  synced_songs       BigInt    @map("synced_songs")
-  last_sync_at       DateTime? @map("last_sync_at")
+  name               String?
+  userCreatedAt      DateTime  @map("user_created_at")
+  isSpotifyConnected Boolean   @map("is_spotify_connected")
+  isYoutubeConnected Boolean   @map("is_youtube_connected")
+  totalPlaylists     BigInt    @map("total_playlists")
+  syncedPlaylists    BigInt    @map("synced_playlists")
+  totalSongs         BigInt    @map("total_songs")
+  syncedSongs        BigInt    @map("synced_songs")
+  lastSyncAt         DateTime? @map("last_sync_at")
+  recentSyncs        Json      @map("recent_syncs")
 
-  @@map("user_dashboard")
+  @@map("user_summary")
+}
+
+enum ServiceProvider {
+  GOOGLE
+  SPOTIFY
+}
+
+model ServiceConnection {
+  id                 String          @id @default(uuid())
+  userId             String          @map("user_id")
+  provider           ServiceProvider
+  providerAccountId  String?         @unique @map("provider_account_id")
+  email              String?
+  accessToken        String          @map("access_token") @db.Text
+  refreshToken       String?         @map("refresh_token") @db.Text
+  expiresAt          DateTime?       @map("expires_at")
+  scopes             String          @db.Text
+  metadata           Json?
+  createdAt          DateTime        @default(now()) @map("created_at")
+  updatedAt          DateTime        @updatedAt @map("updated_at")
+  user               User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("services_connections")
 }
