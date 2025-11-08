@@ -1,4 +1,5 @@
 import { Toaster } from "@/components/ui/toaster";
+import { AuthProvider } from "@/context/AuthContext";
 import { Analytics } from "@vercel/analytics/next";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
@@ -25,7 +26,7 @@ export default function RootLayout({
   return (
     <html lang="pt-BR" className="dark">
       <body className={`font-sans antialiased`}>
-        {children}
+        <AuthProvider>{children}</AuthProvider>
         <Toaster />
         <Analytics />
       </body>

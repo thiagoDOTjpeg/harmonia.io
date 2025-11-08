@@ -1,4 +1,4 @@
-import { AuthResponse, RegisterInput } from '@harmonia/shared';
+import { AuthResponse, RegisterDto } from '@harmonia/shared';
 import { IPasswordHasher } from '../../ports/crypto/IPasswordHasher';
 import { ITokenManager } from '../../ports/crypto/ITokenManager';
 import { IUserRepository } from '../../repositories/IUserRepository';
@@ -10,13 +10,14 @@ export class StartLocalRegister {
     private readonly tokenManager: ITokenManager,
   ) { }
 
-  async execute(input: RegisterInput): Promise<AuthResponse> {
+  async execute(input: RegisterDto): Promise<AuthResponse> {
     try {
       const normalizedEmail = input.email.trim().toLowerCase();
 
       const existing = await this.userRepository.findByEmail(normalizedEmail);
       if (existing) {
         return {
+          success: false,
           error: 'email_in_use',
           message: 'Já existe uma conta com este email.',
         };
@@ -33,18 +34,18 @@ export class StartLocalRegister {
       const token = this.tokenManager.sign({ sub: user.id });
 
       return {
+        success: true,
         token,
         user: {
           id: user.id,
           email: user.email,
           name: user.name,
-          googleId: user.googleId,
-          spotifyId: user.spotifyId
         },
       };
     } catch (error: any) {
       if (error?.code === 'P2002') {
         return {
+          success: false,
           error: 'email_in_use',
           message: 'Já existe uma conta com este email.',
         };

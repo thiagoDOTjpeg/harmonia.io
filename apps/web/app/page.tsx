@@ -61,7 +61,7 @@ export default function HomePage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <Card className="card-neo hover:border-primary/20 transition-all duration-300 hover:-translate-y-2">
               <CardContent className="pt-6 space-y-4">
-                <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center border border-primary/20">
+                <div className="h-12 w-12 rounded-xl bg-linear-to-br from-primary/20 to-primary/5 flex items-center justify-center border border-primary/20">
                   <Zap className="h-6 w-6 text-primary" />
                 </div>
                 <h3 className="text-xl font-semibold font-display">
@@ -76,7 +76,7 @@ export default function HomePage() {
 
             <Card className="card-neo hover:border-secondary/20 transition-all duration-300 hover:-translate-y-2">
               <CardContent className="pt-6 space-y-4">
-                <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-secondary/20 to-secondary/5 flex items-center justify-center border border-secondary/20">
+                <div className="h-12 w-12 rounded-xl bg-linear-to-br from-secondary/20 to-secondary/5 flex items-center justify-center border border-secondary/20">
                   <Clock className="h-6 w-6 text-secondary" />
                 </div>
                 <h3 className="text-xl font-semibold font-display">
@@ -91,7 +91,7 @@ export default function HomePage() {
 
             <Card className="card-neo hover:border-accent/20 transition-all duration-300 hover:-translate-y-2">
               <CardContent className="pt-6 space-y-4">
-                <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-accent/20 to-accent/5 flex items-center justify-center border border-accent/20">
+                <div className="h-12 w-12 rounded-xl bg-linear-to-br from-accent/20 to-accent/5 flex items-center justify-center border border-accent/20">
                   <Shield className="h-6 w-6 text-accent" />
                 </div>
                 <h3 className="text-xl font-semibold font-display">
@@ -120,7 +120,7 @@ export default function HomePage() {
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-left">
               <div className="space-y-3">
-                <div className="h-12 w-12 rounded-full bg-gradient-to-br from-primary to-secondary text-primary-foreground flex items-center justify-center font-bold text-xl font-display shadow-lg shadow-primary/30">
+                <div className="h-12 w-12 rounded-full bg-linear-to-br from-primary to-secondary text-primary-foreground flex items-center justify-center font-bold text-xl font-display shadow-lg shadow-primary/30">
                   1
                 </div>
                 <h3 className="text-xl font-semibold font-display">
@@ -133,7 +133,7 @@ export default function HomePage() {
               </div>
 
               <div className="space-y-3">
-                <div className="h-12 w-12 rounded-full bg-gradient-to-br from-secondary to-accent text-secondary-foreground flex items-center justify-center font-bold text-xl font-display shadow-lg shadow-secondary/30">
+                <div className="h-12 w-12 rounded-full bg-linear-to-br from-secondary to-accent text-secondary-foreground flex items-center justify-center font-bold text-xl font-display shadow-lg shadow-secondary/30">
                   2
                 </div>
                 <h3 className="text-xl font-semibold font-display">
@@ -145,7 +145,7 @@ export default function HomePage() {
               </div>
 
               <div className="space-y-3">
-                <div className="h-12 w-12 rounded-full bg-gradient-to-br from-accent to-primary text-accent-foreground flex items-center justify-center font-bold text-xl font-display shadow-lg shadow-accent/30">
+                <div className="h-12 w-12 rounded-full bg-linear-to-br from-accent to-primary text-accent-foreground flex items-center justify-center font-bold text-xl font-display shadow-lg shadow-accent/30">
                   3
                 </div>
                 <h3 className="text-xl font-semibold font-display">
@@ -161,8 +161,8 @@ export default function HomePage() {
 
         {/* CTA Section */}
         <section className="container py-16 md:py-24">
-          <Card className="border-primary/30 bg-gradient-to-br from-primary/10 via-secondary/10 to-accent/10 relative overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent" />
+          <Card className="border-primary/30 bg-linear-to-br from-primary/10 via-secondary/10 to-accent/10 relative overflow-hidden">
+            <div className="absolute inset-0 bg-linear-to-br from-primary/5 to-transparent" />
             <CardContent className="py-12 text-center space-y-6 relative z-10">
               <h2 className="text-3xl md:text-5xl font-bold font-display tracking-tight">
                 Pronto para começar?
@@ -174,7 +174,7 @@ export default function HomePage() {
               <Button
                 size="lg"
                 asChild
-                className="bg-gradient-to-r from-primary to-secondary text-primary-foreground hover:opacity-90 transition-all glow-primary-lg font-display uppercase tracking-wider"
+                className="bg-linear-to-r from-primary to-secondary text-primary-foreground hover:opacity-90 transition-all glow-primary-lg font-display uppercase tracking-wider"
               >
                 <Link href="/cadastro">
                   Começar Grátis Agora

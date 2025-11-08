@@ -1,63 +1,14 @@
-import { UserDashboard } from '@prisma/client';
+import { UserSummary } from '@/domain/entities/UserSummary';
 import { User } from '../../domain/entities/User';
 
 export interface IUserRepository {
-  findBySpotifyId(spotifyId: string): Promise<User | null>;
-  findByGoogleId(googleId: string): Promise<User | null>;
   findByEmail(email: string): Promise<User | null>;
   findByUserId(userId: string): Promise<User | null>;
-  getUserDashboard(userId: string): Promise<UserDashboard | null>
-
-  createFromSpotify(input: {
-    email: string;
-    name: string | null;
-    spotifyId: string;
-    accessToken: string;
-    refreshToken?: string | null;
-    tokenExpiry: Date;
-  }): Promise<User>;
-
-  createFromGoogle(input: {
-    email: string;
-    name: string | null;
-    googleId: string;
-    accessToken: string;
-    refreshToken?: string | null;
-    tokenExpiry: Date;
-    youtubeChannelId?: string | null;
-  }): Promise<User>;
+  getUserSummary(userId: string): Promise<UserSummary | null>
 
   createFromLocal(input: {
     email: string;
     name: string | null;
-    passwordHash: string;
-  }): Promise<User>;
-
-  linkGoogleToUser(userId: string, input: {
-    googleId: string;
-    accessToken: string;
-    refreshToken?: string | null;
-    tokenExpiry: Date;
-    youtubeChannelId?: string | null;
-  }): Promise<User>;
-
-  linkToSpotifyToUser(userId: string, input: {
-    spotifyId: string;
-    accessToken: string;
-    refreshToken?: string | null;
-    tokenExpiry: Date;
-  }): Promise<User>;
-
-  updateSpotifyTokens(userId: string, input: {
-    accessToken: string;
-    refreshToken?: string | null;
-    tokenExpiry: Date;
-  }): Promise<User>;
-
-  updateGoogleTokens(userId: string, input: {
-    accessToken: string;
-    refreshToken?: string | null;
-    tokenExpiry: Date;
-    youtubeChannelId?: string | null;
+    passwordHash?: string;
   }): Promise<User>;
 }

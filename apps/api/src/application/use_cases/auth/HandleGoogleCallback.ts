@@ -1,4 +1,4 @@
-import { AuthResponse } from '@harmonia/shared';
+import { AuthResponse, OAuthCallbackData, OAuthMethod } from '@harmonia/shared';
 import { IClock } from '../../ports/clock/IClock';
 import { ITokenManager } from '../../ports/crypto/ITokenManager';
 import { IGoogleOAuthClient } from '../../ports/oauth/IGoogleOAuthClient';
@@ -14,18 +14,18 @@ export class HandleGoogleCallback {
     private readonly clock: IClock,
   ) { }
 
-  async execute(input: { code: string; state: string }): Promise<AuthResponse> {
+  async execute(input: OAuthCallbackData): Promise<AuthResponse> {
     const stateData = await this.stateStore.get(input.state);
-    if (!stateData) return { error: 'invalid_state_or_code' };
+    if (!stateData) return { success: false, error: 'invalid_state_or_code' };
     this.stateStore.delete(input.state);
-    const { mode, returnTo } = stateData;
+    const { method, returnTo } = stateData;
 
     const { tokens, profile, youtubeChannelId } = await this.google.exchangeCode(input.code);
     const expiresAt = new Date(this.clock.now().getTime() + Math.max(tokens.expires_in - 60, 0) * 1000);
-    const normalizedEmail = profile.email ? profile.email.trim().toLowerCase() : undefined;
+    const normalizedEmail = profile.email ? profile.email.trim().toLowerCase() : "";
     const emailVerified = Boolean(profile.email_verified);
 
-    const byGoogle = await this.users.findByGoogleId(profile.sub);
+    const byGoogle = await this.users.findByEmail(normalizedEmail);
     if (byGoogle) {
       const updated = await this.users.updateGoogleTokens(byGoogle.id, {
         accessToken: tokens.access_token,
@@ -35,24 +35,22 @@ export class HandleGoogleCallback {
       });
       const jwt = this.tokens.sign({ sub: updated.id });
       return {
+        success: true,
         token: jwt, user: {
           id: updated.id,
           email: updated.email,
           name: updated.name,
-          googleId: updated.googleId,
-          spotifyId: updated.spotifyId,
-          youtubeChannelId: updated.youtubeChannelId
         }, returnTo
       };
     }
 
-    if (mode === 'register') {
+    if (method == OAuthMethod.register) {
       if (!normalizedEmail) {
-        return { error: 'email_ambiguous', message: 'Não foi possível obter/verificar o email.' };
+        return { success: false, error: 'email_ambiguous', message: 'Não foi possível obter/verificar o email.' };
       }
       const existing = await this.users.findByEmail(normalizedEmail);
       if (existing) {
-        return { error: 'email_in_use', message: 'Já existe uma conta com este email. Faça login e conecte o Google.' };
+        return { success: false, error: 'email_in_use', message: 'Já existe uma conta com este email. Faça login e conecte o Google.' };
       }
       const created = await this.users.createFromGoogle({
         email: normalizedEmail,
@@ -65,13 +63,12 @@ export class HandleGoogleCallback {
       });
       const jwt = this.tokens.sign({ sub: created.id });
       return {
-        token: jwt, user: {
+        success: true,
+        token: jwt, user
+          : {
           id: created.id,
           email: created.email,
           name: created.name,
-          googleId: created.googleId,
-          spotifyId: created.spotifyId,
-          youtubeChannelId: created.youtubeChannelId
         }, returnTo
       };
     }
@@ -80,7 +77,7 @@ export class HandleGoogleCallback {
     if (normalizedEmail && emailVerified) {
       const userByEmail = await this.users.findByEmail(normalizedEmail);
       if (!userByEmail) {
-        return { error: 'no_account', message: 'Conta não encontrada. Crie uma conta com Google.' };
+        return { success: false, error: 'no_account', message: 'Conta não encontrada. Crie uma conta com Google.' };
       }
       const updated = await this.users.linkGoogleToUser(userByEmail.id, {
         googleId: profile.sub,
@@ -91,17 +88,15 @@ export class HandleGoogleCallback {
       });
       const jwt = this.tokens.sign({ sub: updated.id });
       return {
+        success: true,
         token: jwt, user: {
           id: updated.id,
           email: updated.email,
           name: updated.name,
-          googleId: updated.googleId,
-          spotifyId: updated.spotifyId,
-          youtubeChannelId: updated.youtubeChannelId
         }, returnTo
       };
     }
 
-    return { error: 'require_manual_link', message: 'Email não verificado ou ausente. Conecte manualmente após login.' };
+    return { success: false, error: 'require_manual_link', message: 'Email não verificado ou ausente. Conecte manualmente após login.' };
   }
 }

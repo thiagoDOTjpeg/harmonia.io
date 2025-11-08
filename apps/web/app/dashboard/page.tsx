@@ -10,7 +10,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { useDashboard } from "@/hooks/use-dashboard";
-import { useDashboardStore } from "@/lib/store/dashboard-store";
 import { formatTimeAgo } from "@/lib/utils";
 import { Clock, Music2, TrendingUp, Zap } from "lucide-react";
 import Link from "next/link";

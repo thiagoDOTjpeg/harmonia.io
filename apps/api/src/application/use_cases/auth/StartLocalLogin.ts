@@ -1,4 +1,4 @@
-import { AuthResponse, LoginInput } from '@harmonia/shared';
+import { AuthResponse, LoginDto } from '@harmonia/shared';
 import { IPasswordHasher } from '../../ports/crypto/IPasswordHasher';
 import { ITokenManager } from '../../ports/crypto/ITokenManager';
 import { IUserRepository } from '../../repositories/IUserRepository';
@@ -10,38 +10,35 @@ export class StartLocalLogin {
     private readonly tokenManager: ITokenManager,
   ) { }
 
-  async execute(input: LoginInput): Promise<AuthResponse> {
+  async execute(input: LoginDto): Promise<AuthResponse> {
     const normalizedEmail = input.email.trim().toLowerCase();
 
-    // Busca usuário
     const user = await this.userRepository.findByEmail(normalizedEmail);
     if (!user || !user.passwordHash) {
       return {
+        success: false,
         error: 'invalid_credentials',
         message: 'Email ou senha inválidos.',
       };
     }
 
-    // Verifica senha
     const isValid = await this.passwordHasher.verify(input.password, user.passwordHash);
     if (!isValid) {
       return {
+        success: false,
         error: 'invalid_credentials',
         message: 'Email ou senha inválidos.',
       };
     }
-
-    // Gera token JWT
     const token = this.tokenManager.sign({ sub: user.id });
 
     return {
+      success: true,
       token,
       user: {
         id: user.id,
         email: user.email,
         name: user.name,
-        googleId: user.googleId,
-        spotifyId: user.spotifyId,
       },
     };
   }

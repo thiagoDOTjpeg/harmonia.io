@@ -5,6 +5,9 @@
     "outDir": "dist",
     "rootDir": "src"
   },
-  "include": ["src/**/*"],
+  "include": [
+    "src/**/*",
+    "../../apps/api/src/infrastructure/http/schemas/auth.ts"
+  ],
   "exclude": ["node_modules", "dist"]
 }

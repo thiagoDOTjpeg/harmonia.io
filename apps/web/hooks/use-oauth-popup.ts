@@ -1,18 +1,15 @@
-import { useToast } from '@/hooks/use-toast';
-import { useAuthStore } from '@/lib/store/auth-store';
-import type { AuthResponse } from '@/lib/types/auth';
-import { useRouter } from 'next/navigation';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { toast } from "@/components/ui/use-toast";
+import { useAuthStore } from "@/lib/store/auth-store";
+import { useUserStore } from "@/lib/store/user-store";
+import { OAuthCallbackResponse } from "@harmonia/shared";
+import { useRouter } from "next/navigation";
+import { useCallback, useEffect, useRef, useState } from "react";
 
-interface OAuthOptions {
-  method: 'register' | 'login';
-}
-
-export function useOAuth() {
+export function useOAuthPopup() {
   const router = useRouter();
-  const { toast } = useToast();
-  const { setAuth } = useAuthStore();
-  const [isLoading, setIsLoading] = useState(false);
+  const { setToken } = useAuthStore();
+  const { setUser } = useUserStore();
+  const [isLoading, setIsLoading] = useState(false)
   const popupRef = useRef<Window | null>(null);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -38,11 +35,13 @@ export function useOAuth() {
     console.log('✅ Mensagem OAuth recebida:', event.data);
 
     if (event.data.type === 'oauth-success') {
-      const authData: AuthResponse = event.data.data;
-      setAuth(authData);
+      const authData: OAuthCallbackResponse = event.data.data;
+      setUser(authData.data.user)
+      setToken(authData.data.token)
+
       toast({
         title: "Autenticação bem-sucedida!",
-        description: `Bem-vindo, ${authData.user.name}!`,
+        description: `Bem-vindo, ${authData.data.user.name}!`,
       });
       router.push('/dashboard');
     } else {
@@ -54,7 +53,7 @@ export function useOAuth() {
     }
 
     cleanup();
-  }, [router, setAuth, toast, cleanup]);
+  }, [router, setUser, setToken, toast, cleanup]);
 
   useEffect(() => {
     window.addEventListener('message', handleMessage);
@@ -64,10 +63,9 @@ export function useOAuth() {
     };
   }, [handleMessage, cleanup]);
 
-  const openOAuthPopup = (provider: 'google' | 'spotify', options: OAuthOptions) => {
+  const openOAuthPopup = (provider: 'google' | 'spotify', method: "register" | "login") => {
     if (isLoading) return;
 
-    const { method } = options;
     const width = 600, height = 700;
     const left = window.screen.width / 2 - width / 2;
     const top = window.screen.height / 2 - height / 2;
@@ -101,6 +99,5 @@ export function useOAuth() {
       }
     }, 1000);
   };
-
-  return { openOAuthPopup, isLoading };
+  return { openOAuthPopup, isLoading }
 }

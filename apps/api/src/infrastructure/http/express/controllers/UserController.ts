@@ -4,7 +4,7 @@ import { Request, Response } from 'express';
 import { AuthMiddleware } from '../middlewares/AuthMiddleware';
 
 export class UserController {
-  static async getDashboardSummary(req: Request, res: Response) {
+  static async getUserSummary(req: Request, res: Response) {
     try {
       const user = await AuthMiddleware.getAuthenticatedUser(req, res) as User;
       if (!user) {
@@ -13,25 +13,16 @@ export class UserController {
           message: "Usuário não encontrado"
         })
       }
-      const summary = await Container.getUserRepository().getUserDashboard(user.id);
-
+      const summary = await Container.getUserRepository().getUserSummary(user.id)
 
       if (!summary) {
         return res.status(400).json({
-          error: "summary_dashboard_not_found",
+          error: "user_summary_not_found",
           message: "Resumo não encontrado"
         })
       }
 
-      const responseSafeData = {
-        ...summary,
-        total_playlists: summary.total_playlists.toString(),
-        total_songs: summary.total_songs.toString(),
-        synced_songs: summary.synced_songs.toString(),
-      };
-
-
-      return res.json(responseSafeData)
+      return res.json(summary);
     } catch (error) {
       console.error("Ocorreu um erro ao buscar o resumo", error);
       return res.status(500).json({

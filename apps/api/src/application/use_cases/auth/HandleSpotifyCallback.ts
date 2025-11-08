@@ -16,7 +16,7 @@ export class HandleSpotifyCallback {
 
   async execute(input: { code: string; state: string }): Promise<AuthResponse> {
     const stateData = await this.stateStore.get(input.state);
-    if (!stateData) return { error: "invalid_state_or_code" }
+    if (!stateData) return { success: false, error: "invalid_state_or_code" }
     this.stateStore.delete(input.state);
     const { mode, returnTo } = stateData;
 
@@ -33,22 +33,21 @@ export class HandleSpotifyCallback {
       })
       const jwt = this.tokens.sign({ sub: updated.id });
       return {
-        token: jwt, user: {
+        success: true,
+        token: jwt,
+        user: {
           id: updated.id,
           email: updated.email,
           name: updated.name,
-          googleId: updated.googleId,
-          spotifyId: updated.spotifyId,
-          youtubeChannelId: updated.youtubeChannelId
         }, returnTo
       };
     }
 
     if (mode === "register") {
-      if (!normalizedEmail) return { error: "email_ambiguous", message: "Não foi possível obter/verificar o email." }
+      if (!normalizedEmail) return { success: false, error: "email_ambiguous", message: "Não foi possível obter/verificar o email." }
 
       const existing = await this.users.findByEmail(normalizedEmail);
-      if (existing) return { error: "email_in_use", message: "Já existe uma conta com este email. Faça login e conecte o Spotify" }
+      if (existing) return { success: false, error: "email_in_use", message: "Já existe uma conta com este email. Faça login e conecte o Spotify" }
 
       const created = await this.users.createFromSpotify({
         email: normalizedEmail,
@@ -61,20 +60,18 @@ export class HandleSpotifyCallback {
 
       const jwt = this.tokens.sign({ sub: created.id });
       return {
+        success: true,
         token: jwt, user: {
           id: created.id,
           email: created.email,
           name: created.name,
-          googleId: created.googleId,
-          spotifyId: created.spotifyId,
-          youtubeChannelId: created.youtubeChannelId
         }, returnTo
       };
     }
 
     if (normalizedEmail) {
       const userByEmail = await this.users.findByEmail(normalizedEmail);
-      if (!userByEmail) return { error: "no_account", message: "Conta não encontrada. Crie uma conta com Spotify" }
+      if (!userByEmail) return { success: false, error: "no_account", message: "Conta não encontrada. Crie uma conta com Spotify" }
 
       const updated = await this.users.linkToSpotifyToUser(userByEmail.id, {
         spotifyId: profile.id,
@@ -84,16 +81,15 @@ export class HandleSpotifyCallback {
       })
       const jwt = this.tokens.sign({ sub: updated.id });
       return {
-        token: jwt, user: {
+        success: true,
+        token: jwt,
+        user: {
           id: updated.id,
           email: updated.email,
           name: updated.name,
-          googleId: updated.googleId,
-          spotifyId: updated.spotifyId,
-          youtubeChannelId: updated.youtubeChannelId
         }, returnTo
       };
     }
-    return { error: "require_manual_link", message: "Email não verificado ou ausente. Conecte manualmente após o login" };
+    return { success: false, error: "require_manual_link", message: "Email não verificado ou ausente. Conecte manualmente após o login" };
   }
 }

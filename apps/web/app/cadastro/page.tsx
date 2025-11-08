@@ -15,8 +15,7 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useOAuth } from "@/hooks/use-oauth";
-import { useRegister } from "@/hooks/use-register";
+import { useAuthContext } from "@/context/AuthContext";
 import { RegisterSchema } from "@harmonia/shared";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AlertCircle, Loader2 } from "lucide-react";
@@ -35,8 +34,11 @@ const RegisterFormSchema = RegisterSchema.extend({
 });
 
 export default function CadastroPage() {
-  const { register: registerUser, isSubmitting } = useRegister();
-  const { openOAuthPopup, isLoading: isOAuthLoading } = useOAuth();
+  const {
+    isLoading,
+    openOAuthPopup,
+    register: registerUser,
+  } = useAuthContext();
 
   const {
     register,
@@ -95,7 +97,7 @@ export default function CadastroPage() {
                   placeholder="João Silva"
                   autoComplete="name"
                   {...register("name")}
-                  disabled={isSubmitting || isOAuthLoading}
+                  disabled={isLoading}
                 />
                 {errors.name && (
                   <p className="text-sm text-destructive">
@@ -113,7 +115,7 @@ export default function CadastroPage() {
                   placeholder="seu@email.com"
                   autoComplete="email"
                   {...register("email")}
-                  disabled={isSubmitting || isOAuthLoading}
+                  disabled={isLoading}
                 />
                 {errors.email && (
                   <p className="text-sm text-destructive">
@@ -131,7 +133,7 @@ export default function CadastroPage() {
                   placeholder="Mínimo 6 caracteres"
                   autoComplete="new-password"
                   {...register("password")}
-                  disabled={isSubmitting || isOAuthLoading}
+                  disabled={isLoading}
                 />
                 {errors.password && (
                   <p className="text-sm text-destructive">
@@ -150,7 +152,7 @@ export default function CadastroPage() {
                       shouldValidate: true,
                     })
                   }
-                  disabled={isSubmitting || isOAuthLoading}
+                  disabled={isLoading}
                 />
                 <label
                   htmlFor="terms"
@@ -180,12 +182,8 @@ export default function CadastroPage() {
                 </Alert>
               )}
 
-              <Button
-                type="submit"
-                className="w-full"
-                disabled={isSubmitting || isOAuthLoading}
-              >
-                {isSubmitting ? (
+              <Button type="submit" className="w-full" disabled={isLoading}>
+                {isLoading ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     Criando conta...
@@ -211,10 +209,10 @@ export default function CadastroPage() {
               <Button
                 variant="outline"
                 type="button"
-                onClick={() => openOAuthPopup("google", { method: "register" })}
-                disabled={isSubmitting || isOAuthLoading}
+                onClick={() => openOAuthPopup("google", "register")}
+                disabled={isLoading}
               >
-                {isOAuthLoading ? (
+                {isLoading ? (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 ) : (
                   <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
@@ -229,12 +227,10 @@ export default function CadastroPage() {
               <Button
                 variant="outline"
                 type="button"
-                onClick={() =>
-                  openOAuthPopup("spotify", { method: "register" })
-                }
-                disabled={isSubmitting || isOAuthLoading}
+                onClick={() => openOAuthPopup("spotify", "register")}
+                disabled={isLoading}
               >
-                {isOAuthLoading ? (
+                {isLoading ? (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 ) : (
                   <svg

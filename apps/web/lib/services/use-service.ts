@@ -1,10 +1,10 @@
-import { UserDashboardResponse } from "../types/user";
+import { UserSummary } from "@harmonia/shared";
 import { fetchApi } from "./api";
 
 
 export const userService = {
-  getDashboardSummary: async (token: string): Promise<UserDashboardResponse> => {
-    return fetchApi<UserDashboardResponse>('/user/dashboard', {
+  getSummary: async (token: string): Promise<UserSummary> => {
+    return fetchApi<UserSummary>('/user/dashboard', {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
