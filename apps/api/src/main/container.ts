@@ -11,6 +11,7 @@ import { SystemClock } from '../infrastructure/time/SystemClock';
 
 // Use cases Auth
 import { prisma } from '@/infrastructure/db/prisma/client';
+import { PrismaServiceConnectionRepository } from '@/infrastructure/db/prisma/repositories/PrismaServiceConnectionRepository';
 import { HandleGoogleCallback } from '../application/use_cases/auth/HandleGoogleCallback';
 import { HandleSpotifyCallback } from '../application/use_cases/auth/HandleSpotifyCallback';
 import { StartGoogleLogin } from '../application/use_cases/auth/StartGoogleLogin';
@@ -33,6 +34,7 @@ export class Container {
   private static playlistRepository = new PrismaPlaylistRepository(prisma);
   private static trackRepository = new PrismaTrackRepository(prisma);
   private static playlistTrackRepository = new PrismaPlaylistTrackRepository(prisma);
+  private static serviceConnectionRepository = new PrismaServiceConnectionRepository(prisma);
 
   // Crypto & Time
   private static tokenManager = new JwtTokenManager();
@@ -91,13 +93,15 @@ export class Container {
     return new StartGoogleRegister(this.stateStore, this.googleClient);
   }
 
-  static getHandleGoogleCallback() {
+  static getHandleGoogleCallback(userId: string | undefined) {
     return new HandleGoogleCallback(
       this.stateStore,
       this.googleClient,
+      this.serviceConnectionRepository,
       this.userRepository,
       this.tokenManager,
       this.clock,
+      userId
     );
   }
 
@@ -109,13 +113,15 @@ export class Container {
     return new StartSpotifyRegister(this.stateStore, this.spotifyClient);
   }
 
-  static getHandleSpotifyCallback() {
+  static getHandleSpotifyCallback(userId: string | undefined) {
     return new HandleSpotifyCallback(
       this.stateStore,
       this.spotifyClient,
+      this.serviceConnectionRepository,
       this.userRepository,
       this.tokenManager,
       this.clock,
+      userId
     );
   }
 

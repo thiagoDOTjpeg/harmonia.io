@@ -1,4 +1,4 @@
-import { SpotifyExchangeResult, SpotifyMe, SpotifyTokenResponse } from '@harmonia/shared';
+import { SpotifyOAuthProfile, SpotifyOAuthResult, SpotifyTokenResponse } from '@harmonia/shared';
 import { ISpotifyOAuthClient } from "../../application/ports/oauth/ISpotifyOAuthClient";
 
 export class SpotifyOAuthClient implements ISpotifyOAuthClient {
@@ -25,14 +25,12 @@ export class SpotifyOAuthClient implements ISpotifyOAuthClient {
     })
     return `https://accounts.spotify.com/authorize?${params.toString()}`;
   }
-  async exchangeCode(code: string): Promise<SpotifyExchangeResult> {
+  async exchangeCode(code: string): Promise<SpotifyOAuthResult> {
     const body = new URLSearchParams({
       grant_type: 'authorization_code',
       code,
       redirect_uri: this.redirectUri,
     })
-
-
     const basic = Buffer.from(`${this.clientId}:${this.clientSecret}`).toString('base64');
 
     const tokenRes = await fetch('https://accounts.spotify.com/api/token', {
@@ -56,7 +54,7 @@ export class SpotifyOAuthClient implements ISpotifyOAuthClient {
       throw Object.assign(new Error('userinfo_failed'), { code: 'userinfo_failed', details: await meSpotify.text() });
     }
 
-    const profile = (await meSpotify.json()) as SpotifyMe
+    const profile = (await meSpotify.json()) as SpotifyOAuthProfile
 
     return { tokens, profile }
   }

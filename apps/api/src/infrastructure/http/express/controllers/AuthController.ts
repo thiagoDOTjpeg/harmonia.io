@@ -1,6 +1,8 @@
-import { OAuthQueryDto } from '@harmonia/shared';
+import { User } from '@/domain/entities/User';
+import { OAuthMethod, OAuthQueryDto } from '@harmonia/shared';
 import { Request, Response } from 'express';
 import { Container } from '../../../../main/container';
+import { AuthMiddleware } from '../middlewares/AuthMiddleware';
 import { getOAuthCallbackHTML } from '../views/oauth-callback';
 
 export class AuthController {
@@ -32,6 +34,8 @@ export class AuthController {
     try {
       const code = String(req.query.code || '');
       const state = String(req.query.state || '');
+      let userId: string | undefined;
+
 
       if (!code || !state) {
         return res.send(getOAuthCallbackHTML({
@@ -42,8 +46,15 @@ export class AuthController {
 
       const stateManager = Container.getStateManager();
       const stateData = await stateManager.get(state);
+
+      if (stateData?.method === OAuthMethod.connect) {
+        const response = await AuthMiddleware.getAuthenticatedUser(req, res);
+        if (response instanceof User) {
+          userId = response.id
+        }
+      }
       const returnTo = stateData?.returnTo;
-      const useCase = Container.getHandleGoogleCallback();
+      const useCase = Container.getHandleGoogleCallback(userId);
       const result = await useCase.execute({ code, state });
 
       if ('error' in result) {
@@ -54,7 +65,6 @@ export class AuthController {
           email_ambiguous: 'Este email está associado a múltiplas contas.',
           conflict: 'Conflito ao processar sua autenticação.',
         };
-
         return res.send(getOAuthCallbackHTML({
           success: false,
           error: errorMessages[result.error] || 'Erro na autenticação'
@@ -79,6 +89,7 @@ export class AuthController {
     try {
       const code = String(req.query.code || '');
       const state = String(req.query.state || '');
+      let userId: string | undefined;
 
       if (!code || !state) {
         return res.send(getOAuthCallbackHTML({
@@ -89,12 +100,17 @@ export class AuthController {
 
       const stateManager = Container.getStateManager();
       const stateData = await stateManager.get(state);
+      if (stateData?.method === OAuthMethod.connect) {
+        const response = await AuthMiddleware.getAuthenticatedUser(req, res);
+        if (response instanceof User) {
+          userId = response.id
+        }
+      }
       const returnTo = stateData?.returnTo;
-      console.log(returnTo);
 
-
-      const useCase = Container.getHandleSpotifyCallback();
+      const useCase = Container.getHandleSpotifyCallback(userId);
       const result = await useCase.execute({ code, state });
+
 
       if ('error' in result) {
         const errorMessages: Record<string, string> = {

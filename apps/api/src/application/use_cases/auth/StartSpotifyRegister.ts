@@ -1,3 +1,4 @@
+import { OAuthMethod } from "@harmonia/shared";
 import { IOAuthStateStore } from "../../ports/oauth/IOAuthStateStore";
 import { ISpotifyOAuthClient } from "../../ports/oauth/ISpotifyOAuthClient";
 
@@ -9,7 +10,7 @@ export class StartSpotifyRegister {
 
   async execute(returnTo?: string) {
     const state = Math.random().toString(36).slice(2);
-    await this.stateStore.set(state, { mode: 'register', returnTo });
+    await this.stateStore.set(state, { method: OAuthMethod.register, returnTo });
     const redirectTo = this.spotify.buildAuthUrl(state);
     return { redirectTo };
   }

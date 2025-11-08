@@ -1,5 +1,5 @@
+import { User } from '@/domain/entities/User';
 import { UserSummary } from '@/domain/entities/UserSummary';
-import { User } from '../../domain/entities/User';
 
 export interface IUserRepository {
   findByEmail(email: string): Promise<User | null>;

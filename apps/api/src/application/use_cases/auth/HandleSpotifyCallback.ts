@@ -1,4 +1,6 @@
-import { AuthResponse } from '@harmonia/shared';
+import { IServiceConnectionRepository } from '@/application/repositories/IServiceConnectionRepository';
+import { OAuthCallbackStrategyFactory } from '@/infrastructure/adapter/oauth/OAuthCallbackStrategyFactory';
+import { AuthResponse, OAuthCallbackData, ServiceProvider } from '@harmonia/shared';
 import { IClock } from "../../ports/clock/IClock";
 import { ITokenManager } from "../../ports/crypto/ITokenManager";
 import { IOAuthStateStore } from "../../ports/oauth/IOAuthStateStore";
@@ -9,87 +11,22 @@ export class HandleSpotifyCallback {
   constructor(
     private readonly stateStore: IOAuthStateStore,
     private readonly spotify: ISpotifyOAuthClient,
+    private readonly serviceConnection: IServiceConnectionRepository,
     private readonly users: IUserRepository,
     private readonly tokens: ITokenManager,
     private readonly clock: IClock,
+    private userId: string | undefined
   ) { }
 
-  async execute(input: { code: string; state: string }): Promise<AuthResponse> {
+  async execute(input: OAuthCallbackData): Promise<AuthResponse> {
     const stateData = await this.stateStore.get(input.state);
     if (!stateData) return { success: false, error: "invalid_state_or_code" }
     this.stateStore.delete(input.state);
-    const { mode, returnTo } = stateData;
+    const exchangeData = await this.spotify.exchangeCode(input.code);
 
-    const { tokens, profile } = await this.spotify.exchangeCode(input.code);
-    const expiresAt = new Date(this.clock.now().getTime() + Math.max(tokens.expires_in - 60, 0) * 1000);
-    const normalizedEmail = profile.email ? profile.email.trim().toLowerCase() : undefined;
+    const strategy = new OAuthCallbackStrategyFactory().getStrategy(ServiceProvider.SPOTIFY);
+    const instancedStrategy = new strategy(this.users, this.serviceConnection, this.tokens, this.clock);
 
-    const bySpotify = await this.users.findBySpotifyId(profile.id);
-    if (bySpotify) {
-      const updated = await this.users.updateSpotifyTokens(bySpotify.id, {
-        accessToken: tokens.access_token,
-        refreshToken: tokens.refresh_token ?? bySpotify.spotifyRefreshToken ?? null,
-        tokenExpiry: expiresAt
-      })
-      const jwt = this.tokens.sign({ sub: updated.id });
-      return {
-        success: true,
-        token: jwt,
-        user: {
-          id: updated.id,
-          email: updated.email,
-          name: updated.name,
-        }, returnTo
-      };
-    }
-
-    if (mode === "register") {
-      if (!normalizedEmail) return { success: false, error: "email_ambiguous", message: "Não foi possível obter/verificar o email." }
-
-      const existing = await this.users.findByEmail(normalizedEmail);
-      if (existing) return { success: false, error: "email_in_use", message: "Já existe uma conta com este email. Faça login e conecte o Spotify" }
-
-      const created = await this.users.createFromSpotify({
-        email: normalizedEmail,
-        name: profile.display_name ?? null,
-        spotifyId: profile.id,
-        accessToken: tokens.access_token,
-        refreshToken: tokens.refresh_token ?? null,
-        tokenExpiry: expiresAt,
-      });
-
-      const jwt = this.tokens.sign({ sub: created.id });
-      return {
-        success: true,
-        token: jwt, user: {
-          id: created.id,
-          email: created.email,
-          name: created.name,
-        }, returnTo
-      };
-    }
-
-    if (normalizedEmail) {
-      const userByEmail = await this.users.findByEmail(normalizedEmail);
-      if (!userByEmail) return { success: false, error: "no_account", message: "Conta não encontrada. Crie uma conta com Spotify" }
-
-      const updated = await this.users.linkToSpotifyToUser(userByEmail.id, {
-        spotifyId: profile.id,
-        accessToken: tokens.access_token,
-        refreshToken: tokens.refresh_token ?? userByEmail.spotifyRefreshToken ?? null,
-        tokenExpiry: expiresAt,
-      })
-      const jwt = this.tokens.sign({ sub: updated.id });
-      return {
-        success: true,
-        token: jwt,
-        user: {
-          id: updated.id,
-          email: updated.email,
-          name: updated.name,
-        }, returnTo
-      };
-    }
-    return { success: false, error: "require_manual_link", message: "Email não verificado ou ausente. Conecte manualmente após o login" };
+    return await instancedStrategy.processCallback(exchangeData, stateData, this.userId);
   }
 }

@@ -4,6 +4,7 @@ import { OAuthCallbackStrategy } from "@/application/ports/strategy/OAuthCallbac
 import { IServiceConnectionRepository } from "@/application/repositories/IServiceConnectionRepository";
 import { IUserRepository } from "@/application/repositories/IUserRepository";
 import { ServiceConnection } from "@/domain/entities/ServiceConnection";
+import { User } from "@/domain/entities/User";
 import { AuthResponse, GoogleOAuthResult, OAuthMethod, OAuthState, ServiceProvider } from "@harmonia/shared";
 import { ServiceProvider as PrismaServiceProvider } from "@prisma/client";
 
@@ -68,19 +69,7 @@ export class GoogleOAuthCallbackStrategy implements OAuthCallbackStrategy<Google
       name: exchangeData?.profile?.name || "NoNameService",
     })
 
-    const createdServiceConnection = await this.serviceConnection.createServiceConnection({
-      userId: user?.id,
-      providerAccountId: exchangeData.profile.sub,
-      accessToken: exchangeData.tokens.access_token,
-      refreshToken: exchangeData.tokens.refresh_token,
-      expiresAt,
-      provider: ServiceProvider.GOOGLE as unknown as PrismaServiceProvider,
-      scopes: SCOPES,
-      email: user.email,
-      metadata: {
-        youtubeChannelId: exchangeData.youtubeChannelId
-      }
-    });
+    const createdServiceConnection = await this.createServiceConnection(user, exchangeData, expiresAt)
     const jwt = this.tokens.sign({ sub: user.id });
     return {
       success: true,
@@ -107,32 +96,12 @@ export class GoogleOAuthCallbackStrategy implements OAuthCallbackStrategy<Google
     let serviceConnection: ServiceConnection;
     const existingServiceConnection = await this.serviceConnection.findByServiceId(exchangeData.profile.sub)
     if (existingServiceConnection) {
-      const updatedServiceConnection = await this.serviceConnection.updateServiceConnection({
-        accessToken: exchangeData.tokens.access_token,
-        refreshToken: exchangeData.tokens.refresh_token,
-        expiresAt,
-        updatedAt: new Date(),
-        metadata: {
-          youtubeChannelId: exchangeData.youtubeChannelId
-        }
-
-      }, exchangeData.profile.sub)
-      serviceConnection = updatedServiceConnection;
+      if (existingServiceConnection.userId !== user.id) {
+        return { success: false, error: 'conflict', message: "Esta conta Google já está conectada a outro usuário." };
+      }
+      serviceConnection = await this.updateServiceConnection(user, exchangeData, expiresAt);
     } else {
-      const createdServiceConnection = await this.serviceConnection.createServiceConnection({
-        userId: user?.id,
-        providerAccountId: exchangeData.profile.sub,
-        accessToken: exchangeData.tokens.access_token,
-        refreshToken: exchangeData.tokens.refresh_token,
-        expiresAt,
-        provider: ServiceProvider.GOOGLE as unknown as PrismaServiceProvider,
-        scopes: SCOPES,
-        email: user.email,
-        metadata: {
-          youtubeChannelId: exchangeData.youtubeChannelId
-        }
-      });
-      serviceConnection = createdServiceConnection;
+      serviceConnection = await this.createServiceConnection(user, exchangeData, expiresAt);
     }
 
     const jwt = this.tokens.sign({ sub: user.id });
@@ -169,32 +138,9 @@ export class GoogleOAuthCallbackStrategy implements OAuthCallbackStrategy<Google
       if (existingServiceConnection.userId !== user.id) {
         return { success: false, error: 'conflict', message: "Esta conta Google já está conectada a outro usuário." };
       }
-      const updatedServiceConnection = await this.serviceConnection.updateServiceConnection({
-        accessToken: exchangeData.tokens.access_token,
-        refreshToken: exchangeData.tokens.refresh_token,
-        expiresAt,
-        updatedAt: new Date(),
-        metadata: {
-          youtubeChannelId: exchangeData.youtubeChannelId
-        }
-
-      }, exchangeData.profile.sub)
-      serviceConnection = updatedServiceConnection;
+      serviceConnection = await this.updateServiceConnection(user, exchangeData, expiresAt);
     } else {
-      const createdServiceConnection = await this.serviceConnection.createServiceConnection({
-        userId: user?.id,
-        providerAccountId: exchangeData.profile.sub,
-        accessToken: exchangeData.tokens.access_token,
-        refreshToken: exchangeData.tokens.refresh_token,
-        expiresAt,
-        provider: ServiceProvider.GOOGLE as unknown as PrismaServiceProvider,
-        scopes: SCOPES,
-        email: user.email,
-        metadata: {
-          youtubeChannelId: exchangeData.youtubeChannelId
-        }
-      });
-      serviceConnection = createdServiceConnection;
+      serviceConnection = await this.createServiceConnection(user, exchangeData, expiresAt);
     }
 
     const jwt = this.tokens.sign({ sub: user.id });
@@ -207,5 +153,34 @@ export class GoogleOAuthCallbackStrategy implements OAuthCallbackStrategy<Google
         name: user.name
       }, returnTo
     }
+  }
+
+  private async createServiceConnection(user: User, exchangeData: GoogleOAuthResult, expiresAt: Date): Promise<ServiceConnection> {
+    const createdServiceConnection = await this.serviceConnection.createServiceConnection({
+      userId: user?.id,
+      providerAccountId: exchangeData.profile.sub,
+      accessToken: exchangeData.tokens.access_token,
+      refreshToken: exchangeData.tokens.refresh_token,
+      expiresAt,
+      provider: ServiceProvider.GOOGLE as unknown as PrismaServiceProvider,
+      scopes: SCOPES,
+      email: user.email,
+      metadata: {
+        youtubeChannelId: exchangeData.youtubeChannelId
+      }
+    });
+    return createdServiceConnection;
+  }
+  private async updateServiceConnection(user: User, exchangeData: GoogleOAuthResult, expiresAt: Date): Promise<ServiceConnection> {
+    const updatedServiceConnection = await this.serviceConnection.updateServiceConnection({
+      accessToken: exchangeData.tokens.access_token,
+      refreshToken: exchangeData.tokens.refresh_token,
+      expiresAt,
+      updatedAt: new Date(),
+      metadata: {
+        youtubeChannelId: exchangeData.youtubeChannelId
+      }
+    }, exchangeData.profile.sub)
+    return updatedServiceConnection;
   }
 }

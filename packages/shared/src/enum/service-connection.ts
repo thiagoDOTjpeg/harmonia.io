@@ -1,4 +1,4 @@
 export enum ServiceProvider {
-  GOOGLE,
-  SPOTIFY
+  GOOGLE = 'GOOGLE',
+  SPOTIFY = 'SPOTIFY'
 }

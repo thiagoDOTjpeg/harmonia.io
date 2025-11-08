@@ -1,6 +1,6 @@
-import { SpotifyExchangeResult } from '@harmonia/shared';
+import { SpotifyOAuthResult } from '@harmonia/shared';
 
 export interface ISpotifyOAuthClient {
   buildAuthUrl(state: string): string;
-  exchangeCode(code: string): Promise<SpotifyExchangeResult>;
+  exchangeCode(code: string): Promise<SpotifyOAuthResult>;
 }
