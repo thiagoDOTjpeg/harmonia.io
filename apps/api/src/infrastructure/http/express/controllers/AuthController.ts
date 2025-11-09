@@ -1,12 +1,12 @@
-import { OAuthQueryDto } from '@harmonia/shared';
 import { Request, Response } from 'express';
 import { Container } from '../../../../main/container';
+import { LoginSchema, OAuthQuerySchema, RegisterSchema } from '../../schemas/auth';
 import { getOAuthCallbackHTML } from '../views/oauth-callback';
 
 export class AuthController {
   static async googleConnect(req: Request, res: Response) {
     try {
-      const { returnTo } = req.query as OAuthQueryDto;
+      const { returnTo } = OAuthQuerySchema.parse(req.query)
       const useCase = Container.getStartGoogleConnect();
       const { redirectTo } = await useCase.execute(returnTo);
       res.redirect(redirectTo);
@@ -18,7 +18,7 @@ export class AuthController {
 
   static async googleLogin(req: Request, res: Response) {
     try {
-      const { returnTo } = req.query as OAuthQueryDto;
+      const { returnTo } = OAuthQuerySchema.parse(req.query)
       const useCase = Container.getStartGoogleLogin();
       const { redirectTo } = await useCase.execute(returnTo);
       res.redirect(redirectTo);
@@ -30,7 +30,7 @@ export class AuthController {
 
   static async googleRegister(req: Request, res: Response) {
     try {
-      const { returnTo } = req.query as OAuthQueryDto;
+      const { returnTo } = OAuthQuerySchema.parse(req.query)
       const useCase = Container.getStartGoogleRegister();
       const { redirectTo } = await useCase.execute(returnTo);
       res.redirect(redirectTo);
@@ -85,7 +85,7 @@ export class AuthController {
 
   static async spotifyConnect(req: Request, res: Response) {
     try {
-      const { returnTo } = req.query as OAuthQueryDto;
+      const { returnTo } = OAuthQuerySchema.parse(req.query)
       const useCase = Container.getStartSpotifyConnect();
       const { redirectTo } = await useCase.execute(returnTo);
       res.redirect(redirectTo);
@@ -97,7 +97,7 @@ export class AuthController {
 
   static async spotifyLogin(req: Request, res: Response) {
     try {
-      const { returnTo } = req.query as OAuthQueryDto;
+      const { returnTo } = OAuthQuerySchema.parse(req.query)
       const useCase = Container.getStartSpotifyLogin();
       const { redirectTo } = await useCase.execute(returnTo);
       res.redirect(redirectTo);
@@ -109,7 +109,7 @@ export class AuthController {
 
   static async spotifyRegister(req: Request, res: Response) {
     try {
-      const { returnTo } = req.query as OAuthQueryDto;
+      const { returnTo } = OAuthQuerySchema.parse(req.query)
       const useCase = Container.getStartSpotifyRegister();
       const { redirectTo } = await useCase.execute(returnTo);
       res.redirect(redirectTo);
@@ -166,14 +166,14 @@ export class AuthController {
 
   static async localRegister(req: Request, res: Response) {
     try {
-      const { email, password, name } = req.body;
+      const bodyParsed = RegisterSchema.parse(req.body);
 
-      if (!email || !password) {
+      if (!bodyParsed.email || !bodyParsed.password) {
         return res.status(400).json({ error: 'missing_email_or_password' });
       }
 
       const useCase = Container.getStartLocalRegister();
-      const result = await useCase.execute({ email, password, name });
+      const result = await useCase.execute(bodyParsed);
 
       if ('error' in result) {
         const status = result.error === 'email_in_use' ? 409 : 400;
@@ -189,14 +189,14 @@ export class AuthController {
 
   static async localLogin(req: Request, res: Response) {
     try {
-      const { email, password } = req.body;
+      const bodyParsed = LoginSchema.parse(req.body);
 
-      if (!email || !password) {
+      if (!bodyParsed.email || !bodyParsed.password) {
         return res.status(400).json({ error: 'missing_email_or_password' });
       }
 
       const useCase = Container.getStartLocalLogin();
-      const result = await useCase.execute({ email, password });
+      const result = await useCase.execute(bodyParsed);
 
       if ('error' in result) {
         const status = result.error === 'invalid_credentials' ? 401 : 400;

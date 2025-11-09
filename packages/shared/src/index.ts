@@ -1,4 +1,3 @@
-export * from '../../../apps/api/src/infrastructure/http/schemas/auth';
 export * from "./enum/oauth";
 export * from "./enum/service-connection";
 export * from './types/auth';

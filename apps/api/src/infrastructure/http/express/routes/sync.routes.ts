@@ -29,12 +29,6 @@ router.post(
 );
 
 router.get(
-  '/sync/playlists',
-  AuthMiddleware.authenticate,
-  SyncController.getPlaylists
-);
-
-router.get(
   '/sync/queue/stats',
   AuthMiddleware.authenticate,
   SyncController.getQueueStats

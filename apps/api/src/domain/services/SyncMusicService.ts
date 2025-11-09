@@ -132,7 +132,4 @@ export class SyncMusicService {
       data: stats,
     }
   }
-  public async getMyJobs(user: User) {
-
-  }
 }

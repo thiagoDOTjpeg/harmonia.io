@@ -15,13 +15,6 @@ export const OAuthQuerySchema = z.object({
   returnTo: z.string().url('URL inválida').optional(),
 });
 
-export const OAuthCallbackSchema = z.object({
-  code: z.string().min(1, 'Code é obrigatório'),
-  state: z.string().min(1, 'State é obrigatório'),
-  error: z.string().optional(),
-});
-
 export type RegisterDto = z.infer<typeof RegisterSchema>;
 export type LoginDto = z.infer<typeof LoginSchema>;
 export type OAuthQueryDto = z.infer<typeof OAuthQuerySchema>;
-export type OAuthCallbackDto = z.infer<typeof OAuthCallbackSchema>;

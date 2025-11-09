@@ -4,6 +4,7 @@ import express from 'express';
 
 import authRoutes from '../infrastructure/http/express/routes/auth.routes';
 import bullBoardRoutes from '../infrastructure/http/express/routes/bull-board.routes';
+import playlistRoutes from '../infrastructure/http/express/routes/playlist.routes';
 import syncRoutes from '../infrastructure/http/express/routes/sync.routes';
 import userRoutes from '../infrastructure/http/express/routes/user.route';
 import { startWorkers } from '../infrastructure/queue/workers';
@@ -18,6 +19,7 @@ app.use(express.json());
 
 app.use(userRoutes);
 app.use(authRoutes);
+app.use(playlistRoutes)
 app.use(syncRoutes);
 app.use(bullBoardRoutes);
 
@@ -30,7 +32,6 @@ app.get('/health', (_req, res) => {
 
 app.get('/', (_req, res) => {
   res.json({
-    message: '🎵 Harmonia.io API',
     status: 'online',
     version: '1.0.0'
   });
@@ -40,7 +41,5 @@ startWorkers();
 
 app.listen(PORT, () => {
   console.log('');
-  console.log('🎵 Harmonia.io rodando!');
-  console.log(`📍 http://127.0.0.1:${PORT}`);
-  console.log('');
+  console.log(`Rodando em http://127.0.0.1:${PORT}`);
 });
