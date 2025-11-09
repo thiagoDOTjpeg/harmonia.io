@@ -1,11 +1,21 @@
-import { User } from '@/domain/entities/User';
-import { OAuthMethod, OAuthQueryDto } from '@harmonia/shared';
+import { OAuthQueryDto } from '@harmonia/shared';
 import { Request, Response } from 'express';
 import { Container } from '../../../../main/container';
-import { AuthMiddleware } from '../middlewares/AuthMiddleware';
 import { getOAuthCallbackHTML } from '../views/oauth-callback';
 
 export class AuthController {
+  static async googleConnect(req: Request, res: Response) {
+    try {
+      const { returnTo } = req.query as OAuthQueryDto;
+      const useCase = Container.getStartGoogleConnect();
+      const { redirectTo } = await useCase.execute(returnTo);
+      res.redirect(redirectTo);
+    } catch (error) {
+      console.error('Google login error:', error);
+      res.status(500).json({ error: 'internal_error' });
+    }
+  }
+
   static async googleLogin(req: Request, res: Response) {
     try {
       const { returnTo } = req.query as OAuthQueryDto;
@@ -34,8 +44,6 @@ export class AuthController {
     try {
       const code = String(req.query.code || '');
       const state = String(req.query.state || '');
-      let userId: string | undefined;
-
 
       if (!code || !state) {
         return res.send(getOAuthCallbackHTML({
@@ -44,17 +52,7 @@ export class AuthController {
         }, undefined));
       }
 
-      const stateManager = Container.getStateManager();
-      const stateData = await stateManager.get(state);
-
-      if (stateData?.method === OAuthMethod.connect) {
-        const response = await AuthMiddleware.getAuthenticatedUser(req, res);
-        if (response instanceof User) {
-          userId = response.id
-        }
-      }
-      const returnTo = stateData?.returnTo;
-      const useCase = Container.getHandleGoogleCallback(userId);
+      const useCase = Container.getHandleGoogleCallback();
       const result = await useCase.execute({ code, state });
 
       if ('error' in result) {
@@ -68,14 +66,14 @@ export class AuthController {
         return res.send(getOAuthCallbackHTML({
           success: false,
           error: errorMessages[result.error] || 'Erro na autenticação'
-        }, returnTo));
+        }, 'http://localhost:3001'));
       }
 
       return res.send(getOAuthCallbackHTML({
         success: true,
         token: result.token,
         user: { email: result.user.email || '', id: result.user.id, name: result.user.name || '' }
-      }, returnTo));
+      }, result.returnTo));
     } catch (error) {
       console.error('Google callback error:', error);
       return res.send(getOAuthCallbackHTML({
@@ -85,59 +83,15 @@ export class AuthController {
     }
   }
 
-  static async spotifyCallback(req: Request, res: Response) {
+  static async spotifyConnect(req: Request, res: Response) {
     try {
-      const code = String(req.query.code || '');
-      const state = String(req.query.state || '');
-      let userId: string | undefined;
-
-      if (!code || !state) {
-        return res.send(getOAuthCallbackHTML({
-          success: false,
-          error: 'Código ou estado inválido'
-        }, undefined));
-      }
-
-      const stateManager = Container.getStateManager();
-      const stateData = await stateManager.get(state);
-      if (stateData?.method === OAuthMethod.connect) {
-        const response = await AuthMiddleware.getAuthenticatedUser(req, res);
-        if (response instanceof User) {
-          userId = response.id
-        }
-      }
-      const returnTo = stateData?.returnTo;
-
-      const useCase = Container.getHandleSpotifyCallback(userId);
-      const result = await useCase.execute({ code, state });
-
-
-      if ('error' in result) {
-        const errorMessages: Record<string, string> = {
-          no_account: 'Conta não encontrada. Por favor, cadastre-se primeiro.',
-          email_in_use: 'Este email já está em uso com outro método de login.',
-          require_manual_link: 'É necessário vincular sua conta manualmente.',
-          email_ambiguous: 'Este email está associado a múltiplas contas.',
-          conflict: 'Conflito ao processar sua autenticação.',
-        };
-
-        return res.send(getOAuthCallbackHTML({
-          success: false,
-          error: errorMessages[result.error] || 'Erro na autenticação'
-        }, returnTo));
-      }
-
-      return res.send(getOAuthCallbackHTML({
-        success: true,
-        token: result.token,
-        user: { email: result.user.email || '', id: result.user.id, name: result.user.name || '' }
-      }, returnTo));
+      const { returnTo } = req.query as OAuthQueryDto;
+      const useCase = Container.getStartSpotifyConnect();
+      const { redirectTo } = await useCase.execute(returnTo);
+      res.redirect(redirectTo);
     } catch (error) {
-      console.error('Spotify callback error:', error);
-      return res.send(getOAuthCallbackHTML({
-        success: false,
-        error: 'Falha na autenticação. Tente novamente.'
-      }, 'http://localhost:3001'));
+      console.error('Spotify login error:', error);
+      res.status(500).json({ error: 'internal_error' });
     }
   }
 
@@ -162,6 +116,51 @@ export class AuthController {
     } catch (error) {
       console.error('Spotify register error:', error);
       res.status(500).json({ error: 'internal_error' });
+    }
+  }
+
+  static async spotifyCallback(req: Request, res: Response) {
+    try {
+      const code = String(req.query.code || '');
+      const state = String(req.query.state || '');
+
+      if (!code || !state) {
+        return res.send(getOAuthCallbackHTML({
+          success: false,
+          error: 'Código ou estado inválido'
+        }, undefined));
+      }
+
+      const useCase = Container.getHandleSpotifyCallback();
+      const result = await useCase.execute({ code, state });
+
+
+      if ('error' in result) {
+        const errorMessages: Record<string, string> = {
+          no_account: 'Conta não encontrada. Por favor, cadastre-se primeiro.',
+          email_in_use: 'Este email já está em uso com outro método de login.',
+          require_manual_link: 'É necessário vincular sua conta manualmente.',
+          email_ambiguous: 'Este email está associado a múltiplas contas.',
+          conflict: 'Conflito ao processar sua autenticação.',
+        };
+
+        return res.send(getOAuthCallbackHTML({
+          success: false,
+          error: errorMessages[result.error] || 'Erro na autenticação'
+        }, 'http://localhost:3001'));
+      }
+
+      return res.send(getOAuthCallbackHTML({
+        success: true,
+        token: result.token,
+        user: { email: result.user.email || '', id: result.user.id, name: result.user.name || '' }
+      }, result.returnTo));
+    } catch (error) {
+      console.error('Spotify callback error:', error);
+      return res.send(getOAuthCallbackHTML({
+        success: false,
+        error: 'Falha na autenticação. Tente novamente.'
+      }, 'http://localhost:3001'));
     }
   }
 

@@ -15,7 +15,6 @@ export class HandleSpotifyCallback {
     private readonly users: IUserRepository,
     private readonly tokens: ITokenManager,
     private readonly clock: IClock,
-    private userId: string | undefined
   ) { }
 
   async execute(input: OAuthCallbackData): Promise<AuthResponse> {
@@ -27,6 +26,6 @@ export class HandleSpotifyCallback {
     const strategy = new OAuthCallbackStrategyFactory().getStrategy(ServiceProvider.SPOTIFY);
     const instancedStrategy = new strategy(this.users, this.serviceConnection, this.tokens, this.clock);
 
-    return await instancedStrategy.processCallback(exchangeData, stateData, this.userId);
+    return await instancedStrategy.processCallback(exchangeData, stateData, stateData.userId);
   }
 }

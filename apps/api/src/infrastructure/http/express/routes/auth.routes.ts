@@ -6,6 +6,13 @@ import { validateBody, validateQuery } from '../middlewares/ZodMiddleware';
 const router = Router();
 
 router.get(
+  '/auth/google/connect',
+  validateQuery(OAuthQuerySchema),
+  AuthController.googleConnect
+);
+
+
+router.get(
   '/auth/google/login',
   validateQuery(OAuthQuerySchema),
   AuthController.googleLogin
@@ -21,6 +28,12 @@ router.get(
   '/auth/google/callback',
   validateQuery(OAuthCallbackSchema),
   AuthController.googleCallback
+);
+
+router.get(
+  '/auth/spotify/connect',
+  validateQuery(OAuthQuerySchema),
+  AuthController.spotifyConnect
 );
 
 router.get(

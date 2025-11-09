@@ -1,3 +1,4 @@
+import { OAuthMethod } from "@harmonia/shared";
 import { IGoogleOAuthClient } from "../../ports/oauth/IGoogleOAuthClient";
 import { IOAuthStateStore } from "../../ports/oauth/IOAuthStateStore";
 
@@ -9,7 +10,7 @@ export class StartGoogleLogin {
 
   async execute(returnTo?: string) {
     const state = Math.random().toString(36).slice(2);
-    await this.stateStore.set(state, { mode: 'login', returnTo: returnTo });
+    await this.stateStore.set(state, { method: OAuthMethod.login, returnTo });
     const redirectTo = this.google.buildAuthUrl(state);
     return { redirectTo };
   }

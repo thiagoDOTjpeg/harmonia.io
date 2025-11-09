@@ -10,6 +10,8 @@ import { JwtTokenManager } from '../infrastructure/crypto/JwtTokenManager';
 import { SystemClock } from '../infrastructure/time/SystemClock';
 
 // Use cases Auth
+import { StartGoogleConnect } from '@/application/use_cases/auth/StartGoogleConnect';
+import { StartSpotifyConnect } from '@/application/use_cases/auth/StartSpotifyConnect';
 import { prisma } from '@/infrastructure/db/prisma/client';
 import { PrismaServiceConnectionRepository } from '@/infrastructure/db/prisma/repositories/PrismaServiceConnectionRepository';
 import { HandleGoogleCallback } from '../application/use_cases/auth/HandleGoogleCallback';
@@ -85,6 +87,10 @@ export class Container {
 
   // ===== GETTERS - USE CASES AUTH =====
 
+  static getStartGoogleConnect() {
+    return new StartGoogleConnect(this.stateStore, this.googleClient);
+  }
+
   static getStartGoogleLogin() {
     return new StartGoogleLogin(this.stateStore, this.googleClient);
   }
@@ -93,7 +99,7 @@ export class Container {
     return new StartGoogleRegister(this.stateStore, this.googleClient);
   }
 
-  static getHandleGoogleCallback(userId: string | undefined) {
+  static getHandleGoogleCallback() {
     return new HandleGoogleCallback(
       this.stateStore,
       this.googleClient,
@@ -101,8 +107,11 @@ export class Container {
       this.userRepository,
       this.tokenManager,
       this.clock,
-      userId
     );
+  }
+
+  static getStartSpotifyConnect() {
+    return new StartSpotifyConnect(this.stateStore, this.spotifyClient);
   }
 
   static getStartSpotifyLogin() {
@@ -113,15 +122,14 @@ export class Container {
     return new StartSpotifyRegister(this.stateStore, this.spotifyClient);
   }
 
-  static getHandleSpotifyCallback(userId: string | undefined) {
+  static getHandleSpotifyCallback() {
     return new HandleSpotifyCallback(
       this.stateStore,
       this.spotifyClient,
       this.serviceConnectionRepository,
       this.userRepository,
       this.tokenManager,
-      this.clock,
-      userId
+      this.clock
     );
   }
 
