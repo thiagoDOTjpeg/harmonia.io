@@ -7,6 +7,21 @@ import { ServiceConnectionMapper } from "../mapper/ServiceConnectionMapper";
 export class PrismaServiceConnectionRepository implements IServiceConnectionRepository {
   constructor(private readonly prisma: PrismaClient) { }
 
+  async findAllByUserId(userId: string): Promise<ServiceConnection[] | null> {
+    const serviceConnections = await this.prisma.serviceConnection.findMany({
+      where: {
+        userId: userId
+      }
+    })
+    if (serviceConnections.length == 0) {
+      return null;
+    }
+    const mappedServiceConnections = serviceConnections.map((sc) => {
+      return ServiceConnectionMapper.toDomain(sc);
+    })
+    return mappedServiceConnections;
+  }
+
   async findByEmail(email: string): Promise<ServiceConnection | null> {
     const serviceConnection = await this.prisma.serviceConnection.findFirst({
       where: {

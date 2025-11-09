@@ -12,8 +12,10 @@ import { SystemClock } from '../infrastructure/time/SystemClock';
 // Use cases Auth
 import { StartGoogleConnect } from '@/application/use_cases/auth/StartGoogleConnect';
 import { StartSpotifyConnect } from '@/application/use_cases/auth/StartSpotifyConnect';
+import { SyncMusicService } from '@/domain/services/SyncMusicService';
 import { prisma } from '@/infrastructure/db/prisma/client';
 import { PrismaServiceConnectionRepository } from '@/infrastructure/db/prisma/repositories/PrismaServiceConnectionRepository';
+import { PlaylistSyncQueue } from '@/infrastructure/queue/PlaylistSyncQueue';
 import { HandleGoogleCallback } from '../application/use_cases/auth/HandleGoogleCallback';
 import { HandleSpotifyCallback } from '../application/use_cases/auth/HandleSpotifyCallback';
 import { StartGoogleLogin } from '../application/use_cases/auth/StartGoogleLogin';
@@ -30,6 +32,8 @@ export class Container {
   private static googleClient = new GoogleOAuthClient();
   private static spotifyClient = new SpotifyOAuthClient();
   private static stateStore = new RedisStateStore();
+  private static syncQueue = new PlaylistSyncQueue();
+
 
   // Repositories
   private static userRepository = new PrismaUserRepository(prisma);
@@ -53,6 +57,16 @@ export class Container {
     return this.spotifyClient;
   }
 
+  // ===== GETTERS - SERVICES =====
+
+  static getSyncMusicService() {
+    return new SyncMusicService(
+      this.serviceConnectionRepository,
+      this.playlistRepository,
+      this.syncQueue
+    );
+  }
+
   // ===== GETTERS - REPOSITORIES =====
 
   static getUserRepository() {
@@ -71,6 +85,10 @@ export class Container {
     return this.playlistTrackRepository;
   }
 
+  static getServiceConnectionRepository() {
+    return this.serviceConnectionRepository;
+  }
+
   // ===== GETTERS - INFRA =====
 
   static getStateManager() {
@@ -83,6 +101,10 @@ export class Container {
 
   static getPasswordHasher() {
     return this.passwordHasher;
+  }
+
+  static getSyncQueue() {
+    return this.syncQueue;
   }
 
   // ===== GETTERS - USE CASES AUTH =====

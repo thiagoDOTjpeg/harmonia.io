@@ -1,20 +1,12 @@
 import { Router } from 'express';
-import { z } from 'zod';
 import { SyncController } from '../controllers/SyncController';
 import { AuthMiddleware } from '../middlewares/AuthMiddleware';
-import { validateBody } from '../middlewares/ZodMiddleware';
 
 const router = Router();
-
-const SyncPlaylistSchema = z.object({
-  youtubePlaylistId: z.string().min(1, 'YouTube Playlist ID é obrigatório'),
-  priority: z.number().min(1).max(100).optional(),
-});
 
 router.post(
   '/sync/playlist',
   AuthMiddleware.authenticate,
-  validateBody(SyncPlaylistSchema),
   SyncController.syncPlaylist
 );
 

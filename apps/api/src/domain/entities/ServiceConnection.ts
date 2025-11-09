@@ -6,7 +6,7 @@ export class ServiceConnection {
     public id: string,
     public userId: string,
     public provider: ServiceProvider,
-    public providerAccountId: string | null,
+    public providerAccountId: string,
     public email: string | null,
     public accessToken: string,
     public refreshToken: string | null,
