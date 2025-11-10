@@ -1,5 +1,6 @@
 generator client {
   provider = "prisma-client-js"
+  previewFeatures = ["strictUndefinedChecks"]
 }
 
 datasource db {
@@ -113,6 +114,8 @@ model ServiceConnection {
   email              String?
   accessToken        String          @map("access_token") @db.Text
   refreshToken       String?         @map("refresh_token") @db.Text
+  accessTokenIv      String          @map("access_token_iv") @db.Text
+  refreshTokenIv     String?         @map("refresh_token_iv") @db.Text
   expiresAt          DateTime?       @map("expires_at")
   scopes             String          @db.Text
   metadata           Json?
