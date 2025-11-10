@@ -10,12 +10,19 @@ import { JwtTokenManager } from '../infrastructure/crypto/JwtTokenManager';
 import { SystemClock } from '../infrastructure/time/SystemClock';
 
 // Use cases Auth
+import { OAuthCallbackStrategy } from '@/application/ports/strategy/OAuthCallbackStrategy';
 import { StartGoogleConnect } from '@/application/use_cases/auth/StartGoogleConnect';
 import { StartSpotifyConnect } from '@/application/use_cases/auth/StartSpotifyConnect';
 import { SyncMusicService } from '@/domain/services/SyncMusicService';
+import { GoogleOAuthCallbackStrategy } from '@/infrastructure/adapter/oauth/GoogleOAuthCallbackStrategy';
+import { OAuthCallbackStrategyFactory } from '@/infrastructure/adapter/oauth/OAuthCallbackStrategyFactory';
+import { SpotifyOAuthCallbackStrategy } from '@/infrastructure/adapter/oauth/SpotifyOAuthCallbackStrategy';
+import { AESSerializer } from '@/infrastructure/adapter/serializer/AESSerializer';
+import { AESTokenEncrypter } from '@/infrastructure/crypto/AESTokenEncrypter';
 import { prisma } from '@/infrastructure/db/prisma/client';
 import { PrismaServiceConnectionRepository } from '@/infrastructure/db/prisma/repositories/PrismaServiceConnectionRepository';
 import { PlaylistSyncQueue } from '@/infrastructure/queue/PlaylistSyncQueue';
+import { ServiceProvider } from '@prisma/client';
 import { HandleGoogleCallback } from '../application/use_cases/auth/HandleGoogleCallback';
 import { HandleSpotifyCallback } from '../application/use_cases/auth/HandleSpotifyCallback';
 import { StartGoogleLogin } from '../application/use_cases/auth/StartGoogleLogin';
@@ -27,13 +34,15 @@ import { StartSpotifyRegister } from '../application/use_cases/auth/StartSpotify
 import { SpotifyOAuthClient } from '../infrastructure/client/SpotifyOAuthClient';
 import { RedisStateStore } from '../infrastructure/state/RedisStateStore';
 
+const ENCRYPTION_KEY: string = process.env.AES_SECRET || "";
+
 export class Container {
+
   // Infra
   private static googleClient = new GoogleOAuthClient();
   private static spotifyClient = new SpotifyOAuthClient();
   private static stateStore = new RedisStateStore();
   private static syncQueue = new PlaylistSyncQueue();
-
 
   // Repositories
   private static userRepository = new PrismaUserRepository(prisma);
@@ -42,9 +51,11 @@ export class Container {
   private static playlistTrackRepository = new PrismaPlaylistTrackRepository(prisma);
   private static serviceConnectionRepository = new PrismaServiceConnectionRepository(prisma);
 
-  // Crypto & Time
+  // Crypto & Time & Serializer
   private static tokenManager = new JwtTokenManager();
   private static passwordHasher = new BcryptPasswordHasher();
+  private static AESEncrypter = new AESTokenEncrypter(ENCRYPTION_KEY);
+  private static tokenSerializer = new AESSerializer();
   private static clock = new SystemClock();
 
   // ===== GETTERS - CLIENTS =====
@@ -55,6 +66,38 @@ export class Container {
 
   static getSpotifyClient() {
     return this.spotifyClient;
+  }
+
+  // ===== GETTERS - FACTORIES =====
+
+  static getStrategyFactory() {
+    const strategies: Record<ServiceProvider, OAuthCallbackStrategy> = {
+      [ServiceProvider.GOOGLE]: this.getGoogleStrategy(),
+      [ServiceProvider.SPOTIFY]: this.getSpotifyStrategy(),
+    }
+    return new OAuthCallbackStrategyFactory(strategies);
+  }
+
+  static getGoogleStrategy() {
+    return new GoogleOAuthCallbackStrategy(
+      this.userRepository,
+      this.serviceConnectionRepository,
+      this.tokenManager,
+      this.clock,
+      this.AESEncrypter,
+      this.tokenSerializer
+    );
+  }
+
+  static getSpotifyStrategy() {
+    return new SpotifyOAuthCallbackStrategy(
+      this.userRepository,
+      this.serviceConnectionRepository,
+      this.tokenManager,
+      this.clock,
+      this.AESEncrypter,
+      this.tokenSerializer
+    );
   }
 
   // ===== GETTERS - SERVICES =====
@@ -121,14 +164,11 @@ export class Container {
     return new StartGoogleRegister(this.stateStore, this.googleClient);
   }
 
+  // TODO: Tech Debt - Remover acoplamento estático do Container (Service Locator pattern)
   static getHandleGoogleCallback() {
     return new HandleGoogleCallback(
       this.stateStore,
       this.googleClient,
-      this.serviceConnectionRepository,
-      this.userRepository,
-      this.tokenManager,
-      this.clock,
     );
   }
 
@@ -144,14 +184,11 @@ export class Container {
     return new StartSpotifyRegister(this.stateStore, this.spotifyClient);
   }
 
+  // TODO: Tech Debt - Remover acoplamento estático do Container (Service Locator pattern)
   static getHandleSpotifyCallback() {
     return new HandleSpotifyCallback(
       this.stateStore,
       this.spotifyClient,
-      this.serviceConnectionRepository,
-      this.userRepository,
-      this.tokenManager,
-      this.clock
     );
   }
 

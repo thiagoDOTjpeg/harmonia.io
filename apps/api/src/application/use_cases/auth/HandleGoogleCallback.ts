@@ -1,20 +1,12 @@
-import { IServiceConnectionRepository } from '@/application/repositories/IServiceConnectionRepository';
-import { OAuthCallbackStrategyFactory } from '@/infrastructure/adapter/oauth/OAuthCallbackStrategyFactory';
+import { Container } from '@/main/container';
 import { AuthResponse, OAuthCallbackData, OAuthMethod, ServiceProvider } from '@harmonia/shared';
-import { IClock } from '../../ports/clock/IClock';
-import { ITokenManager } from '../../ports/crypto/ITokenManager';
 import { IGoogleOAuthClient } from '../../ports/oauth/IGoogleOAuthClient';
 import { IOAuthStateStore } from '../../ports/oauth/IOAuthStateStore';
-import { IUserRepository } from '../../repositories/IUserRepository';
 
 export class HandleGoogleCallback {
   constructor(
     private readonly stateStore: IOAuthStateStore,
     private readonly google: IGoogleOAuthClient,
-    private readonly serviceConnection: IServiceConnectionRepository,
-    private readonly users: IUserRepository,
-    private readonly tokens: ITokenManager,
-    private readonly clock: IClock,
   ) { }
 
   async execute(input: OAuthCallbackData): Promise<AuthResponse> {
@@ -26,8 +18,7 @@ export class HandleGoogleCallback {
     this.stateStore.delete(input.state);
     const exchangeData = await this.google.exchangeCode(input.code);
 
-    const strategy = new OAuthCallbackStrategyFactory().getStrategy(ServiceProvider.GOOGLE);
-    const instancedStrategy = new strategy(this.users, this.serviceConnection, this.tokens, this.clock);
+    const instancedStrategy = Container.getStrategyFactory().getStrategy(ServiceProvider.GOOGLE);
 
     return await instancedStrategy.processCallback(exchangeData, stateData, stateData.userId)
   }
