@@ -1,12 +1,15 @@
 import { IClock } from "@/application/ports/clock/IClock";
+import { IEncryptor } from "@/application/ports/crypto/IEncryptor";
 import { ITokenManager } from "@/application/ports/crypto/ITokenManager";
+import { ITokenSerializer } from "@/application/ports/serializer/ITokenSerializer";
 import { OAuthCallbackStrategy } from "@/application/ports/strategy/OAuthCallbackStrategy";
 import { IServiceConnectionRepository } from "@/application/repositories/IServiceConnectionRepository";
 import { IUserRepository } from "@/application/repositories/IUserRepository";
 import { ServiceConnection } from "@/domain/entities/ServiceConnection";
 import { User } from "@/domain/entities/User";
+import { TokenEncrypted } from "@/infrastructure/http/types/encrypter";
 import { AuthResponse, GoogleOAuthResult, OAuthMethod, OAuthState, ServiceProvider } from "@harmonia/shared";
-import { ServiceProvider as PrismaServiceProvider } from "@prisma/client";
+import { Prisma, ServiceProvider as PrismaServiceProvider } from "@prisma/client";
 
 const SCOPES = [
   'openid',
@@ -21,6 +24,8 @@ export class GoogleOAuthCallbackStrategy implements OAuthCallbackStrategy<Google
     private readonly serviceConnection: IServiceConnectionRepository,
     private readonly tokens: ITokenManager,
     private readonly clock: IClock,
+    private readonly aesEncrypter: IEncryptor,
+    private readonly tokenSerializer: ITokenSerializer<TokenEncrypted>
   ) { }
 
   async processCallback(
@@ -156,11 +161,16 @@ export class GoogleOAuthCallbackStrategy implements OAuthCallbackStrategy<Google
   }
 
   private async createServiceConnection(user: User, exchangeData: GoogleOAuthResult, expiresAt: Date): Promise<ServiceConnection> {
+    const encryptedAccessToken = this.aesEncrypter.encrypt(exchangeData.tokens.access_token);
+    const encryptedRefreshToken = exchangeData.tokens.refresh_token ? this.aesEncrypter.encrypt(exchangeData?.tokens?.refresh_token) : null
+
     const createdServiceConnection = await this.serviceConnection.createServiceConnection({
       userId: user?.id,
       providerAccountId: exchangeData.profile.sub,
-      accessToken: exchangeData.tokens.access_token,
-      refreshToken: exchangeData.tokens.refresh_token,
+      accessToken: this.tokenSerializer.serialize(encryptedAccessToken),
+      refreshToken: encryptedRefreshToken ? this.tokenSerializer.serialize(encryptedRefreshToken) : null,
+      accessTokenIv: encryptedAccessToken.iv,
+      refreshTokenIv: encryptedRefreshToken ? encryptedRefreshToken.iv : null,
       expiresAt,
       provider: ServiceProvider.GOOGLE as unknown as PrismaServiceProvider,
       scopes: SCOPES,
@@ -172,9 +182,14 @@ export class GoogleOAuthCallbackStrategy implements OAuthCallbackStrategy<Google
     return createdServiceConnection;
   }
   private async updateServiceConnection(user: User, exchangeData: GoogleOAuthResult, expiresAt: Date): Promise<ServiceConnection> {
+    const encryptedAccessToken = this.aesEncrypter.encrypt(exchangeData.tokens.access_token);
+    const encryptedRefreshToken = exchangeData.tokens.refresh_token ? this.aesEncrypter.encrypt(exchangeData?.tokens?.refresh_token) : undefined
+
     const updatedServiceConnection = await this.serviceConnection.updateServiceConnection({
-      accessToken: exchangeData.tokens.access_token,
-      refreshToken: exchangeData.tokens.refresh_token,
+      accessToken: this.tokenSerializer.serialize(encryptedAccessToken),
+      refreshToken: encryptedRefreshToken ? this.tokenSerializer.serialize(encryptedRefreshToken) : Prisma.skip,
+      accessTokenIv: encryptedAccessToken.iv,
+      refreshTokenIv: encryptedRefreshToken ? encryptedRefreshToken.iv : Prisma.skip,
       expiresAt,
       updatedAt: new Date(),
       metadata: {

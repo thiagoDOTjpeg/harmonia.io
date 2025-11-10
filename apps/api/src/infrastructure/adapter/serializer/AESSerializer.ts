@@ -1,0 +1,22 @@
+import { ITokenSerializer } from "@/application/ports/serializer/ITokenSerializer";
+import { TokenEncrypted } from "@/infrastructure/http/types/encrypter";
+
+export class AESSerializer implements ITokenSerializer<TokenEncrypted> {
+  serialize(data: TokenEncrypted): string {
+    const { cipherText, iv, tag } = data;
+    const serializedToken = iv + ":" + cipherText + ":" + tag
+    return serializedToken;
+  }
+  deserialize(data: string): TokenEncrypted {
+    if (/^[^:]+:[^:]+:[^:]+$/.test(data) === false) {
+      throw new Error("Token encriptado inválido")
+    }
+    const [iv, cipher, tag] = data.split(":")
+    return {
+      cipherText: cipher,
+      iv,
+      tag
+    }
+  }
+
+}

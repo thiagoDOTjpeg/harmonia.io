@@ -1,7 +1,7 @@
+import { IHasher } from '@/application/ports/crypto/IHasher';
 import bcrypt from 'bcryptjs';
-import { IPasswordHasher } from '../../application/ports/crypto/IPasswordHasher';
 
-export class BcryptPasswordHasher implements IPasswordHasher {
+export class BcryptPasswordHasher implements IHasher {
   private readonly rounds = 10;
 
   async hash(plainPassword: string): Promise<string> {

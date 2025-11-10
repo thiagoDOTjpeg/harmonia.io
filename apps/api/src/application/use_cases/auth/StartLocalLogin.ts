@@ -1,5 +1,5 @@
 import { AuthResponse, LoginDto } from '@harmonia/shared';
-import { IPasswordHasher } from '../../ports/crypto/IPasswordHasher';
+import { IPasswordHasher } from '../../ports/crypto/IHasher';
 import { ITokenManager } from '../../ports/crypto/ITokenManager';
 import { IUserRepository } from '../../repositories/IUserRepository';
 
