@@ -7,7 +7,10 @@ export class AESSerializer implements ITokenSerializer<TokenEncrypted> {
     const serializedToken = iv + ":" + cipherText + ":" + tag
     return serializedToken;
   }
-  deserialize(data: string): TokenEncrypted {
+  deserialize(data: string | null): TokenEncrypted {
+    if (!data) {
+      throw new Error("Erro ao deserializar o Token")
+    }
     if (/^[^:]+:[^:]+:[^:]+$/.test(data) === false) {
       throw new Error("Token encriptado inválido")
     }

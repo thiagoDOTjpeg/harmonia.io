@@ -1,12 +1,13 @@
-import { AuthResponse, LoginDto } from '@harmonia/shared';
-import { IPasswordHasher } from '../../ports/crypto/IHasher';
+import { IHasher } from '@/application/ports/crypto/IHasher';
+import { LoginDto } from '@/infrastructure/http/schemas/auth';
+import { AuthResponse } from '@harmonia/shared';
 import { ITokenManager } from '../../ports/crypto/ITokenManager';
 import { IUserRepository } from '../../repositories/IUserRepository';
 
 export class StartLocalLogin {
   constructor(
     private readonly userRepository: IUserRepository,
-    private readonly passwordHasher: IPasswordHasher,
+    private readonly passwordHasher: IHasher,
     private readonly tokenManager: ITokenManager,
   ) { }
 

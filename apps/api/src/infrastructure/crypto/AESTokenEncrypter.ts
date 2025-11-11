@@ -7,28 +7,31 @@ const IV_LENGTH = 12;
 
 export class AESTokenEncrypter implements IEncryptor {
   constructor(private encryptionKey: string) {
-    if (Buffer.byteLength(encryptionKey, "utf-8") !== 32) {
+    if (Buffer.byteLength(encryptionKey, "base64") !== 32) {
       throw new Error("Key de encriptação inválida")
     }
   }
-  encrypt(token: string): TokenEncrypted {
+  public encrypt(token: string): TokenEncrypted {
+    const keyInBytes = Buffer.from(this.encryptionKey, "base64");
     const iv = randomBytes(IV_LENGTH);
-    const cipher = createCipheriv(ALGORITHM, this.encryptionKey, iv);
+    const cipher = createCipheriv(ALGORITHM, keyInBytes, iv);
+
     const data = cipher.update(token, 'utf-8', "base64");
-    const final = cipher.final('base64')
+    const final = cipher.final()
     return {
       cipherText: `${data}${final}`,
       iv: iv.toString("base64"),
       tag: cipher.getAuthTag().toString("base64")
     }
   }
-  decrypt(ivB64: string, encryptedB64: string, tagB64: string): string {
+  public decrypt(ivB64: string, cipherText: string, tagB64: string): string {
     try {
-      const decipher = createDecipheriv(ALGORITHM, this.encryptionKey, Buffer.from(ivB64, "base64"))
+      const keyInBytes = Buffer.from(this.encryptionKey, "base64");
+      const decipher = createDecipheriv(ALGORITHM, keyInBytes, Buffer.from(ivB64, "base64"))
       decipher.setAuthTag(Buffer.from(tagB64, "base64"))
 
-      let decrypted = decipher.update(encryptedB64, "base64", "utf8");
-      decrypted += decipher.final("utf-8")
+      let decrypted = decipher.update(cipherText, "base64", "utf8");
+      decrypted += decipher.final()
 
       return decrypted;
     } catch (error) {

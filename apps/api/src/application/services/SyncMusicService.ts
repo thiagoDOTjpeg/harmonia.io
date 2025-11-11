@@ -1,44 +1,38 @@
-import { IPlaylistRepository } from "@/application/repositories/IPlaylistRepository";
-import { IServiceConnectionRepository } from "@/application/repositories/IServiceConnectionRepository";
+import { IEncryptor } from "@/application/ports/crypto/IEncryptor";
+import { ITokenSerializer } from "@/application/ports/serializer/ITokenSerializer";
+import { EnsureValidConnectionsUseCase } from "@/application/use_cases/sync_playlist/EnsureValidConnectionsUseCase";
+import { PrismaPlaylistRepository } from "@/infrastructure/db/prisma/repositories/PrismaPlaylistRepository";
 import { cancelSyncPlaylistDto, createSyncPlaylistDto, getSyncPlaylistStatusDto, retrySyncPlaylistDto } from "@/infrastructure/http/schemas/playlist-sync.schema";
+import { TokenEncrypted } from "@/infrastructure/http/types/encrypter";
 import { PlaylistSyncQueue } from "@/infrastructure/queue/PlaylistSyncQueue";
 import { ServiceProvider } from "@harmonia/shared";
-import { ServiceConnection } from "../entities/ServiceConnection";
-import { User } from "../entities/User";
+import { ServiceConnection } from "../../domain/entities/ServiceConnection";
+import { User } from "../../domain/entities/User";
 
 export class SyncMusicService {
   constructor(
-    private readonly serviceConnectionRepository: IServiceConnectionRepository,
-    private readonly playlistRepository: IPlaylistRepository,
-    private readonly syncQueue: PlaylistSyncQueue
+    private readonly syncQueue: PlaylistSyncQueue,
+    private readonly playlistRepository: PrismaPlaylistRepository,
+    private readonly AESEncrypter: IEncryptor,
+    private readonly tokenSerializer: ITokenSerializer<TokenEncrypted>,
+    private readonly ensureValidConnectionsUseCase: EnsureValidConnectionsUseCase
   ) { }
 
   public async syncPlaylist(user: User, bodyParsed: createSyncPlaylistDto) {
     const { youtubePlaylistId, priority } = bodyParsed;
-    const serviceConnetions: Map<ServiceProvider, ServiceConnection> = new Map();
+    let connections: Map<ServiceProvider, ServiceConnection>;
 
-    const existingConnections = await this.serviceConnectionRepository.findAllByUserId(user.id);
-    if (existingConnections == null) {
-      return {
-        sucess: false,
-        error: "service_connection_not_found",
-        message: "Conexão com serviços necessário não estão ativas"
-      }
+    try {
+      connections = await this.ensureValidConnectionsUseCase.execute(user.id);
+    } catch (error) {
+      throw new Error("Erro ao sincronizar playlist", { cause: error })
     }
 
-    for (const sc of existingConnections) {
-      serviceConnetions.set(sc.provider, sc)
-    }
+    const googleConnection = connections.get(ServiceProvider.GOOGLE)
+    const spotifyConnection = connections.get(ServiceProvider.SPOTIFY)
 
-    const spotifyServiceConnection = serviceConnetions.get(ServiceProvider.SPOTIFY)
-    const googleServiceConnection = serviceConnetions.get(ServiceProvider.GOOGLE)
-
-    if (spotifyServiceConnection === undefined || googleServiceConnection === undefined) {
-      return {
-        success: false,
-        error: "service_connection_not_found",
-        message: "Conexão com serviços necessário não estão ativas"
-      }
+    if (spotifyConnection === undefined || googleConnection === undefined) {
+      throw new Error("Conexão com serviços necessário não estão ativas")
     }
 
     const playlist = await this.playlistRepository.findByYoutubePlaylistId(
@@ -50,9 +44,9 @@ export class SyncMusicService {
       playlistId: playlist?.id || `temp-${Date.now()}`,
       userId: user.id,
       youtubePlaylistId,
-      googleAccessToken: spotifyServiceConnection.accessToken,
-      spotifyAccessToken: googleServiceConnection.accessToken,
-      spotifyUserId: spotifyServiceConnection.providerAccountId,
+      googleAccessToken: this.getServiceConnectionAccessToken(googleConnection),
+      spotifyAccessToken: this.getServiceConnectionAccessToken(spotifyConnection),
+      spotifyUserId: spotifyConnection.providerAccountId,
       priority: priority || 10,
     });
 
@@ -132,4 +126,12 @@ export class SyncMusicService {
       data: stats,
     }
   }
+
+  private getServiceConnectionAccessToken(serviceConnection: ServiceConnection): string {
+    const encryptedToken = serviceConnection.accessToken
+    const { cipherText, iv, tag } = this.tokenSerializer.deserialize(encryptedToken)
+    const descriptedToken = this.AESEncrypter.decrypt(iv, cipherText, tag);
+    return descriptedToken;
+  }
+
 }

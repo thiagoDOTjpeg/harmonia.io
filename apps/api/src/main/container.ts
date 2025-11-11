@@ -10,10 +10,14 @@ import { JwtTokenManager } from '../infrastructure/crypto/JwtTokenManager';
 import { SystemClock } from '../infrastructure/time/SystemClock';
 
 // Use cases Auth
+import { IAuthProvider } from '@/application/ports/auth/IAuthProvider';
 import { OAuthCallbackStrategy } from '@/application/ports/strategy/OAuthCallbackStrategy';
+import { GoogleAuthProvider } from '@/application/providers/GoogleAuthProvider';
+import { SpotifyAuthProvider } from '@/application/providers/SpotifyAuthProvider';
+import { SyncMusicService } from '@/application/services/SyncMusicService';
 import { StartGoogleConnect } from '@/application/use_cases/auth/StartGoogleConnect';
 import { StartSpotifyConnect } from '@/application/use_cases/auth/StartSpotifyConnect';
-import { SyncMusicService } from '@/domain/services/SyncMusicService';
+import { EnsureValidConnectionsUseCase } from '@/application/use_cases/sync_playlist/EnsureValidConnectionsUseCase';
 import { GoogleOAuthCallbackStrategy } from '@/infrastructure/adapter/oauth/GoogleOAuthCallbackStrategy';
 import { OAuthCallbackStrategyFactory } from '@/infrastructure/adapter/oauth/OAuthCallbackStrategyFactory';
 import { SpotifyOAuthCallbackStrategy } from '@/infrastructure/adapter/oauth/SpotifyOAuthCallbackStrategy';
@@ -78,6 +82,8 @@ export class Container {
     return new OAuthCallbackStrategyFactory(strategies);
   }
 
+  // ===== GETTERS - STRATEGIES =====
+
   static getGoogleStrategy() {
     return new GoogleOAuthCallbackStrategy(
       this.userRepository,
@@ -100,13 +106,16 @@ export class Container {
     );
   }
 
+
   // ===== GETTERS - SERVICES =====
 
   static getSyncMusicService() {
     return new SyncMusicService(
-      this.serviceConnectionRepository,
+      this.syncQueue,
       this.playlistRepository,
-      this.syncQueue
+      this.AESEncrypter,
+      this.tokenSerializer,
+      this.getEnsureValidConnectionsUseCase()
     );
   }
 
@@ -154,6 +163,20 @@ export class Container {
 
   static getStartGoogleConnect() {
     return new StartGoogleConnect(this.stateStore, this.googleClient);
+  }
+
+  static getEnsureValidConnectionsUseCase() {
+    const providers: Record<ServiceProvider, IAuthProvider> = {
+      [ServiceProvider.GOOGLE]: new GoogleAuthProvider(),
+      [ServiceProvider.SPOTIFY]: new SpotifyAuthProvider()
+    }
+    return new EnsureValidConnectionsUseCase(
+      this.serviceConnectionRepository,
+      this.AESEncrypter,
+      this.tokenSerializer,
+      this.clock,
+      providers
+    );
   }
 
   static getStartGoogleLogin() {

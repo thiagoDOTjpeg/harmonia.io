@@ -50,7 +50,7 @@ export function getOAuthCallbackHTML(data: OAuthCallbackData, returnTo?: string)
           setTimeout(() => {
             console.log('🚪 Fechando popup.');
             window.close();
-          }, 1000); // 500ms é um tempo seguro.
+          }, 10000); // 500ms é um tempo seguro.
 
         } else {
           console.error('❌ A janela principal (opener) não foi encontrada ou está fechada.');

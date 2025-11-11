@@ -1,5 +1,5 @@
 import { UserSummary } from '@/domain/entities/UserSummary';
-import { PrismaClient } from '@prisma/client';
+import { Prisma, PrismaClient } from '@prisma/client';
 import { IUserRepository } from '../../../../application/repositories/IUserRepository';
 import { User } from '../../../../domain/entities/User';
 import { UserMapper } from '../mapper/UserMapper';
@@ -38,7 +38,7 @@ export class PrismaUserRepository implements IUserRepository {
       data: {
         email: input.email.trim().toLowerCase(),
         name: input.name,
-        passwordHash: input?.passwordHash,
+        passwordHash: input.passwordHash ?? Prisma.skip,
       },
     });
     return UserMapper.toDomain(user);
