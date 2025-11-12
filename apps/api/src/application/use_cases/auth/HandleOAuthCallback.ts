@@ -18,6 +18,6 @@ export class HandleOAuthCallback {
 
     const strategy = this.strategyFactory.create(provider);
 
-    return await strategy.processCallback(stateData, stateData.userId)
+    return await strategy.processCallback(input.code, stateData, stateData.userId)
   }
 }

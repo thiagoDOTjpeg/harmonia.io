@@ -1,4 +1,4 @@
-import { BadRequestError, OAuthMethod, ServiceProvider } from '@harmonia/shared';
+import { AppError, BadRequestError, OAuthMethod, ServiceProvider } from '@harmonia/shared';
 import { NextFunction, Request, Response } from 'express';
 import { Container } from '../../../../main/container';
 import { LoginSchema, OAuthQuerySchema, RegisterSchema } from '../../schemas/auth';
@@ -65,10 +65,16 @@ export class AuthController {
       }, result.returnTo));
     } catch (error) {
       console.error('Google callback error:', error);
+      if (error instanceof AppError) {
+        return res.send(getOAuthCallbackHTML({
+          success: false,
+          error: error.message
+        }, 'http://127.0.0.1:3001'));
+      }
       return res.send(getOAuthCallbackHTML({
         success: false,
         error: 'Falha na autenticação. Tente novamente.'
-      }, 'http://localhost:3001'));
+      }, 'http://127.0.0.1:3001'));
     }
   }
 
@@ -77,7 +83,7 @@ export class AuthController {
       const user = await AuthMiddleware.getAuthenticatedUser(req, res);
       const { returnTo } = OAuthQuerySchema.parse(req.query)
       const useCase = Container.getStartOAuthUseCase();
-      const { redirectTo } = await useCase.execute(OAuthMethod.connect, Container.getGoogleClient(), returnTo, user.id);
+      const { redirectTo } = await useCase.execute(OAuthMethod.connect, Container.getSpotifyClient(), returnTo, user.id);
       res.redirect(redirectTo);
     } catch (error) {
       console.error('Spotify login error:', error);
@@ -89,7 +95,7 @@ export class AuthController {
     try {
       const { returnTo } = OAuthQuerySchema.parse(req.query)
       const useCase = Container.getStartOAuthUseCase();
-      const { redirectTo } = await useCase.execute(OAuthMethod.login, Container.getGoogleClient(), returnTo);
+      const { redirectTo } = await useCase.execute(OAuthMethod.login, Container.getSpotifyClient(), returnTo);
       res.redirect(redirectTo);
     } catch (error) {
       console.error('Spotify login error:', error);
@@ -101,7 +107,7 @@ export class AuthController {
     try {
       const { returnTo } = OAuthQuerySchema.parse(req.query)
       const useCase = Container.getStartOAuthUseCase();
-      const { redirectTo } = await useCase.execute(OAuthMethod.register, Container.getGoogleClient(), returnTo);
+      const { redirectTo } = await useCase.execute(OAuthMethod.register, Container.getSpotifyClient(), returnTo);
       res.redirect(redirectTo);
     } catch (error) {
       console.error('Spotify register error:', error);
@@ -131,10 +137,16 @@ export class AuthController {
       }, result.returnTo));
     } catch (error) {
       console.error('Spotify callback error:', error);
+      if (error instanceof AppError) {
+        return res.send(getOAuthCallbackHTML({
+          success: false,
+          error: error.message
+        }, 'http://127.0.0.1:3001'));
+      }
       return res.send(getOAuthCallbackHTML({
         success: false,
         error: 'Falha na autenticação. Tente novamente.'
-      }, 'http://localhost:3001'));
+      }, 'http://127.0.0.1:3001'));
     }
   }
 

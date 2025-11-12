@@ -8,7 +8,7 @@ export class StartOAuthUseCase {
   ) { }
   async execute(method: OAuthMethod, authProvider: IAuthUrlProvider, returnTo?: string, userId?: string) {
     const state = Math.random().toString(36).slice(2);
-    await this.stateStore.set(state, { code: state, method, returnTo, userId });
+    await this.stateStore.set(state, { method, returnTo, userId });
     const redirectTo = authProvider.buildAuthUrl(state);
     return { redirectTo }
   }

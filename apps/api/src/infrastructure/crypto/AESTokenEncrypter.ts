@@ -15,9 +15,9 @@ export class AESTokenEncrypter implements IEncryptor {
     const keyInBytes = Buffer.from(this.encryptionKey, "base64");
     const iv = randomBytes(IV_LENGTH);
     const cipher = createCipheriv(ALGORITHM, keyInBytes, iv);
-
     const data = cipher.update(token, 'utf-8', "base64");
-    const final = cipher.final()
+    const final = cipher.final("base64")
+
     return {
       cipherText: `${data}${final}`,
       iv: iv.toString("base64"),
@@ -26,12 +26,15 @@ export class AESTokenEncrypter implements IEncryptor {
   }
   public decrypt(ivB64: string, cipherText: string, tagB64: string): string {
     try {
-      const keyInBytes = Buffer.from(this.encryptionKey, "base64");
-      const decipher = createDecipheriv(ALGORITHM, keyInBytes, Buffer.from(ivB64, "base64"))
-      decipher.setAuthTag(Buffer.from(tagB64, "base64"))
+      const bufferKey = Buffer.from(this.encryptionKey, "base64");
+      const bufferIv = Buffer.from(ivB64, "base64")
+      const bufferTag = Buffer.from(tagB64, "base64")
 
-      let decrypted = decipher.update(cipherText, "base64", "utf8");
-      decrypted += decipher.final()
+      const decipher = createDecipheriv(ALGORITHM, bufferKey, bufferIv)
+      decipher.setAuthTag(bufferTag)
+
+      let decrypted = decipher.update(cipherText, "base64", "utf-8");
+      decrypted += decipher.final("utf-8")
 
       return decrypted;
     } catch (error) {

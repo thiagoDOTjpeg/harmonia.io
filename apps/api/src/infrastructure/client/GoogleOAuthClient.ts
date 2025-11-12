@@ -44,6 +44,8 @@ export class GoogleOAuthClient implements IAuthUrlProvider, ICodeExchanger<Googl
       body,
     });
     if (!tokenRes.ok) {
+      console.error(await tokenRes.text());
+
       throw new TokenExchangeError()
     }
     const tokens = (await tokenRes.json()) as GoogleTokenResponse;

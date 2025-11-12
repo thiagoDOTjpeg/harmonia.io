@@ -33,11 +33,12 @@ export class SpotifyOAuthCallbackStrategy implements IOAuthCallbackStrategy {
   ) {
   }
   async processCallback(
-    state: OAuthState,
+    code: string,
+    OAuthState: OAuthState,
     loggedUserId?: string
   ): Promise<AuthResponse> {
-    const exchangeData = await this.spotify.exchangeCode(state.code);
-    const { method, returnTo } = state;
+    const exchangeData = await this.spotify.exchangeCode(code);
+    const { method, returnTo } = OAuthState;
 
     const expiresAt = new Date(
       this.clock.now().getTime() + Math.max(exchangeData.tokens.expires_in - 60, 0) * 1000
