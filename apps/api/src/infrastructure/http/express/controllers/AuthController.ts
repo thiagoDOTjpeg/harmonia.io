@@ -1,4 +1,4 @@
-import { OAuthMethod } from '@harmonia/shared';
+import { BadRequestError, OAuthMethod, ServiceProvider } from '@harmonia/shared';
 import { Request, Response } from 'express';
 import { Container } from '../../../../main/container';
 import { LoginSchema, OAuthQuerySchema, RegisterSchema } from '../../schemas/auth';
@@ -15,7 +15,7 @@ export class AuthController {
       res.redirect(redirectTo);
     } catch (error) {
       console.error('Google login error:', error);
-      res.status(500).json({ error: 'internal_error' });
+      throw error
     }
   }
 
@@ -27,7 +27,7 @@ export class AuthController {
       res.redirect(redirectTo);
     } catch (error) {
       console.error('Google login error:', error);
-      res.status(500).json({ error: 'internal_error' });
+      throw error
     }
   }
 
@@ -39,7 +39,7 @@ export class AuthController {
       res.redirect(redirectTo);
     } catch (error) {
       console.error('Google register error:', error);
-      res.status(500).json({ error: 'internal_error' });
+      throw error
     }
   }
 
@@ -55,22 +55,8 @@ export class AuthController {
         }, undefined));
       }
 
-      const useCase = Container.getHandleGoogleCallback();
-      const result = await useCase.execute({ code, state });
-
-      if ('error' in result) {
-        const errorMessages: Record<string, string> = {
-          no_account: 'Conta não encontrada. Por favor, cadastre-se primeiro.',
-          email_in_use: 'Este email já está em uso com outro método de login.',
-          require_manual_link: 'É necessário vincular sua conta manualmente.',
-          email_ambiguous: 'Este email está associado a múltiplas contas.',
-          conflict: 'Conflito ao processar sua autenticação.',
-        };
-        return res.send(getOAuthCallbackHTML({
-          success: false,
-          error: errorMessages[result.error] || 'Erro na autenticação'
-        }, 'http://localhost:3001'));
-      }
+      const useCase = Container.getHandleOAuthCallback();
+      const result = await useCase.execute(ServiceProvider.GOOGLE, { code, state });
 
       return res.send(getOAuthCallbackHTML({
         success: true,
@@ -95,7 +81,7 @@ export class AuthController {
       res.redirect(redirectTo);
     } catch (error) {
       console.error('Spotify login error:', error);
-      res.status(500).json({ error: 'internal_error' });
+      throw error
     }
   }
 
@@ -107,7 +93,7 @@ export class AuthController {
       res.redirect(redirectTo);
     } catch (error) {
       console.error('Spotify login error:', error);
-      res.status(500).json({ error: 'internal_error' });
+      throw error
     }
   }
 
@@ -119,7 +105,7 @@ export class AuthController {
       res.redirect(redirectTo);
     } catch (error) {
       console.error('Spotify register error:', error);
-      res.status(500).json({ error: 'internal_error' });
+      throw error
     }
   }
 
@@ -135,24 +121,8 @@ export class AuthController {
         }, undefined));
       }
 
-      const useCase = Container.getHandleSpotifyCallback();
-      const result = await useCase.execute({ code, state });
-
-
-      if ('error' in result) {
-        const errorMessages: Record<string, string> = {
-          no_account: 'Conta não encontrada. Por favor, cadastre-se primeiro.',
-          email_in_use: 'Este email já está em uso com outro método de login.',
-          require_manual_link: 'É necessário vincular sua conta manualmente.',
-          email_ambiguous: 'Este email está associado a múltiplas contas.',
-          conflict: 'Conflito ao processar sua autenticação.',
-        };
-
-        return res.send(getOAuthCallbackHTML({
-          success: false,
-          error: errorMessages[result.error] || 'Erro na autenticação'
-        }, 'http://localhost:3001'));
-      }
+      const useCase = Container.getHandleOAuthCallback();
+      const result = await useCase.execute(ServiceProvider.SPOTIFY, { code, state });
 
       return res.send(getOAuthCallbackHTML({
         success: true,
@@ -173,7 +143,7 @@ export class AuthController {
       const bodyParsed = RegisterSchema.parse(req.body);
 
       if (!bodyParsed.email || !bodyParsed.password) {
-        return res.status(400).json({ error: 'missing_email_or_password' });
+        throw new BadRequestError("Todos os campos devem estar preenchidos")
       }
 
       const useCase = Container.getStartLocalRegister();
@@ -187,7 +157,7 @@ export class AuthController {
       return res.status(201).json(result);
     } catch (error) {
       console.error('Local register error:', error);
-      return res.status(500).json({ error: 'register_failed' });
+      throw error
     }
   }
 
@@ -196,7 +166,7 @@ export class AuthController {
       const bodyParsed = LoginSchema.parse(req.body);
 
       if (!bodyParsed.email || !bodyParsed.password) {
-        return res.status(400).json({ error: 'missing_email_or_password' });
+        throw new BadRequestError("Todos os campos devem estar preenchidos")
       }
 
       const useCase = Container.getStartLocalLogin();
@@ -210,7 +180,7 @@ export class AuthController {
       return res.json(result);
     } catch (error) {
       console.error('Local login error:', error);
-      return res.status(500).json({ error: 'login_failed' });
+      throw error;
     }
   }
 }

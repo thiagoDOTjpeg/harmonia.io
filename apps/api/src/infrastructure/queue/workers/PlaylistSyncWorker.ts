@@ -42,19 +42,19 @@ export class PlaylistSyncWorker {
       const playlistRepository = Container.getPlaylistRepository();
       const trackRepository = Container.getTrackRepository();
       const playlistTrackRepository = Container.getPlaylistTrackRepository();
-      const googleClient = Container.getGoogleClient();
+      const googleMusicClient = Container.getGoogleMusicClient();
 
       const spotifyClient = new SpotifyMusicClient(
         data.spotifyAccessToken,
         data.spotifyUserId
       );
 
-      const youtubePlaylistInfo = await googleClient.getPlaylistInfo(
+      const youtubePlaylistInfo = await googleMusicClient.getPlaylistInfo(
         data.youtubePlaylistId,
         data.googleAccessToken
       );
 
-      const youtubeVideos = await googleClient.getPlaylistItems(
+      const youtubeVideos = await googleMusicClient.getPlaylistItems(
         data.youtubePlaylistId,
         data.googleAccessToken
       );

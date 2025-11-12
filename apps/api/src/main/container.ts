@@ -15,12 +15,14 @@ import { IOAuthCallbackStrategy } from '@/application/ports/strategy/IOAuthCallb
 import { GoogleAuthProvider } from '@/application/providers/GoogleAuthProvider';
 import { SpotifyAuthProvider } from '@/application/providers/SpotifyAuthProvider';
 import { SyncMusicService } from '@/application/services/SyncMusicService';
+import { HandleOAuthCallback } from '@/application/use_cases/auth/HandleOAuthCallback';
 import { StartOAuthUseCase } from '@/application/use_cases/auth/StartOAuthUseCase';
 import { EnsureValidConnectionsUseCase } from '@/application/use_cases/sync_playlist/EnsureValidConnectionsUseCase';
 import { GoogleOAuthCallbackStrategy } from '@/infrastructure/adapter/oauth/GoogleOAuthCallbackStrategy';
 import { OAuthCallbackStrategyFactory } from '@/infrastructure/adapter/oauth/OAuthCallbackStrategyFactory';
 import { SpotifyOAuthCallbackStrategy } from '@/infrastructure/adapter/oauth/SpotifyOAuthCallbackStrategy';
 import { AESSerializer } from '@/infrastructure/adapter/serializer/AESSerializer';
+import { GoogleMusicClient } from '@/infrastructure/client/GoogleMusicClient';
 import { AESTokenEncrypter } from '@/infrastructure/crypto/AESTokenEncrypter';
 import { prisma } from '@/infrastructure/db/prisma/client';
 import { PrismaServiceConnectionRepository } from '@/infrastructure/db/prisma/repositories/PrismaServiceConnectionRepository';
@@ -38,6 +40,7 @@ export class Container {
   // Infra
   private static googleClient = new GoogleOAuthClient();
   private static spotifyClient = new SpotifyOAuthClient();
+  private static googleMusicClient = new GoogleMusicClient();
   private static stateStore = new RedisStateStore();
   private static syncQueue = new PlaylistSyncQueue();
 
@@ -63,6 +66,10 @@ export class Container {
 
   static getSpotifyClient() {
     return this.spotifyClient;
+  }
+
+  static getGoogleMusicClient() {
+    return this.googleMusicClient;
   }
 
   // ===== GETTERS - FACTORIES =====
@@ -172,6 +179,10 @@ export class Container {
 
   static getStartOAuthUseCase() {
     return new StartOAuthUseCase(this.stateStore);
+  }
+
+  static getHandleOAuthCallback() {
+    return new HandleOAuthCallback(this.stateStore, this.getStrategyFactory())
   }
 
   static getStartLocalLogin() {

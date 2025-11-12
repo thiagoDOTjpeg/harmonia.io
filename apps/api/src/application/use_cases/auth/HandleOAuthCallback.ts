@@ -1,6 +1,6 @@
 import { IOAuthStateStore } from "@/application/ports/oauth/IOAuthStateStore";
 import { OAuthCallbackStrategyFactory } from "@/infrastructure/adapter/oauth/OAuthCallbackStrategyFactory";
-import { OAuthCallbackData, OAuthMethod, ServiceProvider } from "@harmonia/shared";
+import { NotFoundError, OAuthCallbackData, OAuthMethod, ServiceProvider } from "@harmonia/shared";
 
 export class HandleOAuthCallback {
   constructor(
@@ -10,9 +10,9 @@ export class HandleOAuthCallback {
 
   async execute(provider: ServiceProvider, input: OAuthCallbackData) {
     const stateData = await this.stateStore.get(input.state);
-    if (!stateData) return { success: false, error: "invalid_state_or_code" }
+    if (!stateData) throw new NotFoundError("State não encontrado")
     if (stateData.method === OAuthMethod.connect && !stateData.userId) {
-      return { success: false, error: "no_account", message: "Nenhum usuário conectado" }
+      throw new NotFoundError("Nenhum usuário conectado")
     }
     this.stateStore.delete(input.state);
 

@@ -1,6 +1,6 @@
 import { IAuthUrlProvider } from '@/application/ports/oauth/IAuthUrlProvider';
 import { ICodeExchanger } from '@/application/ports/oauth/ICodeExchanger';
-import { GoogleOAuthResult, GoogleTokenResponse, GoogleUserInfo, YouTubePlaylistInfo, YouTubePlaylistItemsResponse, YouTubePlaylistResponse, YouTubeVideo } from '@harmonia/shared';
+import { GoogleOAuthResult, GoogleTokenResponse, GoogleUserInfo, TokenExchangeError } from '@harmonia/shared';
 
 export class GoogleOAuthClient implements IAuthUrlProvider, ICodeExchanger<GoogleOAuthResult> {
   constructor(
@@ -44,7 +44,7 @@ export class GoogleOAuthClient implements IAuthUrlProvider, ICodeExchanger<Googl
       body,
     });
     if (!tokenRes.ok) {
-      throw Object.assign(new Error('token_exchange_failed'), { code: 'token_exchange_failed', details: await tokenRes.text() });
+      throw new TokenExchangeError()
     }
     const tokens = (await tokenRes.json()) as GoogleTokenResponse;
 
@@ -66,85 +66,5 @@ export class GoogleOAuthClient implements IAuthUrlProvider, ICodeExchanger<Googl
     }
 
     return { tokens, profile, youtubeChannelId };
-  }
-
-  async getPlaylistInfo(playlistId: string, accessToken: string): Promise<YouTubePlaylistInfo> {
-    const params = new URLSearchParams({
-      part: 'snippet,contentDetails',
-      id: playlistId,
-    })
-    const response = await fetch(
-      `https://www.googleapis.com/youtube/v3/playlists?${params.toString()}`,
-      {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      }
-    );
-
-    if (!response.ok) {
-      throw new Error(`Failed to get playlist info: ${await response.text()}`);
-    }
-
-    const data = await response.json() as YouTubePlaylistResponse;
-    const playlist = data.items?.[0];
-
-    if (!playlist) {
-      throw new Error('Playlist not found');
-    }
-
-    return {
-      id: playlist.id,
-      title: playlist.snippet.title,
-      channelTile: playlist.snippet.channelTitle,
-      description: playlist.snippet.description || '',
-      itemCount: playlist.contentDetails.itemCount,
-    };
-  }
-
-  async getPlaylistItems(playlistId: string, accessToken: string): Promise<YouTubeVideo[]> {
-    const videos: YouTubeVideo[] = [];
-    let pageToken: string | undefined;
-
-    do {
-      const params = new URLSearchParams({
-        part: 'snippet',
-        playlistId: playlistId,
-        maxResults: '50',
-      });
-
-      if (pageToken) {
-        params.append('pageToken', pageToken);
-      }
-
-      const response = await fetch(
-        `https://www.googleapis.com/youtube/v3/playlistItems?${params}`,
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error(`Failed to get playlist items: ${await response.text()}`);
-      }
-
-      const data = await response.json() as YouTubePlaylistItemsResponse;
-
-      for (const item of data.items || []) {
-        videos.push({
-          videoId: item.snippet.resourceId.videoId,
-          title: item.snippet.title,
-          channelTitle: item.snippet.channelTitle || 'Unknown',
-          videoOwnerChannelTitle: item.snippet.videoOwnerChannelTitle
-
-        });
-      }
-
-      pageToken = data.nextPageToken;
-    } while (pageToken);
-
-    return videos;
   }
 }

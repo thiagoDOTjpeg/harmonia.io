@@ -2,6 +2,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import express from 'express';
 
+import { ErrorHandlerMiddleware } from '@/infrastructure/http/express/middlewares/ErrorHandlerMiddleware';
 import authRoutes from '../infrastructure/http/express/routes/auth.routes';
 import bullBoardRoutes from '../infrastructure/http/express/routes/bull-board.routes';
 import playlistRoutes from '../infrastructure/http/express/routes/playlist.routes';
@@ -38,6 +39,8 @@ app.get('/', (_req, res) => {
 });
 
 startWorkers();
+
+app.use(ErrorHandlerMiddleware.globalErrorHandler)
 
 app.listen(PORT, () => {
   console.log('');

@@ -9,7 +9,7 @@ import { IUserRepository } from "@/application/repositories/IUserRepository";
 import { ServiceConnection } from "@/domain/entities/ServiceConnection";
 import { User } from "@/domain/entities/User";
 import { TokenEncrypted } from "@/infrastructure/http/types/encrypter";
-import { AuthResponse, GoogleOAuthResult, OAuthMethod, OAuthState, ServiceProvider } from "@harmonia/shared";
+import { AuthResponse, GoogleOAuthResult, InvalidCredentialsError, NotFoundError, OAuthMethod, OAuthState, ServiceProvider, UnathorizedError } from "@harmonia/shared";
 import { Prisma, ServiceProvider as PrismaServiceProvider } from "@prisma/client";
 
 const SCOPES = [
@@ -27,7 +27,7 @@ export class GoogleOAuthCallbackStrategy implements IOAuthCallbackStrategy {
     private readonly clock: IClock,
     private readonly aesEncrypter: IEncryptor,
     private readonly tokenSerializer: ITokenSerializer<TokenEncrypted>,
-    private readonly spotify: ICodeExchanger<GoogleOAuthResult>,
+    private readonly google: ICodeExchanger<GoogleOAuthResult>,
 
   ) { }
 
@@ -35,14 +35,14 @@ export class GoogleOAuthCallbackStrategy implements IOAuthCallbackStrategy {
     state: OAuthState,
     loggedUserId?: string
   ): Promise<AuthResponse> {
-    const exchangeData = await this.spotify.exchangeCode(state.code);;
+    const exchangeData = await this.google.exchangeCode(state.code);;
     const { method, returnTo } = state;
 
     const expiresAt = new Date(
       this.clock.now().getTime() + Math.max(exchangeData.tokens.expires_in - 60, 0) * 1000
     );
     if (!exchangeData.profile.email || !exchangeData.profile.name) {
-      return { success: false, error: "invalid_credentials", message: "Não foi possível obter/verificar o email/nome." }
+      throw new InvalidCredentialsError("Não foi possível obter/verificar o email/nome.")
     }
     const normalizedEmail = exchangeData.profile.email?.trim().toLowerCase();
 
@@ -69,7 +69,7 @@ export class GoogleOAuthCallbackStrategy implements IOAuthCallbackStrategy {
 
     const existingUser = await this.users.findByEmail(email);
     if (existingUser) {
-      return { success: false, error: 'email_in_use', message: 'Já existe um usuário cadastrado com esses dados. Faça login e conecte o serviço' };
+      throw new InvalidCredentialsError("Já existe um usuário cadastrado com esses dados. Faça login e conecte o serviço")
     }
     const user = await this.users.createFromLocal({
       email: email,
@@ -97,14 +97,14 @@ export class GoogleOAuthCallbackStrategy implements IOAuthCallbackStrategy {
   ): Promise<AuthResponse> {
     const user = await this.users.findByEmail(email);
     if (!user) {
-      return { success: false, error: 'no_account', message: "Nenhum usuário encontrado, faça o registro" };
+      throw new NotFoundError("Nenhum usuário encontrado, faça o registro")
     }
 
     let serviceConnection: ServiceConnection;
     const existingServiceConnection = await this.serviceConnection.findByServiceId(exchangeData.profile.sub)
     if (existingServiceConnection) {
       if (existingServiceConnection.userId !== user.id) {
-        return { success: false, error: 'conflict', message: "Esta conta Google já está conectada a outro usuário." };
+        throw new InvalidCredentialsError("Esta conta Google já está vinculada.")
       }
       serviceConnection = await this.updateServiceConnection(user, exchangeData, expiresAt);
     } else {
@@ -131,11 +131,11 @@ export class GoogleOAuthCallbackStrategy implements IOAuthCallbackStrategy {
     loggedUserId?: string
   ): Promise<AuthResponse> {
     if (!loggedUserId) {
-      return { success: false, error: 'unauthorized', message: "Usuário não identificado para conexão." };
+      throw new UnathorizedError("Usuário não identificado para conexão.")
     }
     const user = await this.users.findByUserId(loggedUserId);
     if (!user) {
-      return { success: false, error: 'no_account', message: "Nenhum usuário encontrado, conta do serviço diferente da cadastrada" };
+      throw new NotFoundError("Nenhum usuário encontrado, conta do serviço diferente da cadastrada");
     }
 
     let serviceConnection: ServiceConnection;
@@ -143,7 +143,7 @@ export class GoogleOAuthCallbackStrategy implements IOAuthCallbackStrategy {
 
     if (existingServiceConnection) {
       if (existingServiceConnection.userId !== user.id) {
-        return { success: false, error: 'conflict', message: "Esta conta Google já está conectada a outro usuário." };
+        throw new InvalidCredentialsError("Esta conta Google já está vinculada.")
       }
       serviceConnection = await this.updateServiceConnection(user, exchangeData, expiresAt);
     } else {
