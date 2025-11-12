@@ -1,7 +1,8 @@
-import { GoogleExchangeResult, GoogleTokenResponse, GoogleUserInfo, YouTubePlaylistInfo, YouTubePlaylistItemsResponse, YouTubePlaylistResponse, YouTubeVideo } from '@harmonia/shared';
-import { IGoogleOAuthClient } from '../../application/ports/oauth/IGoogleOAuthClient';
+import { IAuthUrlProvider } from '@/application/ports/oauth/IAuthUrlProvider';
+import { ICodeExchanger } from '@/application/ports/oauth/ICodeExchanger';
+import { GoogleOAuthResult, GoogleTokenResponse, GoogleUserInfo, YouTubePlaylistInfo, YouTubePlaylistItemsResponse, YouTubePlaylistResponse, YouTubeVideo } from '@harmonia/shared';
 
-export class GoogleOAuthClient implements IGoogleOAuthClient {
+export class GoogleOAuthClient implements IAuthUrlProvider, ICodeExchanger<GoogleOAuthResult> {
   constructor(
     private readonly clientId = process.env.GOOGLE_CLIENT_ID!,
     private readonly clientSecret = process.env.GOOGLE_CLIENT_SECRET!,
@@ -28,7 +29,7 @@ export class GoogleOAuthClient implements IGoogleOAuthClient {
     return `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`;
   }
 
-  async exchangeCode(code: string): Promise<GoogleExchangeResult> {
+  async exchangeCode(code: string): Promise<GoogleOAuthResult> {
     const body = new URLSearchParams({
       grant_type: 'authorization_code',
       code,

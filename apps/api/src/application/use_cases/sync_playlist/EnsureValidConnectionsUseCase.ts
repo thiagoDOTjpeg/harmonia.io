@@ -30,7 +30,6 @@ export class EnsureValidConnectionsUseCase {
           throw new Error("Serviço de conexão não identificado")
         }
         if (authProvider.isExpired(service)) {
-          console.log("cheguei aqui");
           const serializedRefreshToken = this.tokenSerializer.deserialize(service?.refreshToken);
           const refreshTokenDecrypted = this.AESEncrypter.decrypt(serializedRefreshToken.iv, serializedRefreshToken.cipherText, serializedRefreshToken.tag);
 

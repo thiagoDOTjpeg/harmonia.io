@@ -11,12 +11,11 @@ import { SystemClock } from '../infrastructure/time/SystemClock';
 
 // Use cases Auth
 import { IAuthProvider } from '@/application/ports/auth/IAuthProvider';
-import { OAuthCallbackStrategy } from '@/application/ports/strategy/OAuthCallbackStrategy';
+import { IOAuthCallbackStrategy } from '@/application/ports/strategy/IOAuthCallbackStrategy';
 import { GoogleAuthProvider } from '@/application/providers/GoogleAuthProvider';
 import { SpotifyAuthProvider } from '@/application/providers/SpotifyAuthProvider';
 import { SyncMusicService } from '@/application/services/SyncMusicService';
-import { StartGoogleConnect } from '@/application/use_cases/auth/StartGoogleConnect';
-import { StartSpotifyConnect } from '@/application/use_cases/auth/StartSpotifyConnect';
+import { StartOAuthUseCase } from '@/application/use_cases/auth/StartOAuthUseCase';
 import { EnsureValidConnectionsUseCase } from '@/application/use_cases/sync_playlist/EnsureValidConnectionsUseCase';
 import { GoogleOAuthCallbackStrategy } from '@/infrastructure/adapter/oauth/GoogleOAuthCallbackStrategy';
 import { OAuthCallbackStrategyFactory } from '@/infrastructure/adapter/oauth/OAuthCallbackStrategyFactory';
@@ -27,14 +26,8 @@ import { prisma } from '@/infrastructure/db/prisma/client';
 import { PrismaServiceConnectionRepository } from '@/infrastructure/db/prisma/repositories/PrismaServiceConnectionRepository';
 import { PlaylistSyncQueue } from '@/infrastructure/queue/PlaylistSyncQueue';
 import { ServiceProvider } from '@prisma/client';
-import { HandleGoogleCallback } from '../application/use_cases/auth/HandleGoogleCallback';
-import { HandleSpotifyCallback } from '../application/use_cases/auth/HandleSpotifyCallback';
-import { StartGoogleLogin } from '../application/use_cases/auth/StartGoogleLogin';
-import { StartGoogleRegister } from '../application/use_cases/auth/StartGoogleRegister';
 import { StartLocalLogin } from '../application/use_cases/auth/StartLocalLogin';
 import { StartLocalRegister } from '../application/use_cases/auth/StartLocalRegister';
-import { StartSpotifyLogin } from '../application/use_cases/auth/StartSpotifyLogin';
-import { StartSpotifyRegister } from '../application/use_cases/auth/StartSpotifyRegister';
 import { SpotifyOAuthClient } from '../infrastructure/client/SpotifyOAuthClient';
 import { RedisStateStore } from '../infrastructure/state/RedisStateStore';
 
@@ -75,7 +68,7 @@ export class Container {
   // ===== GETTERS - FACTORIES =====
 
   static getStrategyFactory() {
-    const strategies: Record<ServiceProvider, OAuthCallbackStrategy> = {
+    const strategies: Record<ServiceProvider, IOAuthCallbackStrategy> = {
       [ServiceProvider.GOOGLE]: this.getGoogleStrategy(),
       [ServiceProvider.SPOTIFY]: this.getSpotifyStrategy(),
     }
@@ -91,7 +84,8 @@ export class Container {
       this.tokenManager,
       this.clock,
       this.AESEncrypter,
-      this.tokenSerializer
+      this.tokenSerializer,
+      this.googleClient
     );
   }
 
@@ -102,7 +96,8 @@ export class Container {
       this.tokenManager,
       this.clock,
       this.AESEncrypter,
-      this.tokenSerializer
+      this.tokenSerializer,
+      this.spotifyClient
     );
   }
 
@@ -161,10 +156,6 @@ export class Container {
 
   // ===== GETTERS - USE CASES AUTH =====
 
-  static getStartGoogleConnect() {
-    return new StartGoogleConnect(this.stateStore, this.googleClient);
-  }
-
   static getEnsureValidConnectionsUseCase() {
     const providers: Record<ServiceProvider, IAuthProvider> = {
       [ServiceProvider.GOOGLE]: new GoogleAuthProvider(),
@@ -179,40 +170,8 @@ export class Container {
     );
   }
 
-  static getStartGoogleLogin() {
-    return new StartGoogleLogin(this.stateStore, this.googleClient);
-  }
-
-  static getStartGoogleRegister() {
-    return new StartGoogleRegister(this.stateStore, this.googleClient);
-  }
-
-  // TODO: Tech Debt - Remover acoplamento estático do Container (Service Locator pattern)
-  static getHandleGoogleCallback() {
-    return new HandleGoogleCallback(
-      this.stateStore,
-      this.googleClient,
-    );
-  }
-
-  static getStartSpotifyConnect() {
-    return new StartSpotifyConnect(this.stateStore, this.spotifyClient);
-  }
-
-  static getStartSpotifyLogin() {
-    return new StartSpotifyLogin(this.stateStore, this.spotifyClient);
-  }
-
-  static getStartSpotifyRegister() {
-    return new StartSpotifyRegister(this.stateStore, this.spotifyClient);
-  }
-
-  // TODO: Tech Debt - Remover acoplamento estático do Container (Service Locator pattern)
-  static getHandleSpotifyCallback() {
-    return new HandleSpotifyCallback(
-      this.stateStore,
-      this.spotifyClient,
-    );
+  static getStartOAuthUseCase() {
+    return new StartOAuthUseCase(this.stateStore);
   }
 
   static getStartLocalLogin() {

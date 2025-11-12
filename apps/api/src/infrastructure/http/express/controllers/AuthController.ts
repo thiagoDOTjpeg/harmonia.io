@@ -1,14 +1,17 @@
+import { OAuthMethod } from '@harmonia/shared';
 import { Request, Response } from 'express';
 import { Container } from '../../../../main/container';
 import { LoginSchema, OAuthQuerySchema, RegisterSchema } from '../../schemas/auth';
+import { AuthMiddleware } from '../middlewares/AuthMiddleware';
 import { getOAuthCallbackHTML } from '../views/oauth-callback';
 
 export class AuthController {
   static async googleConnect(req: Request, res: Response) {
     try {
-      const { returnTo } = OAuthQuerySchema.parse(req.query)
-      const useCase = Container.getStartGoogleConnect();
-      const { redirectTo } = await useCase.execute(returnTo);
+      const user = await AuthMiddleware.getAuthenticatedUser(req, res);
+      const { returnTo } = OAuthQuerySchema.parse(req.query);
+      const useCase = Container.getStartOAuthUseCase();
+      const { redirectTo } = await useCase.execute(OAuthMethod.connect, Container.getGoogleClient(), returnTo, user.id);
       res.redirect(redirectTo);
     } catch (error) {
       console.error('Google login error:', error);
@@ -19,8 +22,8 @@ export class AuthController {
   static async googleLogin(req: Request, res: Response) {
     try {
       const { returnTo } = OAuthQuerySchema.parse(req.query)
-      const useCase = Container.getStartGoogleLogin();
-      const { redirectTo } = await useCase.execute(returnTo);
+      const useCase = Container.getStartOAuthUseCase();
+      const { redirectTo } = await useCase.execute(OAuthMethod.login, Container.getGoogleClient(), returnTo);
       res.redirect(redirectTo);
     } catch (error) {
       console.error('Google login error:', error);
@@ -31,8 +34,8 @@ export class AuthController {
   static async googleRegister(req: Request, res: Response) {
     try {
       const { returnTo } = OAuthQuerySchema.parse(req.query)
-      const useCase = Container.getStartGoogleRegister();
-      const { redirectTo } = await useCase.execute(returnTo);
+      const useCase = Container.getStartOAuthUseCase();
+      const { redirectTo } = await useCase.execute(OAuthMethod.register, Container.getGoogleClient(), returnTo);
       res.redirect(redirectTo);
     } catch (error) {
       console.error('Google register error:', error);
@@ -85,9 +88,10 @@ export class AuthController {
 
   static async spotifyConnect(req: Request, res: Response) {
     try {
+      const user = await AuthMiddleware.getAuthenticatedUser(req, res);
       const { returnTo } = OAuthQuerySchema.parse(req.query)
-      const useCase = Container.getStartSpotifyConnect();
-      const { redirectTo } = await useCase.execute(returnTo);
+      const useCase = Container.getStartOAuthUseCase();
+      const { redirectTo } = await useCase.execute(OAuthMethod.connect, Container.getGoogleClient(), returnTo, user.id);
       res.redirect(redirectTo);
     } catch (error) {
       console.error('Spotify login error:', error);
@@ -98,8 +102,8 @@ export class AuthController {
   static async spotifyLogin(req: Request, res: Response) {
     try {
       const { returnTo } = OAuthQuerySchema.parse(req.query)
-      const useCase = Container.getStartSpotifyLogin();
-      const { redirectTo } = await useCase.execute(returnTo);
+      const useCase = Container.getStartOAuthUseCase();
+      const { redirectTo } = await useCase.execute(OAuthMethod.login, Container.getGoogleClient(), returnTo);
       res.redirect(redirectTo);
     } catch (error) {
       console.error('Spotify login error:', error);
@@ -110,8 +114,8 @@ export class AuthController {
   static async spotifyRegister(req: Request, res: Response) {
     try {
       const { returnTo } = OAuthQuerySchema.parse(req.query)
-      const useCase = Container.getStartSpotifyRegister();
-      const { redirectTo } = await useCase.execute(returnTo);
+      const useCase = Container.getStartOAuthUseCase();
+      const { redirectTo } = await useCase.execute(OAuthMethod.register, Container.getGoogleClient(), returnTo);
       res.redirect(redirectTo);
     } catch (error) {
       console.error('Spotify register error:', error);

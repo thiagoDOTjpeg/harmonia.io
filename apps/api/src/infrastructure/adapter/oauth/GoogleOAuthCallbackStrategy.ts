@@ -1,8 +1,9 @@
 import { IClock } from "@/application/ports/clock/IClock";
 import { IEncryptor } from "@/application/ports/crypto/IEncryptor";
 import { ITokenManager } from "@/application/ports/crypto/ITokenManager";
+import { ICodeExchanger } from "@/application/ports/oauth/ICodeExchanger";
 import { ITokenSerializer } from "@/application/ports/serializer/ITokenSerializer";
-import { OAuthCallbackStrategy } from "@/application/ports/strategy/OAuthCallbackStrategy";
+import { IOAuthCallbackStrategy } from "@/application/ports/strategy/IOAuthCallbackStrategy";
 import { IServiceConnectionRepository } from "@/application/repositories/IServiceConnectionRepository";
 import { IUserRepository } from "@/application/repositories/IUserRepository";
 import { ServiceConnection } from "@/domain/entities/ServiceConnection";
@@ -18,31 +19,32 @@ const SCOPES = [
   'https://www.googleapis.com/auth/youtube.readonly',
 ].join(' ');
 
-export class GoogleOAuthCallbackStrategy implements OAuthCallbackStrategy<GoogleOAuthResult> {
+export class GoogleOAuthCallbackStrategy implements IOAuthCallbackStrategy {
   constructor(
     private readonly users: IUserRepository,
     private readonly serviceConnection: IServiceConnectionRepository,
     private readonly tokens: ITokenManager,
     private readonly clock: IClock,
     private readonly aesEncrypter: IEncryptor,
-    private readonly tokenSerializer: ITokenSerializer<TokenEncrypted>
+    private readonly tokenSerializer: ITokenSerializer<TokenEncrypted>,
+    private readonly spotify: ICodeExchanger<GoogleOAuthResult>,
+
   ) { }
 
   async processCallback(
-    exchangeData: GoogleOAuthResult,
     state: OAuthState,
     loggedUserId?: string
   ): Promise<AuthResponse> {
-    const { tokens, profile } = exchangeData;
+    const exchangeData = await this.spotify.exchangeCode(state.code);;
     const { method, returnTo } = state;
 
     const expiresAt = new Date(
-      this.clock.now().getTime() + Math.max(tokens.expires_in - 60, 0) * 1000
+      this.clock.now().getTime() + Math.max(exchangeData.tokens.expires_in - 60, 0) * 1000
     );
-    if (!profile.email || !profile.name) {
+    if (!exchangeData.profile.email || !exchangeData.profile.name) {
       return { success: false, error: "invalid_credentials", message: "Não foi possível obter/verificar o email/nome." }
     }
-    const normalizedEmail = profile.email?.trim().toLowerCase();
+    const normalizedEmail = exchangeData.profile.email?.trim().toLowerCase();
 
 
     switch (method) {

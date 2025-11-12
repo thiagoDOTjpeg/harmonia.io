@@ -1,11 +1,11 @@
-import { OAuthCallbackStrategy } from "@/application/ports/strategy/OAuthCallbackStrategy";
+import { IOAuthCallbackStrategy } from "@/application/ports/strategy/IOAuthCallbackStrategy";
 import { ServiceProvider } from "@harmonia/shared";
 
 export class OAuthCallbackStrategyFactory {
-  constructor(private strategies: Record<ServiceProvider, OAuthCallbackStrategy>) {
+  constructor(private strategies: Record<ServiceProvider, IOAuthCallbackStrategy>) {
   }
 
-  getStrategy(serviceProvider: ServiceProvider): OAuthCallbackStrategy {
+  create(serviceProvider: ServiceProvider): IOAuthCallbackStrategy {
     return this.strategies[serviceProvider]
   }
 }
