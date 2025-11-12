@@ -1,12 +1,12 @@
 import { BadRequestError, OAuthMethod, ServiceProvider } from '@harmonia/shared';
-import { Request, Response } from 'express';
+import { NextFunction, Request, Response } from 'express';
 import { Container } from '../../../../main/container';
 import { LoginSchema, OAuthQuerySchema, RegisterSchema } from '../../schemas/auth';
 import { AuthMiddleware } from '../middlewares/AuthMiddleware';
 import { getOAuthCallbackHTML } from '../views/oauth-callback';
 
 export class AuthController {
-  static async googleConnect(req: Request, res: Response) {
+  static async googleConnect(req: Request, res: Response, next: NextFunction) {
     try {
       const user = await AuthMiddleware.getAuthenticatedUser(req, res);
       const { returnTo } = OAuthQuerySchema.parse(req.query);
@@ -15,11 +15,11 @@ export class AuthController {
       res.redirect(redirectTo);
     } catch (error) {
       console.error('Google login error:', error);
-      throw error
+      next(error)
     }
   }
 
-  static async googleLogin(req: Request, res: Response) {
+  static async googleLogin(req: Request, res: Response, next: NextFunction) {
     try {
       const { returnTo } = OAuthQuerySchema.parse(req.query)
       const useCase = Container.getStartOAuthUseCase();
@@ -27,11 +27,11 @@ export class AuthController {
       res.redirect(redirectTo);
     } catch (error) {
       console.error('Google login error:', error);
-      throw error
+      next(error)
     }
   }
 
-  static async googleRegister(req: Request, res: Response) {
+  static async googleRegister(req: Request, res: Response, next: NextFunction) {
     try {
       const { returnTo } = OAuthQuerySchema.parse(req.query)
       const useCase = Container.getStartOAuthUseCase();
@@ -39,11 +39,11 @@ export class AuthController {
       res.redirect(redirectTo);
     } catch (error) {
       console.error('Google register error:', error);
-      throw error
+      next(error)
     }
   }
 
-  static async googleCallback(req: Request, res: Response) {
+  static async googleCallback(req: Request, res: Response, next: NextFunction) {
     try {
       const code = String(req.query.code || '');
       const state = String(req.query.state || '');
@@ -72,7 +72,7 @@ export class AuthController {
     }
   }
 
-  static async spotifyConnect(req: Request, res: Response) {
+  static async spotifyConnect(req: Request, res: Response, next: NextFunction) {
     try {
       const user = await AuthMiddleware.getAuthenticatedUser(req, res);
       const { returnTo } = OAuthQuerySchema.parse(req.query)
@@ -81,11 +81,11 @@ export class AuthController {
       res.redirect(redirectTo);
     } catch (error) {
       console.error('Spotify login error:', error);
-      throw error
+      next(error)
     }
   }
 
-  static async spotifyLogin(req: Request, res: Response) {
+  static async spotifyLogin(req: Request, res: Response, next: NextFunction) {
     try {
       const { returnTo } = OAuthQuerySchema.parse(req.query)
       const useCase = Container.getStartOAuthUseCase();
@@ -93,11 +93,11 @@ export class AuthController {
       res.redirect(redirectTo);
     } catch (error) {
       console.error('Spotify login error:', error);
-      throw error
+      next(error)
     }
   }
 
-  static async spotifyRegister(req: Request, res: Response) {
+  static async spotifyRegister(req: Request, res: Response, next: NextFunction) {
     try {
       const { returnTo } = OAuthQuerySchema.parse(req.query)
       const useCase = Container.getStartOAuthUseCase();
@@ -105,11 +105,11 @@ export class AuthController {
       res.redirect(redirectTo);
     } catch (error) {
       console.error('Spotify register error:', error);
-      throw error
+      next(error)
     }
   }
 
-  static async spotifyCallback(req: Request, res: Response) {
+  static async spotifyCallback(req: Request, res: Response, next: NextFunction) {
     try {
       const code = String(req.query.code || '');
       const state = String(req.query.state || '');
@@ -138,7 +138,7 @@ export class AuthController {
     }
   }
 
-  static async localRegister(req: Request, res: Response) {
+  static async localRegister(req: Request, res: Response, next: NextFunction) {
     try {
       const bodyParsed = RegisterSchema.parse(req.body);
 
@@ -157,11 +157,11 @@ export class AuthController {
       return res.status(201).json(result);
     } catch (error) {
       console.error('Local register error:', error);
-      throw error
+      next(error)
     }
   }
 
-  static async localLogin(req: Request, res: Response) {
+  static async localLogin(req: Request, res: Response, next: NextFunction) {
     try {
       const bodyParsed = LoginSchema.parse(req.body);
 
@@ -180,7 +180,7 @@ export class AuthController {
       return res.json(result);
     } catch (error) {
       console.error('Local login error:', error);
-      throw error;
+      next(error);
     }
   }
 }

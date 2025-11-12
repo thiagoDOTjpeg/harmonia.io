@@ -27,10 +27,7 @@ export class PlaylistController {
       });
     } catch (error) {
       console.error('Get playlists error:', error);
-      return res.status(500).json({
-        error: 'fetch_failed',
-        message: 'Erro ao buscar playlists',
-      });
+      throw error
     }
   }
 }

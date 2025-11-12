@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+import { NextFunction, Request, Response } from 'express';
 import { User } from '../../../../domain/entities/User';
 import { Container } from '../../../../main/container';
 import { PlaylistSyncQueue } from '../../../queue/PlaylistSyncQueue';
@@ -8,7 +8,7 @@ import { AuthMiddleware } from '../middlewares/AuthMiddleware';
 const syncQueue = new PlaylistSyncQueue();
 
 export class SyncController {
-  static async syncPlaylist(req: Request, res: Response) {
+  static async syncPlaylist(req: Request, res: Response, next: NextFunction) {
     try {
       const bodyParsed = createSyncPlaylistSchema.parse(req.body);
       const user = await AuthMiddleware.getAuthenticatedUser(req, res) as User;
@@ -19,15 +19,11 @@ export class SyncController {
       return res.json(result);
     } catch (error) {
       console.error('Sync playlist error:', error);
-      return res.status(500).json({
-        error: 'sync_failed',
-        message: 'Erro ao iniciar sincronização',
-        details: error instanceof Error ? error.message : 'Erro desconhecido',
-      });
+      next(error)
     }
   }
 
-  static async getSyncStatus(req: Request, res: Response) {
+  static async getSyncStatus(req: Request, res: Response, next: NextFunction) {
     try {
       const queryParsed = getSyncPlaylistStatusSchema.parse(req.params);
 
@@ -37,14 +33,11 @@ export class SyncController {
       return res.json(result);
     } catch (error) {
       console.error('Get sync status error:', error);
-      return res.status(500).json({
-        error: 'fetch_failed',
-        message: 'Erro ao buscar status',
-      });
+      next(error)
     }
   }
 
-  static async cancelSync(req: Request, res: Response) {
+  static async cancelSync(req: Request, res: Response, next: NextFunction) {
     try {
       const queryParsed = cancelSyncPlaylistSchema.parse(req.params)
       const service = Container.getSyncMusicService();
@@ -53,14 +46,11 @@ export class SyncController {
       return res.json(result);
     } catch (error) {
       console.error('Cancel sync error:', error);
-      return res.status(500).json({
-        error: 'cancel_failed',
-        message: 'Erro ao cancelar sincronização',
-      });
+      next(error)
     }
   }
 
-  static async retrySync(req: Request, res: Response) {
+  static async retrySync(req: Request, res: Response, next: NextFunction) {
     try {
       const queryParsed = retrySyncPlaylistSchema.parse(req.params);
       const service = Container.getSyncMusicService();
@@ -69,14 +59,11 @@ export class SyncController {
       return res.json(result);
     } catch (error) {
       console.error('Retry sync error:', error);
-      return res.status(500).json({
-        error: 'retry_failed',
-        message: 'Erro ao reiniciar sincronização',
-      });
+      next(error)
     }
   }
 
-  static async getQueueStats(req: Request, res: Response) {
+  static async getQueueStats(req: Request, res: Response, next: NextFunction) {
     try {
       const service = Container.getSyncMusicService();
       const result = service.getQueueStatus();
@@ -84,14 +71,11 @@ export class SyncController {
       return res.json(result)
     } catch (error) {
       console.error('Get queue stats error:', error);
-      return res.status(500).json({
-        error: 'fetch_failed',
-        message: 'Erro ao buscar estatísticas',
-      });
+      next(error)
     }
   }
 
-  static async getMyJobs(req: Request, res: Response) {
+  static async getMyJobs(req: Request, res: Response, next: NextFunction) {
     try {
       const user = await AuthMiddleware.getAuthenticatedUser(req, res) as User;
 
@@ -108,10 +92,7 @@ export class SyncController {
       });
     } catch (error) {
       console.error('Get user jobs error:', error);
-      return res.status(500).json({
-        error: 'fetch_failed',
-        message: 'Erro ao buscar jobs do usuário',
-      });
+      next(error)
     }
   }
 }
