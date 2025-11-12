@@ -16,22 +16,22 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuthContext } from "@/context/AuthContext";
-import { RegisterSchema } from "@harmonia/shared";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AlertCircle, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
-import { z } from "zod";
+import z from "zod";
 
-type RegisterFormData = z.infer<typeof RegisterSchema> & {
-  acceptTerms: boolean;
-};
-
-const RegisterFormSchema = RegisterSchema.extend({
+const RegisterFormSchema = z.object({
+  name: z.string(),
+  email: z.string().email(),
+  password: z.string().min(8, "A senha deve ter no mínimo 8 caracteres"),
   acceptTerms: z.boolean().refine((val) => val === true, {
     message: "Você deve aceitar os termos de serviço",
   }),
 });
+
+type RegisterFormData = z.infer<typeof RegisterFormSchema>;
 
 export default function CadastroPage() {
   const {

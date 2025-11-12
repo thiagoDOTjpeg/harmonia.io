@@ -1,4 +1,3 @@
-import { useToast } from "@/components/ui/use-toast";
 import { ApiError } from "@/lib/services/api";
 import { authService } from "@/lib/services/auth-service";
 import { useAuthStore } from "@/lib/store/auth-store";
@@ -7,10 +6,10 @@ import { LoginInput, RegisterInput } from "@harmonia/shared";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useOAuthPopup } from "./use-oauth-popup";
+import { toast } from "./use-toast";
 
 export function useAuth() {
   const router = useRouter();
-  const { toast } = useToast();
   const { setToken, clearAuth } = useAuthStore();
   const { setUser, clearUser } = useUserStore();
   const { openOAuthPopup, isLoading: oauthLoading } = useOAuthPopup();
@@ -54,8 +53,6 @@ export function useAuth() {
         description: errorMessage,
         duration: 5000
       })
-
-      return { success: false, error: errorMessage }
     } finally {
       setIsLoading(false);
     }
@@ -82,7 +79,6 @@ export function useAuth() {
       });
 
       router.push('/dashboard');
-      return { success: true };
     } catch (error) {
       let errorMessage = 'Erro ao criar conta. Tente novamente.';
 
@@ -108,8 +104,6 @@ export function useAuth() {
         description: errorMessage,
         duration: 5000
       });
-
-      return { success: false, error: errorMessage };
     } finally {
       setIsLoading(false);
     }

@@ -10,6 +10,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { useDashboard } from "@/hooks/use-dashboard";
+import { useDashboardStore } from "@/lib/store/dashboard-store";
 import { formatTimeAgo } from "@/lib/utils";
 import { Clock, Music2, TrendingUp, Zap } from "lucide-react";
 import Link from "next/link";
@@ -17,13 +18,14 @@ import { useEffect } from "react";
 
 export default function DashboardPage() {
   const { dashboard, isLoading } = useDashboard();
-  const { dashboardData, _hasHydrated } = useDashboardStore();
+  const { summary, _hasHydrated } = useDashboardStore();
 
   useEffect(() => {
-    if (_hasHydrated && !dashboardData) {
+    if (_hasHydrated && !summary) {
       dashboard();
     }
-  }, [_hasHydrated, dashboardData]);
+    console.log(summary);
+  }, [_hasHydrated, summary]);
 
   if (!_hasHydrated) {
     return <DashboardSkeleton />;
@@ -49,8 +51,11 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {dashboardData?.total_playlists ?? 0}
+              {summary?.total_playlists ?? 0}
             </div>
+            <p className="text-xs text-muted-foreground mt-1">
+              de {summary?.total_playlists ?? 0}
+            </p>
           </CardContent>
         </Card>
 
@@ -63,7 +68,7 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {dashboardData?.synced_songs ?? 0}
+              {summary?.synced_songs ?? 0}
             </div>
             <p className="text-xs text-muted-foreground mt-1">
               +23 esta semana
@@ -80,7 +85,7 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {formatTimeAgo(dashboardData?.last_sync_at)}
+              {formatTimeAgo(summary?.last_sync_at)}
             </div>
             <p className="text-xs text-muted-foreground mt-1">atrás</p>
           </CardContent>
@@ -151,7 +156,7 @@ export default function DashboardPage() {
                   <p className="text-xs text-muted-foreground">
                     {isLoading
                       ? "Carregando..."
-                      : dashboardData?.is_youtube_connected
+                      : summary?.is_youtube_connected
                         ? "Conectado"
                         : "Desconectado"}
                   </p>
@@ -178,7 +183,7 @@ export default function DashboardPage() {
                   <p className="text-xs text-muted-foreground">
                     {isLoading
                       ? "Carregando..."
-                      : dashboardData?.is_spotify_connected
+                      : summary?.is_spotify_connected
                         ? "Conectado"
                         : "Desconectado"}
                   </p>
@@ -200,26 +205,7 @@ export default function DashboardPage() {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {[
-              {
-                name: "Músicas Favoritas 2024",
-                songs: 45,
-                time: "2 horas atrás",
-                status: "Concluído",
-              },
-              {
-                name: "Workout Mix",
-                songs: 32,
-                time: "1 dia atrás",
-                status: "Concluído",
-              },
-              {
-                name: "Chill Vibes",
-                songs: 28,
-                time: "3 dias atrás",
-                status: "Concluído",
-              },
-            ].map((activity, index) => (
+            {summary?.recent_syncs.map((activity, index) => (
               <div
                 key={index}
                 className="flex items-center justify-between py-3 border-b border-border last:border-0"
@@ -231,12 +217,13 @@ export default function DashboardPage() {
                   <div>
                     <p className="font-medium">{activity.name}</p>
                     <p className="text-sm text-muted-foreground">
-                      {activity.songs} músicas • {activity.time}
+                      {activity.songs_count} músicas •{" Última sincronização "}
+                      {formatTimeAgo(activity.last_synced_at)} {" atrás"}
                     </p>
                   </div>
                 </div>
                 <span className="text-sm text-primary font-medium">
-                  {activity.status}
+                  {activity.status.toLocaleUpperCase()}
                 </span>
               </div>
             ))}

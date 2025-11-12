@@ -14,9 +14,14 @@ export function cn(...inputs: ClassValue[]) {
  */
 export function formatTimeAgo(isoString?: string | null): string {
   if (!isoString) return "Nunca";
+  if (!isoString.includes("Z")) {
+    const isoArray = isoString.split("");
+    isoArray.push("Z")
+    isoString = isoArray.join("");
+  }
 
   try {
-    const date = parseISO(isoString);
+    const date = new Date(isoString);
     const distance = formatDistanceToNow(date, {
       locale: ptBR,
       addSuffix: false,

@@ -13,20 +13,22 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useLogin } from "@/hooks/use-login";
-import { useOAuth } from "@/hooks/use-oauth";
-import { LoginSchema } from "@harmonia/shared";
+import { useAuthContext } from "@/context/AuthContext";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
 import z from "zod";
 
-type LoginFormData = z.infer<typeof LoginSchema>;
+const LoginFormSchema = z.object({
+  email: z.string().email(),
+  password: z.string().min(8, "A senha possui no mínimo 8 caracteres"),
+});
+
+type LoginFormData = z.infer<typeof LoginFormSchema>;
 
 export default function LoginPage() {
-  const { login, isSubmitting } = useLogin();
-  const { openOAuthPopup, isLoading: isOAuthLoading } = useOAuth();
+  const { isLoading, login, openOAuthPopup } = useAuthContext();
 
   const {
     register,
@@ -35,7 +37,7 @@ export default function LoginPage() {
     watch,
     setValue,
   } = useForm<LoginFormData>({
-    resolver: zodResolver(LoginSchema),
+    resolver: zodResolver(LoginFormSchema),
     defaultValues: {
       email: "",
       password: "",
@@ -87,7 +89,7 @@ export default function LoginPage() {
                   placeholder="seu@email.com"
                   autoComplete="email"
                   {...register("email")}
-                  disabled={isSubmitting || isOAuthLoading}
+                  disabled={isLoading}
                   required
                   className="bg-muted/50 border-border focus:border-primary transition-colors"
                 />
@@ -117,7 +119,7 @@ export default function LoginPage() {
                   type="password"
                   autoComplete="current-password"
                   {...register("password")}
-                  disabled={isSubmitting || isOAuthLoading}
+                  disabled={isLoading}
                   required
                   className="bg-muted/50 border-border focus:border-primary transition-colors"
                 />
@@ -151,10 +153,10 @@ export default function LoginPage() {
                 variant="outline"
                 type="button"
                 className="hover:border-primary/50 hover:bg-primary/5 transition-colors bg-transparent"
-                onClick={() => openOAuthPopup("google", { method: "login" })}
-                disabled={isSubmitting || isOAuthLoading}
+                onClick={() => openOAuthPopup("google", "login")}
+                disabled={isLoading}
               >
-                {isOAuthLoading ? (
+                {isLoading ? (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 ) : (
                   <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
@@ -170,10 +172,10 @@ export default function LoginPage() {
                 variant="outline"
                 type="button"
                 className="hover:border-primary/50 hover:bg-primary/5 transition-colors bg-transparent"
-                onClick={() => openOAuthPopup("spotify", { method: "login" })}
-                disabled={isSubmitting || isOAuthLoading}
+                onClick={() => openOAuthPopup("spotify", "login")}
+                disabled={isLoading}
               >
-                {isOAuthLoading ? (
+                {isLoading ? (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 ) : (
                   <svg

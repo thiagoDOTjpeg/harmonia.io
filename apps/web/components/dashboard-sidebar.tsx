@@ -1,6 +1,8 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { useAuthContext } from "@/context/AuthContext";
+import { useDashboardStore } from "@/lib/store/dashboard-store";
 import { cn } from "@/lib/utils";
 import {
   Crown,
@@ -12,7 +14,7 @@ import {
   Settings,
 } from "lucide-react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 
 const navigation = [
   { name: "Visão Geral", href: "/dashboard", icon: Home },
@@ -24,6 +26,15 @@ const navigation = [
 
 export function DashboardSidebar() {
   const pathname = usePathname();
+  const router = useRouter();
+  const { logout } = useAuthContext();
+  const { clearDashboard } = useDashboardStore();
+
+  const handelLogout = () => {
+    logout();
+    clearDashboard();
+    router.push("/");
+  };
 
   return (
     <aside className="w-64 border-r border-border bg-card flex flex-col">
@@ -105,11 +116,13 @@ export function DashboardSidebar() {
             Upgrade de Plano
           </Link>
         </Button>
-        <Button variant="ghost" className="w-full justify-start" asChild>
-          <Link href="/">
-            <LogOut className="mr-2 h-4 w-4" />
-            Sair
-          </Link>
+        <Button
+          variant="ghost"
+          className="w-full justify-start"
+          onClick={handelLogout}
+        >
+          <LogOut className="mr-2 h-4 w-4" />
+          Sair
         </Button>
       </div>
     </aside>

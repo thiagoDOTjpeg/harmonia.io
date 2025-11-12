@@ -1,5 +1,4 @@
-import type { LoginInput, RegisterInput } from '@harmonia/shared';
-import type { AuthResponse } from '../types/auth';
+import type { AuthResponse, LoginInput, RegisterInput } from '@harmonia/shared';
 import { fetchApi } from './api';
 
 export const authService = {

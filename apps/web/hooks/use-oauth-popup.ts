@@ -1,9 +1,9 @@
-import { toast } from "@/components/ui/use-toast";
 import { useAuthStore } from "@/lib/store/auth-store";
 import { useUserStore } from "@/lib/store/user-store";
-import { OAuthCallbackResponse } from "@harmonia/shared";
+import { AuthResponse } from "@harmonia/shared";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { toast } from "./use-toast";
 
 export function useOAuthPopup() {
   const router = useRouter();
@@ -35,13 +35,13 @@ export function useOAuthPopup() {
     console.log('✅ Mensagem OAuth recebida:', event.data);
 
     if (event.data.type === 'oauth-success') {
-      const authData: OAuthCallbackResponse = event.data.data;
-      setUser(authData.data.user)
-      setToken(authData.data.token)
+      const authData: AuthResponse = event.data.data;
+      setUser(authData.user)
+      setToken(authData.token)
 
       toast({
         title: "Autenticação bem-sucedida!",
-        description: `Bem-vindo, ${authData.data.user.name}!`,
+        description: `Bem-vindo, ${authData.user.name}!`,
       });
       router.push('/dashboard');
     } else {
