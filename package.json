@@ -18,6 +18,7 @@
     "test": "turbo test",
     "db:generate": "turbo db:generate --filter=@harmonia/database",
     "db:push": "turbo db:push --filter=@harmonia/api",
+    "db:pull": "turbo db:pull --filter=@harmonia/api",
     "db:migrate": "turbo db:migrate --filter=@harmonia/api",
     "clean": "turbo clean && rm -rf node_modules",
     "format": "prettier --write \"**/*.{ts,tsx,md,json}\""

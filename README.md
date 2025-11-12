@@ -583,7 +583,7 @@ MIT License - Veja [LICENSE](LICENSE) para mais detalhes.
 ## 📧 Contato
 
 - **Email**: contato@harmonia.io
-- **GitHub**: [@seu-usuario](https://github.com/seu-usuario)
+- **GitHub**: [@thiagoDOTjpeg](https://github.com/thiagotDOTjpeg)
 
 ---
 

@@ -1,122 +1,165 @@
-import { OAuthQueryDto } from '@harmonia/shared';
-import { Request, Response } from 'express';
+import { AppError, BadRequestError, OAuthMethod, ServiceProvider } from '@harmonia/shared';
+import { NextFunction, Request, Response } from 'express';
 import { Container } from '../../../../main/container';
+import { LoginSchema, OAuthQuerySchema, RegisterSchema } from '../../schemas/auth';
+import { AuthMiddleware } from '../middlewares/AuthMiddleware';
+import { getOAuthCallbackHTML } from '../views/oauth-callback';
 
 export class AuthController {
-  static async googleLogin(req: Request, res: Response) {
+  static async googleConnect(req: Request, res: Response, next: NextFunction) {
     try {
-      const { returnTo } = req.query as OAuthQueryDto;
-      const useCase = Container.getStartGoogleLogin();
-      const { redirectTo } = await useCase.execute(returnTo);
+      const user = await AuthMiddleware.getAuthenticatedUser(req, res);
+      const { returnTo } = OAuthQuerySchema.parse(req.query);
+      const useCase = Container.getStartOAuthUseCase();
+      const { redirectTo } = await useCase.execute(OAuthMethod.connect, Container.getGoogleClient(), returnTo, user.id);
       res.redirect(redirectTo);
     } catch (error) {
       console.error('Google login error:', error);
-      res.status(500).json({ error: 'internal_error' });
+      next(error)
     }
   }
 
-  static async googleRegister(req: Request, res: Response) {
+  static async googleLogin(req: Request, res: Response, next: NextFunction) {
     try {
-      const { returnTo } = req.query as OAuthQueryDto;
-      const useCase = Container.getStartGoogleRegister();
-      const { redirectTo } = await useCase.execute(returnTo);
+      const { returnTo } = OAuthQuerySchema.parse(req.query)
+      const useCase = Container.getStartOAuthUseCase();
+      const { redirectTo } = await useCase.execute(OAuthMethod.login, Container.getGoogleClient(), returnTo);
+      res.redirect(redirectTo);
+    } catch (error) {
+      console.error('Google login error:', error);
+      next(error)
+    }
+  }
+
+  static async googleRegister(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { returnTo } = OAuthQuerySchema.parse(req.query)
+      const useCase = Container.getStartOAuthUseCase();
+      const { redirectTo } = await useCase.execute(OAuthMethod.register, Container.getGoogleClient(), returnTo);
       res.redirect(redirectTo);
     } catch (error) {
       console.error('Google register error:', error);
-      res.status(500).json({ error: 'internal_error' });
+      next(error)
     }
   }
 
-  static async googleCallback(req: Request, res: Response) {
+  static async googleCallback(req: Request, res: Response, next: NextFunction) {
     try {
       const code = String(req.query.code || '');
       const state = String(req.query.state || '');
 
       if (!code || !state) {
-        return res.status(400).json({ error: 'invalid_state_or_code' });
+        return res.send(getOAuthCallbackHTML({
+          success: false,
+          error: 'Código ou estado inválido'
+        }, undefined));
       }
 
-      const useCase = Container.getHandleGoogleCallback();
-      const result = await useCase.execute({ code, state });
+      const useCase = Container.getHandleOAuthCallback();
+      const result = await useCase.execute(ServiceProvider.GOOGLE, { code, state });
 
-      if ('error' in result) {
-        const status =
-          result.error === 'no_account' ? 404 :
-            ['email_in_use', 'require_manual_link', 'email_ambiguous', 'conflict'].includes(result.error)
-              ? 409
-              : 400;
-        return res.status(status).json(result);
-      }
-
-      return res.json(result);
+      return res.send(getOAuthCallbackHTML({
+        success: true,
+        token: result.token,
+        user: { email: result.user.email || '', id: result.user.id, name: result.user.name || '' }
+      }, result.returnTo));
     } catch (error) {
       console.error('Google callback error:', error);
-      return res.status(500).json({ error: 'auth_failed' });
+      if (error instanceof AppError) {
+        return res.send(getOAuthCallbackHTML({
+          success: false,
+          error: error.message
+        }, 'http://127.0.0.1:3001'));
+      }
+      return res.send(getOAuthCallbackHTML({
+        success: false,
+        error: 'Falha na autenticação. Tente novamente.'
+      }, 'http://127.0.0.1:3001'));
     }
   }
 
-  static async spotifyLogin(req: Request, res: Response) {
+  static async spotifyConnect(req: Request, res: Response, next: NextFunction) {
     try {
-      const { returnTo } = req.query as OAuthQueryDto;
-      const useCase = Container.getStartSpotifyLogin();
-      const { redirectTo } = await useCase.execute(returnTo);
+      const user = await AuthMiddleware.getAuthenticatedUser(req, res);
+      const { returnTo } = OAuthQuerySchema.parse(req.query)
+      const useCase = Container.getStartOAuthUseCase();
+      const { redirectTo } = await useCase.execute(OAuthMethod.connect, Container.getSpotifyClient(), returnTo, user.id);
       res.redirect(redirectTo);
     } catch (error) {
       console.error('Spotify login error:', error);
-      res.status(500).json({ error: 'internal_error' });
+      next(error)
     }
   }
 
-  static async spotifyRegister(req: Request, res: Response) {
+  static async spotifyLogin(req: Request, res: Response, next: NextFunction) {
     try {
-      const { returnTo } = req.query as OAuthQueryDto;
-      const useCase = Container.getStartSpotifyRegister();
-      const { redirectTo } = await useCase.execute(returnTo);
+      const { returnTo } = OAuthQuerySchema.parse(req.query)
+      const useCase = Container.getStartOAuthUseCase();
+      const { redirectTo } = await useCase.execute(OAuthMethod.login, Container.getSpotifyClient(), returnTo);
+      res.redirect(redirectTo);
+    } catch (error) {
+      console.error('Spotify login error:', error);
+      next(error)
+    }
+  }
+
+  static async spotifyRegister(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { returnTo } = OAuthQuerySchema.parse(req.query)
+      const useCase = Container.getStartOAuthUseCase();
+      const { redirectTo } = await useCase.execute(OAuthMethod.register, Container.getSpotifyClient(), returnTo);
       res.redirect(redirectTo);
     } catch (error) {
       console.error('Spotify register error:', error);
-      res.status(500).json({ error: 'internal_error' });
+      next(error)
     }
   }
 
-  static async spotifyCallback(req: Request, res: Response) {
+  static async spotifyCallback(req: Request, res: Response, next: NextFunction) {
     try {
       const code = String(req.query.code || '');
       const state = String(req.query.state || '');
 
       if (!code || !state) {
-        return res.status(400).json({ error: 'invalid_state_or_code' });
+        return res.send(getOAuthCallbackHTML({
+          success: false,
+          error: 'Código ou estado inválido'
+        }, undefined));
       }
 
-      const useCase = Container.getHandleSpotifyCallback();
-      const result = await useCase.execute({ code, state });
+      const useCase = Container.getHandleOAuthCallback();
+      const result = await useCase.execute(ServiceProvider.SPOTIFY, { code, state });
 
-      if ('error' in result) {
-        const status =
-          result.error === 'no_account' ? 404 :
-            ['email_in_use', 'require_manual_link', 'email_ambiguous', 'conflict'].includes(result.error)
-              ? 409
-              : 400;
-        return res.status(status).json(result);
-      }
-
-      return res.json(result);
+      return res.send(getOAuthCallbackHTML({
+        success: true,
+        token: result.token,
+        user: { email: result.user.email || '', id: result.user.id, name: result.user.name || '' }
+      }, result.returnTo));
     } catch (error) {
       console.error('Spotify callback error:', error);
-      return res.status(500).json({ error: 'auth_failed' });
+      if (error instanceof AppError) {
+        return res.send(getOAuthCallbackHTML({
+          success: false,
+          error: error.message
+        }, 'http://127.0.0.1:3001'));
+      }
+      return res.send(getOAuthCallbackHTML({
+        success: false,
+        error: 'Falha na autenticação. Tente novamente.'
+      }, 'http://127.0.0.1:3001'));
     }
   }
 
-  static async localRegister(req: Request, res: Response) {
+  static async localRegister(req: Request, res: Response, next: NextFunction) {
     try {
-      const { email, password, name } = req.body;
+      const bodyParsed = RegisterSchema.parse(req.body);
 
-      if (!email || !password) {
-        return res.status(400).json({ error: 'missing_email_or_password' });
+      if (!bodyParsed.email || !bodyParsed.password) {
+        throw new BadRequestError("Todos os campos devem estar preenchidos")
       }
 
       const useCase = Container.getStartLocalRegister();
-      const result = await useCase.execute({ email, password, name });
+      const result = await useCase.execute(bodyParsed);
 
       if ('error' in result) {
         const status = result.error === 'email_in_use' ? 409 : 400;
@@ -126,20 +169,20 @@ export class AuthController {
       return res.status(201).json(result);
     } catch (error) {
       console.error('Local register error:', error);
-      return res.status(500).json({ error: 'register_failed' });
+      next(error)
     }
   }
 
-  static async localLogin(req: Request, res: Response) {
+  static async localLogin(req: Request, res: Response, next: NextFunction) {
     try {
-      const { email, password } = req.body;
+      const bodyParsed = LoginSchema.parse(req.body);
 
-      if (!email || !password) {
-        return res.status(400).json({ error: 'missing_email_or_password' });
+      if (!bodyParsed.email || !bodyParsed.password) {
+        throw new BadRequestError("Todos os campos devem estar preenchidos")
       }
 
       const useCase = Container.getStartLocalLogin();
-      const result = await useCase.execute({ email, password });
+      const result = await useCase.execute(bodyParsed);
 
       if ('error' in result) {
         const status = result.error === 'invalid_credentials' ? 401 : 400;
@@ -149,7 +192,7 @@ export class AuthController {
       return res.json(result);
     } catch (error) {
       console.error('Local login error:', error);
-      return res.status(500).json({ error: 'login_failed' });
+      next(error);
     }
   }
 }

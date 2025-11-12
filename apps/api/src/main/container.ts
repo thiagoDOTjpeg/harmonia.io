@@ -1,4 +1,3 @@
-import { prisma } from '../infrastructure/db/prisma/client';
 import { PrismaPlaylistRepository } from '../infrastructure/db/prisma/repositories/PrismaPlaylistRepository';
 import { PrismaPlaylistTrackRepository } from '../infrastructure/db/prisma/repositories/PrismaPlaylistTrackRepository';
 import { PrismaTrackRepository } from '../infrastructure/db/prisma/repositories/PrismaTrackRepository';
@@ -11,32 +10,52 @@ import { JwtTokenManager } from '../infrastructure/crypto/JwtTokenManager';
 import { SystemClock } from '../infrastructure/time/SystemClock';
 
 // Use cases Auth
-import { HandleGoogleCallback } from '../application/use_cases/auth/HandleGoogleCallback';
-import { HandleSpotifyCallback } from '../application/use_cases/auth/HandleSpotifyCallback';
-import { StartGoogleLogin } from '../application/use_cases/auth/StartGoogleLogin';
-import { StartGoogleRegister } from '../application/use_cases/auth/StartGoogleRegister';
+import { IAuthProvider } from '@/application/ports/auth/IAuthProvider';
+import { IOAuthCallbackStrategy } from '@/application/ports/strategy/IOAuthCallbackStrategy';
+import { GoogleAuthProvider } from '@/application/providers/GoogleAuthProvider';
+import { SpotifyAuthProvider } from '@/application/providers/SpotifyAuthProvider';
+import { SyncMusicService } from '@/application/services/SyncMusicService';
+import { HandleOAuthCallback } from '@/application/use_cases/auth/HandleOAuthCallback';
+import { StartOAuthUseCase } from '@/application/use_cases/auth/StartOAuthUseCase';
+import { EnsureValidConnectionsUseCase } from '@/application/use_cases/sync_playlist/EnsureValidConnectionsUseCase';
+import { GoogleOAuthCallbackStrategy } from '@/infrastructure/adapter/oauth/GoogleOAuthCallbackStrategy';
+import { OAuthCallbackStrategyFactory } from '@/infrastructure/adapter/oauth/OAuthCallbackStrategyFactory';
+import { SpotifyOAuthCallbackStrategy } from '@/infrastructure/adapter/oauth/SpotifyOAuthCallbackStrategy';
+import { AESSerializer } from '@/infrastructure/adapter/serializer/AESSerializer';
+import { GoogleMusicClient } from '@/infrastructure/client/GoogleMusicClient';
+import { AESTokenEncrypter } from '@/infrastructure/crypto/AESTokenEncrypter';
+import { prisma } from '@/infrastructure/db/prisma/client';
+import { PrismaServiceConnectionRepository } from '@/infrastructure/db/prisma/repositories/PrismaServiceConnectionRepository';
+import { PlaylistSyncQueue } from '@/infrastructure/queue/PlaylistSyncQueue';
+import { ServiceProvider } from '@prisma/client';
 import { StartLocalLogin } from '../application/use_cases/auth/StartLocalLogin';
 import { StartLocalRegister } from '../application/use_cases/auth/StartLocalRegister';
-import { StartSpotifyLogin } from '../application/use_cases/auth/StartSpotifyLogin';
-import { StartSpotifyRegister } from '../application/use_cases/auth/StartSpotifyRegister';
 import { SpotifyOAuthClient } from '../infrastructure/client/SpotifyOAuthClient';
 import { RedisStateStore } from '../infrastructure/state/RedisStateStore';
 
+const ENCRYPTION_KEY: string = process.env.AES_SECRET || "";
+
 export class Container {
+
   // Infra
   private static googleClient = new GoogleOAuthClient();
   private static spotifyClient = new SpotifyOAuthClient();
+  private static googleMusicClient = new GoogleMusicClient();
   private static stateStore = new RedisStateStore();
+  private static syncQueue = new PlaylistSyncQueue();
 
   // Repositories
   private static userRepository = new PrismaUserRepository(prisma);
   private static playlistRepository = new PrismaPlaylistRepository(prisma);
   private static trackRepository = new PrismaTrackRepository(prisma);
   private static playlistTrackRepository = new PrismaPlaylistTrackRepository(prisma);
+  private static serviceConnectionRepository = new PrismaServiceConnectionRepository(prisma);
 
-  // Crypto & Time
+  // Crypto & Time & Serializer
   private static tokenManager = new JwtTokenManager();
   private static passwordHasher = new BcryptPasswordHasher();
+  private static AESEncrypter = new AESTokenEncrypter(ENCRYPTION_KEY);
+  private static tokenSerializer = new AESSerializer();
   private static clock = new SystemClock();
 
   // ===== GETTERS - CLIENTS =====
@@ -47,6 +66,59 @@ export class Container {
 
   static getSpotifyClient() {
     return this.spotifyClient;
+  }
+
+  static getGoogleMusicClient() {
+    return this.googleMusicClient;
+  }
+
+  // ===== GETTERS - FACTORIES =====
+
+  static getStrategyFactory() {
+    const strategies: Record<ServiceProvider, IOAuthCallbackStrategy> = {
+      [ServiceProvider.GOOGLE]: this.getGoogleStrategy(),
+      [ServiceProvider.SPOTIFY]: this.getSpotifyStrategy(),
+    }
+    return new OAuthCallbackStrategyFactory(strategies);
+  }
+
+  // ===== GETTERS - STRATEGIES =====
+
+  static getGoogleStrategy() {
+    return new GoogleOAuthCallbackStrategy(
+      this.userRepository,
+      this.serviceConnectionRepository,
+      this.tokenManager,
+      this.clock,
+      this.AESEncrypter,
+      this.tokenSerializer,
+      this.googleClient
+    );
+  }
+
+  static getSpotifyStrategy() {
+    return new SpotifyOAuthCallbackStrategy(
+      this.userRepository,
+      this.serviceConnectionRepository,
+      this.tokenManager,
+      this.clock,
+      this.AESEncrypter,
+      this.tokenSerializer,
+      this.spotifyClient
+    );
+  }
+
+
+  // ===== GETTERS - SERVICES =====
+
+  static getSyncMusicService() {
+    return new SyncMusicService(
+      this.syncQueue,
+      this.playlistRepository,
+      this.AESEncrypter,
+      this.tokenSerializer,
+      this.getEnsureValidConnectionsUseCase()
+    );
   }
 
   // ===== GETTERS - REPOSITORIES =====
@@ -67,7 +139,15 @@ export class Container {
     return this.playlistTrackRepository;
   }
 
+  static getServiceConnectionRepository() {
+    return this.serviceConnectionRepository;
+  }
+
   // ===== GETTERS - INFRA =====
+
+  static getStateManager() {
+    return this.stateStore;
+  }
 
   static getTokenManager() {
     return this.tokenManager;
@@ -77,42 +157,32 @@ export class Container {
     return this.passwordHasher;
   }
 
+  static getSyncQueue() {
+    return this.syncQueue;
+  }
+
   // ===== GETTERS - USE CASES AUTH =====
 
-  static getStartGoogleLogin() {
-    return new StartGoogleLogin(this.stateStore, this.googleClient);
-  }
-
-  static getStartGoogleRegister() {
-    return new StartGoogleRegister(this.stateStore, this.googleClient);
-  }
-
-  static getHandleGoogleCallback() {
-    return new HandleGoogleCallback(
-      this.stateStore,
-      this.googleClient,
-      this.userRepository,
-      this.tokenManager,
+  static getEnsureValidConnectionsUseCase() {
+    const providers: Record<ServiceProvider, IAuthProvider> = {
+      [ServiceProvider.GOOGLE]: new GoogleAuthProvider(),
+      [ServiceProvider.SPOTIFY]: new SpotifyAuthProvider()
+    }
+    return new EnsureValidConnectionsUseCase(
+      this.serviceConnectionRepository,
+      this.AESEncrypter,
+      this.tokenSerializer,
       this.clock,
+      providers
     );
   }
 
-  static getStartSpotifyLogin() {
-    return new StartSpotifyLogin(this.stateStore, this.spotifyClient);
+  static getStartOAuthUseCase() {
+    return new StartOAuthUseCase(this.stateStore);
   }
 
-  static getStartSpotifyRegister() {
-    return new StartSpotifyRegister(this.stateStore, this.spotifyClient);
-  }
-
-  static getHandleSpotifyCallback() {
-    return new HandleSpotifyCallback(
-      this.stateStore,
-      this.spotifyClient,
-      this.userRepository,
-      this.tokenManager,
-      this.clock,
-    );
+  static getHandleOAuthCallback() {
+    return new HandleOAuthCallback(this.stateStore, this.getStrategyFactory())
   }
 
   static getStartLocalLogin() {

@@ -1,0 +1,27 @@
+import { User } from '@/domain/entities/User';
+import { Container } from '@/main/container';
+import { NotFoundError, UnathorizedError } from '@harmonia/shared';
+import { NextFunction, Request, Response } from 'express';
+import { AuthMiddleware } from '../middlewares/AuthMiddleware';
+
+export class UserController {
+  static async getUserSummary(req: Request, res: Response, next: NextFunction) {
+    try {
+      const user = await AuthMiddleware.getAuthenticatedUser(req, res) as User;
+      if (!user) {
+        throw new UnathorizedError("Usuário não logado")
+
+      }
+      const summary = await Container.getUserRepository().getUserSummary(user.id)
+
+      if (!summary) {
+        throw new NotFoundError("Resumo não encontrado")
+      }
+
+      return res.json(summary);
+    } catch (error) {
+      console.error("Ocorreu um erro ao buscar o resumo", error);
+      next(error)
+    }
+  }
+}

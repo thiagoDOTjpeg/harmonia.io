@@ -1,10 +1,6 @@
-// ============================================
-// HARMONIA.IO - SCHEMA DO BANCO DE DADOS
-// Versão 2.0 - Modelo Normalizado com Tracks separadas
-// ============================================
-
 generator client {
   provider = "prisma-client-js"
+  previewFeatures = ["strictUndefinedChecks"]
 }
 
 datasource db {
@@ -12,139 +8,120 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// ============================================
-// 1. USUÁRIOS
-// ============================================
-
 model User {
-  id        String   @id @default(uuid())
-  email     String?  @unique
-  name      String?
+  id                  String              @id @default(uuid())
+  email               String?             @unique
+  name                String?
+  passwordHash        String?             @map("password_hash")
+  createdAt           DateTime            @default(now()) @map("created_at")
+  updatedAt           DateTime            @updatedAt @map("updated_at")
+  emailVerifiedAt     DateTime?           @map("email_verified_at")
+  playlists           SyncedPlaylist[]
+  servicesConnections ServiceConnection[]
 
-  // Login com email/senha
-  passwordHash     String?  @db.Text
-  emailVerifiedAt  DateTime?
-  
-  // OAuth Spotify
-  spotifyId           String?  @unique
-  spotifyAccessToken  String?  @db.Text
-  spotifyRefreshToken String?  @db.Text
-  spotifyTokenExpiry  DateTime?
-
-  // OAuth Google/YouTube
-  googleId            String?  @unique
-  googleAccessToken   String?  @db.Text
-  googleRefreshToken  String?  @db.Text
-  googleTokenExpiry   DateTime?
-  youtubeChannelId    String?
-  
-  // Relacionamentos
-  playlists SyncedPlaylist[]
-  
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  
   @@map("users")
 }
 
-// ============================================
-// 2. PLAYLISTS SINCRONIZADAS
-// ============================================
-
 model SyncedPlaylist {
-  id String @id @default(uuid())
-  
-  // Origem: YouTube
-  youtubePlaylistId String
-  youtubeUrl        String
-  youtubeTitle      String?
-  
-  // Destino: Spotify
-  spotifyPlaylistId String
-  spotifyUrl        String
-  spotifyTitle      String?
-  
-  // Controle de sincronização
-  lastSyncedAt  DateTime?
-  syncStatus    String    @default("pending") // pending, syncing, completed, failed
-  
-  // Dono da playlist
-  userId  String
-  user    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
-  // Relacionamento N:N com Tracks através de PlaylistTrack
-  playlistTracks PlaylistTrack[]
-  
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  
+  id                String          @id @default(uuid())
+  youtubePlaylistId String          @map("youtube_playlist_id")
+  youtubeUrl        String          @map("youtube_url")
+  youtubeTitle      String?         @map("youtube_title")
+  spotifyPlaylistId String          @map("spotify_playlist_id")
+  spotifyUrl        String          @map("spotify_url")
+  spotifyTitle      String?         @map("spotify_title")
+  lastSyncedAt      DateTime?       @map("last_synced_at")
+  syncStatus        String          @default("pending") @map("sync_status")
+  userId            String          @map("user_id")
+  createdAt         DateTime        @default(now()) @map("created_at")
+  updatedAt         DateTime        @updatedAt @map("updated_at")
+  playlistTracks    PlaylistTrack[]
+  user              User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   @@unique([userId, youtubePlaylistId])
   @@index([userId])
   @@map("synced_playlists")
 }
 
-// ============================================
-// 3. TRACKS (MÚSICAS ÚNICAS - MASTER DATA)
-// ============================================
-
 model Track {
-  id String @id @default(uuid())
-  
-  // YouTube (identificador único)
-  youtubeVideoId String  @unique
-  youtubeTitle   String
-  youtubeChannel String?
-  
-  // Spotify (melhor match encontrado)
-  spotifyTrackId String? @unique
-  spotifyUri     String?
-  spotifyArtist  String?
-  spotifyAlbum   String?
-  
-  // Metadados de match
-  matchScore    Float    @default(0)
-  matchedAt     DateTime?
-  matchSource   String?  // "manual", "auto", "ai"
-  
-  // Machine Learning (futuro)
-  isOfficialVideo Boolean @default(false)
-  isVisualizer    Boolean @default(false)
-  isLive          Boolean @default(false)
-  aiConfidence    Float?
-  
-  // Relacionamento N:N com Playlists
-  playlistTracks PlaylistTrack[]
-  
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  
+  id              String          @id @default(uuid())
+  youtubeVideoId  String          @unique @map("youtube_video_id")
+  youtubeTitle    String          @map("youtube_title")
+  youtubeChannel  String?         @map("youtube_channel")
+  spotifyTrackId  String?         @unique @map("spotify_track_id")
+  spotifyUri      String?         @map("spotify_uri")
+  spotifyArtist   String?         @map("spotify_artist")
+  spotifyAlbum    String?         @map("spotify_album")
+  matchScore      Float           @default(0) @map("match_score")
+  matchedAt       DateTime?       @map("matched_at")
+  matchSource     String?         @map("match_source")
+  isOfficialVideo Boolean         @default(false) @map("is_official_video")
+  isVisualizer    Boolean         @default(false) @map("is_visualizer")
+  isLive          Boolean         @default(false) @map("is_live")
+  aiConfidence    Float?          @map("ai_confidence")
+  createdAt       DateTime        @default(now()) @map("created_at")
+  updatedAt       DateTime        @updatedAt @map("updated_at")
+  playlistTracks  PlaylistTrack[]
+
   @@index([youtubeVideoId])
   @@index([spotifyTrackId])
   @@map("tracks")
 }
 
-// ============================================
-// 4. PLAYLIST_TRACKS (JOIN TABLE N:N)
-// ============================================
-
 model PlaylistTrack {
-  id String @id @default(uuid())
-  
-  // Referências
-  playlistId String
+  id         String         @id @default(uuid())
+  playlistId String         @map("playlist_id")
+  trackId    String         @map("track_id")
+  status     String         @default("pending")
+  addedAt    DateTime       @default(now()) @map("added_at")
+  position   Int?
   playlist   SyncedPlaylist @relation(fields: [playlistId], references: [id], onDelete: Cascade)
-  
-  trackId String
-  track   Track @relation(fields: [trackId], references: [id], onDelete: Cascade)
-  
-  // Controle específico dessa música nessa playlist
-  status   String   @default("pending") // pending, synced, failed
-  addedAt  DateTime @default(now())
-  position Int? // ordem na playlist (opcional)
-  
-  // Evita duplicatas
+  track      Track          @relation(fields: [trackId], references: [id], onDelete: Cascade)
+
   @@unique([playlistId, trackId])
   @@index([playlistId])
   @@index([trackId])
   @@map("playlist_tracks")
+}
+
+model UserSummary {
+  userId             String    @id @map("user_id")
+  email              String
+  name               String?
+  userCreatedAt      DateTime  @map("user_created_at")
+  isSpotifyConnected Boolean   @map("is_spotify_connected")
+  isYoutubeConnected Boolean   @map("is_youtube_connected")
+  totalPlaylists     BigInt    @map("total_playlists")
+  syncedPlaylists    BigInt    @map("synced_playlists")
+  totalSongs         BigInt    @map("total_songs")
+  syncedSongs        BigInt    @map("synced_songs")
+  lastSyncAt         DateTime? @map("last_sync_at")
+  recentSyncs        Json      @map("recent_syncs")
+
+  @@map("user_summary")
+}
+
+enum ServiceProvider {
+  GOOGLE
+  SPOTIFY
+}
+
+model ServiceConnection {
+  id                 String          @id @default(uuid())
+  userId             String          @map("user_id")
+  provider           ServiceProvider
+  providerAccountId  String?         @unique @map("provider_account_id")
+  email              String?
+  accessToken        String          @map("access_token") @db.Text
+  refreshToken       String?         @map("refresh_token") @db.Text
+  accessTokenIv      String          @map("access_token_iv") @db.Text
+  refreshTokenIv     String?         @map("refresh_token_iv") @db.Text
+  expiresAt          DateTime?       @map("expires_at")
+  scopes             String          @db.Text
+  metadata           Json?
+  createdAt          DateTime        @default(now()) @map("created_at")
+  updatedAt          DateTime        @updatedAt @map("updated_at")
+  user               User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("services_connections")
 }
