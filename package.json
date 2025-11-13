@@ -12,6 +12,7 @@
     "dev:web": "turbo dev --filter=@harmonia/web",
     "worker": "turbo worker --filter=@harmonia/api",
     "build": "turbo build",
+    "start:api": "node apps/api/dist/main/index.js",
     "build:api": "turbo build --filter=@harmonia/api",
     "build:web": "turbo build --filter=@harmonia/web",
     "lint": "turbo lint",
