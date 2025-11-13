@@ -9,7 +9,7 @@ export class ServiceConnectionMapper {
       serviceConnection.id,
       serviceConnection.userId,
       ServiceProvider[serviceConnection.provider as keyof typeof ServiceProvider],
-      serviceConnection.providerAccountId,
+      serviceConnection.providerAccountId || "",
       serviceConnection.email,
       serviceConnection.accessToken,
       serviceConnection.refreshToken,
@@ -34,7 +34,9 @@ export class ServiceConnectionMapper {
       refreshToken: serviceConnection.refreshToken,
       scopes: serviceConnection.scopes,
       updatedAt: serviceConnection.updatedAt,
-      userId: serviceConnection.userId
+      userId: serviceConnection.userId,
+      accessTokenIv: "",
+      refreshTokenIv: ""
     }
   }
 

@@ -1,25 +1,74 @@
-"use client"
+"use client";
 
-import type React from "react"
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { usePlaylist } from "@/hooks/use-playlist";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import z from "zod";
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-import { useState } from "react"
+const AddSyncPlaylistSchema = z.object({
+  url: z
+    .string()
+    .url("URL inválida")
+    .refine(
+      (url) => {
+        try {
+          const urlObj = new URL(url);
+          return (
+            urlObj.hostname.includes("youtube.com") &&
+            urlObj.searchParams.has("list")
+          );
+        } catch {
+          return false;
+        }
+      },
+      {
+        message:
+          "URL deve ser uma playlist válida do YouTube (deve conter 'list=' na URL)",
+      }
+    ),
+  playlistName: z.string().optional(),
+  syncType: z.enum(["manual", "automatic"]).default("manual"),
+});
+
+type AddSyncPlaylistData = z.infer<typeof AddSyncPlaylistSchema>;
 
 export default function NovaPage() {
-  const [url, setUrl] = useState("")
-  const [playlistName, setPlaylistName] = useState("")
-  const [syncType, setSyncType] = useState("manual")
+  const { isLoading, postSyncPlaylist } = usePlaylist();
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    console.log({ url, playlistName, syncType })
-    // Simulate sync
-    alert("Sincronização iniciada!")
-  }
+  const form = useForm<AddSyncPlaylistData>({
+    resolver: zodResolver(AddSyncPlaylistSchema),
+    defaultValues: {
+      url: "",
+      playlistName: "",
+      syncType: "manual",
+    },
+  });
+
+  const onSubmit = async (data: AddSyncPlaylistData) => {
+    const urlObj = new URL(data.url);
+    const playlistId = urlObj.searchParams.get("list") || "";
+
+    await postSyncPlaylist({ youtubePlaylistId: playlistId });
+  };
 
   return (
     <div className="p-8 space-y-8">
@@ -33,61 +82,101 @@ export default function NovaPage() {
       <Card className="max-w-2xl">
         <CardHeader>
           <CardTitle>Configurar Sincronização</CardTitle>
-          <CardDescription>Cole a URL da playlist do YouTube que você deseja sincronizar</CardDescription>
+          <CardDescription>
+            Cole a URL da playlist do YouTube que você deseja sincronizar
+          </CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="space-y-2">
-              <Label htmlFor="url">URL da Playlist do YouTube</Label>
-              <Input
-                id="url"
-                type="url"
-                placeholder="https://www.youtube.com/playlist?list=..."
-                value={url}
-                onChange={(e) => setUrl(e.target.value)}
-                required
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              <FormField
+                control={form.control}
+                name="url"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>URL da Playlist do YouTube</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="url"
+                        placeholder="https://www.youtube.com/playlist?list=..."
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormDescription>
+                      Cole o link completo da playlist pública do YouTube
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-              <p className="text-sm text-muted-foreground">Cole o link completo da playlist pública do YouTube</p>
-            </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="name">Nome da Playlist no Spotify (opcional)</Label>
-              <Input
-                id="name"
-                type="text"
-                placeholder="Deixe em branco para usar o nome original"
-                value={playlistName}
-                onChange={(e) => setPlaylistName(e.target.value)}
+              <FormField
+                control={form.control}
+                name="playlistName"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>
+                      Nome da Playlist no Spotify (opcional)
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        type="text"
+                        placeholder="Deixe em branco para usar o nome original"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-            </div>
 
-            <div className="space-y-3">
-              <Label>Tipo de Sincronização</Label>
-              <RadioGroup value={syncType} onValueChange={setSyncType}>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="manual" id="manual" />
-                  <Label htmlFor="manual" className="font-normal cursor-pointer">
-                    Manual - Sincronizar apenas quando solicitado
-                  </Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="automatic" id="automatic" />
-                  <Label htmlFor="automatic" className="font-normal cursor-pointer">
-                    Automática - Sincronizar automaticamente a cada 24 horas
-                  </Label>
-                </div>
-              </RadioGroup>
-              <p className="text-sm text-muted-foreground">
-                A sincronização automática está disponível nos planos Pro e Premium
-              </p>
-            </div>
+              <FormField
+                control={form.control}
+                name="syncType"
+                render={({ field }) => (
+                  <FormItem className="space-y-3">
+                    <FormLabel>Tipo de Sincronização</FormLabel>
+                    <FormControl>
+                      <RadioGroup
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                        className="flex flex-col space-y-1"
+                      >
+                        <FormItem className="flex items-center space-x-2 space-y-0">
+                          <FormControl>
+                            <RadioGroupItem value="manual" />
+                          </FormControl>
+                          <FormLabel className="font-normal cursor-pointer">
+                            Manual - Sincronizar apenas quando solicitado
+                          </FormLabel>
+                        </FormItem>
+                        <FormItem className="flex items-center space-x-2 space-y-0">
+                          <FormControl>
+                            <RadioGroupItem value="automatic" />
+                          </FormControl>
+                          <FormLabel className="font-normal cursor-pointer">
+                            Automática - Sincronizar automaticamente a cada 24
+                            horas
+                          </FormLabel>
+                        </FormItem>
+                      </RadioGroup>
+                    </FormControl>
+                    <FormDescription>
+                      A sincronização automática está disponível nos planos Pro
+                      e Premium
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-            <Button type="submit" className="w-full">
-              Iniciar Sincronização
-            </Button>
-          </form>
+              <Button disabled={isLoading} type="submit" className="w-full">
+                Iniciar Sincronização
+              </Button>
+            </form>
+          </Form>
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

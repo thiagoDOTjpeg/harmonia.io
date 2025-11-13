@@ -54,13 +54,10 @@ export class SyncMusicService {
     console.log(`[API] Job ${job.id} adicionado para sincronização`);
 
     return {
-      success: true,
-      data: {
-        jobId: job.id,
-        playlistId: playlist?.id,
-        status: 'pending',
-        message: 'Sincronização iniciada. Use /sync/status/:jobId para acompanhar',
-      },
+      jobId: job.id,
+      playlistId: playlist?.id,
+      status: 'pending',
+      message: 'Sincronização iniciada. Use /sync/status/:jobId para acompanhar',
     };
   }
 

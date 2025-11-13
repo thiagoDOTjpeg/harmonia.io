@@ -28,7 +28,7 @@ export const useDashboardStore = create<DashboardState>()(
       },
 
       clearDashboard: () => {
-        set({ summary: null });
+        set({ summary: null, playlists: null });
       },
 
       setHasHydrated: (state: boolean) => set({ _hasHydrated: state }),

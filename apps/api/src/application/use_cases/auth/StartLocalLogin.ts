@@ -1,6 +1,6 @@
 import { IHasher } from '@/application/ports/crypto/IHasher';
 import { LoginDto } from '@/infrastructure/http/schemas/auth';
-import { AuthResponse } from '@harmonia/shared';
+import { AuthResponse, InvalidCredentialsError } from '@harmonia/shared';
 import { ITokenManager } from '../../ports/crypto/ITokenManager';
 import { IUserRepository } from '../../repositories/IUserRepository';
 
@@ -16,20 +16,12 @@ export class StartLocalLogin {
 
     const user = await this.userRepository.findByEmail(normalizedEmail);
     if (!user || !user.passwordHash) {
-      return {
-        success: false,
-        error: 'invalid_credentials',
-        message: 'Email ou senha inválidos.',
-      };
+      throw new InvalidCredentialsError("Email ou senha inválidos.s")
     }
 
     const isValid = await this.passwordHasher.verify(input.password, user.passwordHash);
     if (!isValid) {
-      return {
-        success: false,
-        error: 'invalid_credentials',
-        message: 'Email ou senha inválidos.',
-      };
+      throw new InvalidCredentialsError("Email ou senha inválidos.s")
     }
     const token = this.tokenManager.sign({ sub: user.id });
 

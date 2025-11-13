@@ -135,7 +135,7 @@ export class PlaylistSyncWorker {
             track = await trackRepository.create({
               youtubeVideoId: video.videoId,
               youtubeTitle: video.title,
-              youtubeChannel: video.channelTitle,
+              youtubeChannel: video.videoOwnerChannelTitle,
             });
           }
 

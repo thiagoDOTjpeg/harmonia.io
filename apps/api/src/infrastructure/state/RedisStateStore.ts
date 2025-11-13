@@ -1,5 +1,5 @@
-import { IOAuthStateStore } from '../../application/ports/oauth/IOAuthStateStore';
 import { OAuthState } from '@harmonia/shared';
+import { IOAuthStateStore } from '../../application/ports/oauth/IOAuthStateStore';
 import { redis } from '../db/redis/client';
 
 export class RedisStateStore implements IOAuthStateStore {

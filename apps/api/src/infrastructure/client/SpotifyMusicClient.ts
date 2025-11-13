@@ -1,6 +1,6 @@
+import { SpotifyCreatePlaylistResponse, SpotifySearchResponse, SpotifySearchResult } from '@harmonia/shared';
 import { ISpotifyMusicClient } from '../../application/ports/spotify/ISpotifyMusicClient';
 import { MusicMatchingService } from '../../domain/services/MusicMatchingService';
-import { SpotifyCreatePlaylistResponse, SpotifySearchResponse, SpotifySearchResult } from '@harmonia/shared';
 
 
 export class SpotifyMusicClient implements ISpotifyMusicClient {
@@ -14,7 +14,7 @@ export class SpotifyMusicClient implements ISpotifyMusicClient {
 
     const response = await fetch(
       `https://api.spotify.com/v1/search?${new URLSearchParams({
-        q: query,
+        q: query.query,
         type: 'track',
         limit: '5',
       })}`,
@@ -42,10 +42,16 @@ export class SpotifyMusicClient implements ISpotifyMusicClient {
     let bestScore = 0;
 
     for (const track of tracks) {
-      const score = MusicMatchingService.calculateMatchScore({ title: youtubeTitle, channelTitle }, {
-        name: track.name,
-        artists: track.artists || [],
-      });
+      const score = MusicMatchingService.calculateMatchScore(
+        {
+          title: query.expectedTitle,
+          artist: query.expectedArtist,
+        },
+        {
+          name: track.name,
+          artists: track.artists || [],
+        }
+      );
 
       if (score > bestScore) {
         bestScore = score;

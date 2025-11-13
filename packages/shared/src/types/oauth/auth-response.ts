@@ -1,5 +1,5 @@
 export interface AuthSuccess {
-  success: true;
+  success: boolean;
   token: string;
   user: {
     id: string;

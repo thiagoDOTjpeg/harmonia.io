@@ -1,6 +1,6 @@
-import { SpotifyMusicClient } from "../../../infrastructure/client/SpotifyMusicClient";
+import { IGoogleMusicClient } from "@/application/ports/google/IGoogleMusicClient";
 import { SyncPlaylistInput, SyncPlaylistResult } from '@harmonia/shared';
-import { IGoogleOAuthClient } from "../../ports/oauth/IGoogleOAuthClient";
+import { SpotifyMusicClient } from "../../../infrastructure/client/SpotifyMusicClient";
 import { IPlaylistRepository } from "../../repositories/IPlaylistRepository";
 import { IPlaylistTrackRepository } from "../../repositories/IPlaylistTrackRepository";
 import { ITrackRepository } from "../../repositories/ITrackRepository";
@@ -10,7 +10,7 @@ export class SyncYouTubePlaylistToSpotify {
     private readonly playlistRepository: IPlaylistRepository,
     private readonly trackRepository: ITrackRepository,
     private readonly playlistTrackRepository: IPlaylistTrackRepository,
-    private readonly googleClient: IGoogleOAuthClient,
+    private readonly googleClient: IGoogleMusicClient,
   ) { }
 
   async execute(input: SyncPlaylistInput): Promise<SyncPlaylistResult> {
