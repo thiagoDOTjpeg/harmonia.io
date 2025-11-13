@@ -7,13 +7,35 @@ import { toast } from "./use-toast";
 
 export function useDashboard() {
   const router = useRouter();
-  const { setSummary } = useDashboardStore();
+  const { setSummary, setPlaylists, _hasHydrated, clearDashboard, summary, playlists, setHasHydrated } = useDashboardStore();
   const { token } = useAuthStore();
   const [isLoading, setIsLoading] = useState(false);
 
-  const dashboard = async () => {
+  const getPlaylists = async () => {
     if (!token) {
       toast({ variant: "destructive", title: "Não autenticado" });
+      router.push("/")
+      return null;
+    }
+
+    setIsLoading(true)
+    try {
+      const data = await userService.getPlaylists(token);
+      setPlaylists(data);
+
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Erro desconhecido"
+      toast({ variant: "destructive", title: "Erro", description: message })
+      return null
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  const getSummary = async () => {
+    if (!token) {
+      toast({ variant: "destructive", title: "Não autenticado" });
+      router.push("/")
       return null;
     }
 
@@ -31,5 +53,5 @@ export function useDashboard() {
     }
   };
 
-  return { dashboard, isLoading };
+  return { getSummary, getPlaylists, isLoading, _hasHydrated, clearDashboard, summary, playlists, setHasHydrated };
 }

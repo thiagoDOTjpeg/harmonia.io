@@ -1,6 +1,8 @@
+import { UserPlaylist } from '@/domain/entities/UserPlaylist';
 import { PrismaClient } from '@prisma/client';
 import { IPlaylistRepository } from '../../../../application/repositories/IPlaylistRepository';
 import { SyncedPlaylist } from '../../../../domain/entities/SyncedPlaylist';
+import { UserPlaylistsMapper } from '../mapper/UserPlaylistsMapper';
 
 export class PrismaPlaylistRepository implements IPlaylistRepository {
   constructor(private readonly prisma: PrismaClient) { }
@@ -40,6 +42,13 @@ export class PrismaPlaylistRepository implements IPlaylistRepository {
       orderBy: { createdAt: 'desc' },
     });
     return playlists.map(p => this.toDomain(p));
+  }
+
+  async findByUserIdView(userId: string): Promise<UserPlaylist[]> {
+    const playlists = await this.prisma.userPlaylists.findMany({
+      where: { userId },
+    });
+    return playlists.map(p => UserPlaylistsMapper.toDomain(p));
   }
 
   async create(input: {
@@ -86,7 +95,6 @@ export class PrismaPlaylistRepository implements IPlaylistRepository {
     });
   }
 
-  // NOVO: Método para buscar com tracks incluídas
   async findByIdWithTracks(playlistId: string): Promise<any | null> {
     return await this.prisma.syncedPlaylist.findUnique({
       where: { id: playlistId },

@@ -101,6 +101,22 @@ model UserSummary {
   @@map("user_summary")
 }
 
+model UserPlaylists {
+  id                String    @id
+  userId            String    @map("user_id")
+  youtubePlaylistId String    @map("youtube_playlist_id")
+  youtubeTitle      String?   @map("youtube_title")
+  spotifyPlaylistId String    @map("spotify_playlist_id")
+  spotifyTitle      String?   @map("spotify_title")
+  syncStatus        String    @map("sync_status")
+  lastSyncedAt      DateTime? @map("last_synced_at")
+  createdAt         DateTime  @map("created_at")
+  updatedAt         DateTime  @map("updated_at")
+  songs             BigInt
+
+  @@map("user_playlists")
+}
+
 enum ServiceProvider {
   GOOGLE
   SPOTIFY

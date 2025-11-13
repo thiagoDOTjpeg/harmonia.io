@@ -10,21 +10,9 @@ export class PlaylistController {
       if (!user) return;
 
       const playlistRepository = Container.getPlaylistRepository();
-      const playlists = await playlistRepository.findByUserId(user.id);
+      const playlists = await playlistRepository.findByUserIdView(user.id);
 
-      return res.json({
-        success: true,
-        data: playlists.map((p) => ({
-          id: p.id,
-          youtubeTitle: p.youtubeTitle,
-          spotifyTitle: p.spotifyTitle,
-          youtubeUrl: p.youtubeUrl,
-          spotifyUrl: p.spotifyUrl,
-          syncStatus: p.syncStatus,
-          lastSyncedAt: p.lastSyncedAt,
-          createdAt: p.createdAt,
-        })),
-      });
+      return res.json(playlists);
     } catch (error) {
       console.error('Get playlists error:', error);
       throw error

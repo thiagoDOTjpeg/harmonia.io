@@ -43,3 +43,17 @@ export interface YouTubePlaylistItemsResponse {
   }>;
   nextPageToken?: string;
 }
+
+export interface UserPlaylist {
+  id: string,
+  user_id: string,
+  youtube_playlist_id: string,
+  youtube_title: string | null,
+  spotify_playlist_id: string,
+  spotify_title: string | null,
+  sync_status: string,
+  last_synced_at: string | null,
+  songs: number,
+  created_at: string,
+  updated_at: string
+}
