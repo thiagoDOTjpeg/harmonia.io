@@ -5,7 +5,7 @@ export class PlaylistSyncQueue {
   private queue: Queue<SyncPlaylistJobData>;
 
   constructor() {
-    const isProduction = process.env.NODE_ENV === 'production';
+    const isProduction = process.env.NODE_ENV === 'prod';
 
     let redisConfig: any;
 
