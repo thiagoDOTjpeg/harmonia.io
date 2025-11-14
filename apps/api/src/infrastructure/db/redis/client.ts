@@ -13,9 +13,20 @@ if (process.env.NODE_ENV === "dev") {
     },
   });
 } else {
-  redis = new Redis(process.env.REDIS_URL || "")
+  redis = new Redis(process.env.REDIS_URL || "", {
+    maxRetriesPerRequest: null,
+    enableReadyCheck: false,
+    enableOfflineQueue: true,
+    lazyConnect: false,
+    tls: {
+      rejectUnauthorized: false,
+    },
+    retryStrategy(times) {
+      const delay = Math.min(times * 50, 2000);
+      return delay;
+    },
+  });
 }
-
 
 redis.on('error', (err) => {
   console.error('Redis connection error:', err);
