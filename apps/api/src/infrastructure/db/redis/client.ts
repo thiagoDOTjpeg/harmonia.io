@@ -1,6 +1,7 @@
+import { Redis as UpstashRedis } from '@upstash/redis';
 import Redis from 'ioredis';
 
-let redis: Redis;
+let redis: Redis | UpstashRedis;
 
 console.log('🔍 NODE_ENV:', process.env.NODE_ENV);
 console.log('🔍 REDIS_URL exists:', !!process.env.REDIS_URL);
@@ -16,36 +17,30 @@ if (process.env.NODE_ENV === "dev") {
       return delay;
     },
   });
-} else {
-  const redisUrl = process.env.REDIS_URL;
 
-  if (!redisUrl) {
-    throw new Error('❌ REDIS_URL não está definida no ambiente de produção');
+  redis.on('error', (err) => {
+    console.error('Redis connection error:', err);
+  });
+
+  redis.on('connect', () => {
+    console.log('✅ Redis connected (dev)');
+  });
+} else {
+  const redisUrl = process.env.UPSTASH_REDIS_REST_URL;
+  const redisToken = process.env.UPSTASH_REDIS_REST_TOKEN;
+
+  if (!redisUrl || !redisToken) {
+    throw new Error('❌ UPSTASH_REDIS_REST_URL e UPSTASH_REDIS_REST_TOKEN devem estar definidas');
   }
 
-  console.log('🔍 Conectando no Redis URL:', redisUrl.replace(/:([^:@]+)@/, ':****@'));
+  console.log('🔍 Conectando no Upstash Redis:', redisUrl);
 
-  redis = new Redis(redisUrl, {
-    maxRetriesPerRequest: null,
-    enableReadyCheck: false,
-    enableOfflineQueue: true,
-    lazyConnect: false,
-    tls: {
-      rejectUnauthorized: false,
-    },
-    retryStrategy(times) {
-      const delay = Math.min(times * 50, 2000);
-      return delay;
-    },
+  redis = new UpstashRedis({
+    url: redisUrl,
+    token: redisToken,
   });
+
+  console.log('✅ Upstash Redis configurado');
 }
-
-redis.on('error', (err) => {
-  console.error('Redis connection error:', err);
-});
-
-redis.on('connect', () => {
-  console.log('✅ Redis connected, ambiente:', process.env.NODE_ENV);
-});
 
 export { redis };
