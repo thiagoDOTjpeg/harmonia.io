@@ -16,19 +16,37 @@ export class PlaylistSyncQueue {
         throw new Error('❌ REDIS_URL deve estar definida em produção');
       }
 
-      redisConfig = redisUrl;
-      console.log('🔍 [Queue] Usando Redis em produção');
+      redisConfig = {
+        redis: redisUrl,
+        maxRetriesPerRequest: null,
+        enableReadyCheck: false,
+        retryStrategy: (times: number) => {
+          const delay = Math.min(times * 50, 2000);
+          console.log(`[Queue] Tentando reconectar ao Redis (tentativa ${times})...`);
+          return delay;
+        },
+        reconnectOnError: (err: Error) => {
+          console.error('[Queue] Erro no Redis, tentando reconectar:', err.message);
+          return true;
+        },
+        connectTimeout: 10000,
+        keepAlive: 30000,
+        tls: redisUrl.startsWith('rediss://') ? {} : undefined,
+      };
+
+      console.log('🔍 [Queue] Usando Redis em produção com retry strategy');
     } else {
       redisConfig = {
         host: process.env.REDIS_HOST || 'localhost',
         port: parseInt(process.env.REDIS_PORT || '6379'),
         password: process.env.REDIS_PASSWORD,
+        maxRetriesPerRequest: null,
+        enableReadyCheck: false,
       };
       console.log('🔍 [Queue] Usando Redis local em desenvolvimento');
     }
 
-    this.queue = new Bull<SyncPlaylistJobData>('playlist-sync', {
-      redis: redisConfig,
+    this.queue = new Bull<SyncPlaylistJobData>('playlist-sync', redisConfig, {
       defaultJobOptions: {
         attempts: 3,
         backoff: {
@@ -67,9 +85,18 @@ export class PlaylistSyncQueue {
     });
 
     this.queue.on('error', (error: Error) => {
-      console.error('[Queue] Erro na fila:', error);
+      console.error('[Queue] Erro na fila:', error.message);
+    });
+
+    this.queue.on('waiting', (jobId) => {
+      console.log(`[Queue] Job ${jobId} aguardando processamento`);
+    });
+
+    this.queue.on('active', (job: Job<SyncPlaylistJobData>) => {
+      console.log(`[Queue] Job ${job.id} iniciado`);
     });
   }
+
 
   async addSyncJob(data: SyncPlaylistJobData): Promise<Job<SyncPlaylistJobData>> {
     const existingJobs = await this.queue.getJobs(['waiting', 'active', 'delayed']);
