@@ -1,13 +1,15 @@
 {
-  "extends": "../../packages/config-typescript/node.json",
+  "extends": "@harmonia/config-typescript/node",
   "compilerOptions": {
-    "composite": true,
-    "outDir": "dist",
-    "rootDir": "src",
+    "module": "CommonJS",
+    "moduleResolution": "node",
+    "rootDir": "./src",
+    "outDir": "./dist",
+    "baseUrl": "./src",
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["*"]
     }
   },
-  "include": ["src/**/*"],
+  "include": ["src"],
   "exclude": ["node_modules", "dist"]
 }

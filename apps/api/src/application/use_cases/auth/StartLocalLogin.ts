@@ -1,8 +1,8 @@
-import { IHasher } from '@/application/ports/crypto/IHasher';
-import { LoginDto } from '@/infrastructure/http/schemas/auth';
+import { IHasher } from '@/application/ports/crypto/IHasher.js';
+import { ITokenManager } from '@/application/ports/crypto/ITokenManager.js';
+import { IUserRepository } from '@/application/repositories/IUserRepository.js';
+import { LoginDto } from '@/infrastructure/http/schemas/auth.js';
 import { AuthResponse, InvalidCredentialsError } from '@harmonia/shared';
-import { ITokenManager } from '../../ports/crypto/ITokenManager';
-import { IUserRepository } from '../../repositories/IUserRepository';
 
 export class StartLocalLogin {
   constructor(

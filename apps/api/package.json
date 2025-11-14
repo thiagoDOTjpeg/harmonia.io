@@ -2,11 +2,10 @@
   "name": "@harmonia/api",
   "version": "1.0.0",
   "private": true,
-  "type": "module",
   "scripts": {
     "dev": "dotenv -e ../../.env -- tsx watch src/main/index.ts",
     "worker": "dotenv -e ../../.env -- tsx watch src/main/worker.ts",
-    "build": "tsc && tsc-alias",
+    "build": "dotenv -e ../../.env -- prisma generate --schema=../../packages/database/prisma/schema.prisma && tsc && tsc-alias",
     "start": "node dist/main/index.js",
     "db:generate": "dotenv -e ../../.env -- prisma generate --schema=../../packages/database/prisma/schema.prisma",
     "db:push": "dotenv -e ../../.env -- prisma db push --schema=../../packages/database/prisma/schema.prisma",
