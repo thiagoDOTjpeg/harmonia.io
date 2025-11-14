@@ -17,7 +17,7 @@ export class RedisStateStore implements IOAuthStateStore {
 
       if (!data) return undefined;
 
-      return JSON.parse(data) as OAuthState;
+      return data as OAuthState;
     } catch (error) {
       console.error('Redis get error:', error);
       return undefined;
