@@ -6,6 +6,7 @@
     "BASE_URL",
     "PORT",
     "REDIS_HOST",
+    "REDIS_URL",
     "REDIS_PORT",
     "DATABASE_URL",
     "JWT_SECRET",
@@ -25,12 +26,24 @@
     "dev": {
       "cache": false,
       "persistent": true,
-      "env": ["NODE_ENV", "DATABASE_URL", "REDIS_HOST", "REDIS_PORT"]
+      "env": [
+        "NODE_ENV",
+        "DATABASE_URL",
+        "REDIS_HOST",
+        "REDIS_PORT",
+        "REDIS_URL"
+      ]
     },
     "worker": {
       "cache": false,
       "persistent": true,
-      "env": ["NODE_ENV", "DATABASE_URL", "REDIS_HOST", "REDIS_PORT"]
+      "env": [
+        "NODE_ENV",
+        "DATABASE_URL",
+        "REDIS_HOST",
+        "REDIS_PORT",
+        "REDIS_URL"
+      ]
     },
     "lint": {
       "outputs": []

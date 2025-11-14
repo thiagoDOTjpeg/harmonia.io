@@ -36,8 +36,5 @@
     "node": ">=18.0.0",
     "npm": ">=7.0.0"
   },
-  "packageManager": "npm@10.9.3",
-  "dependencies": {
-    "@upstash/redis": "1.35.6"
-  }
+  "packageManager": "npm@10.9.3"
 }

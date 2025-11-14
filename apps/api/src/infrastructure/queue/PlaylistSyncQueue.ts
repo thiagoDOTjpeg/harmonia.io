@@ -1,52 +1,23 @@
-import { SyncPlaylistJobData, SyncResult } from '@harmonia/shared';
+import { SyncPlaylistJobData } from '@harmonia/shared';
 import Bull, { Job, Queue } from 'bull';
 
 export class PlaylistSyncQueue {
   private queue: Queue<SyncPlaylistJobData>;
 
   constructor() {
-    const isProduction = process.env.NODE_ENV === 'prod';
+    const redisConfig = {
+      host: process.env.REDIS_HOST || 'localhost',
+      port: parseInt(process.env.REDIS_PORT || '6379'),
+      password: process.env.REDIS_PASSWORD,
+      db: parseInt(process.env.REDIS_DB || '0'),
+      maxRetriesPerRequest: null,
+      enableReadyCheck: false,
+    };
 
-    let redisConfig: any;
+    console.log(`🔍 [Queue] Conectando ao Redis: ${redisConfig.host}:${redisConfig.port}`);
 
-    if (isProduction) {
-      const redisUrl = process.env.REDIS_URL;
-
-      if (!redisUrl) {
-        throw new Error('❌ REDIS_URL deve estar definida em produção');
-      }
-
-      redisConfig = {
-        redis: redisUrl,
-        maxRetriesPerRequest: null,
-        enableReadyCheck: false,
-        retryStrategy: (times: number) => {
-          const delay = Math.min(times * 50, 2000);
-          console.log(`[Queue] Tentando reconectar ao Redis (tentativa ${times})...`);
-          return delay;
-        },
-        reconnectOnError: (err: Error) => {
-          console.error('[Queue] Erro no Redis, tentando reconectar:', err.message);
-          return true;
-        },
-        connectTimeout: 10000,
-        keepAlive: 30000,
-        tls: redisUrl.startsWith('rediss://') ? {} : undefined,
-      };
-
-      console.log('🔍 [Queue] Usando Redis em produção com retry strategy');
-    } else {
-      redisConfig = {
-        host: process.env.REDIS_HOST || 'localhost',
-        port: parseInt(process.env.REDIS_PORT || '6379'),
-        password: process.env.REDIS_PASSWORD,
-        maxRetriesPerRequest: null,
-        enableReadyCheck: false,
-      };
-      console.log('🔍 [Queue] Usando Redis local em desenvolvimento');
-    }
-
-    this.queue = new Bull<SyncPlaylistJobData>('playlist-sync', redisConfig, {
+    this.queue = new Bull<SyncPlaylistJobData>('sync-playlist', {
+      redis: redisConfig,
       defaultJobOptions: {
         attempts: 3,
         backoff: {
@@ -68,23 +39,23 @@ export class PlaylistSyncQueue {
   }
 
   private setupEventListeners() {
-    this.queue.on('completed', (job: Job<SyncPlaylistJobData>, result: SyncResult) => {
+    this.queue.on('completed', (job, result) => {
       console.log(`[Queue] Job ${job.id} concluído:`, result);
     });
 
-    this.queue.on('failed', (job: Job<SyncPlaylistJobData>, error: Error) => {
-      console.error(`[Queue] Job ${job.id} falhou:`, error.message);
+    this.queue.on('failed', (job, err) => {
+      console.error(`[Queue] Job ${job.id} falhou:`, err.message);
     });
 
-    this.queue.on('progress', (job: Job<SyncPlaylistJobData>, progress: any) => {
+    this.queue.on('progress', (job, progress) => {
       console.log(`[Queue] Job ${job.id} progresso:`, progress);
     });
 
-    this.queue.on('stalled', (job: Job<SyncPlaylistJobData>) => {
+    this.queue.on('stalled', (job) => {
       console.warn(`[Queue] Job ${job.id} travado (provavelmente worker morreu)`);
     });
 
-    this.queue.on('error', (error: Error) => {
+    this.queue.on('error', (error) => {
       console.error('[Queue] Erro na fila:', error.message);
     });
 
@@ -92,11 +63,10 @@ export class PlaylistSyncQueue {
       console.log(`[Queue] Job ${jobId} aguardando processamento`);
     });
 
-    this.queue.on('active', (job: Job<SyncPlaylistJobData>) => {
+    this.queue.on('active', (job) => {
       console.log(`[Queue] Job ${job.id} iniciado`);
     });
   }
-
 
   async addSyncJob(data: SyncPlaylistJobData): Promise<Job<SyncPlaylistJobData>> {
     const existingJobs = await this.queue.getJobs(['waiting', 'active', 'delayed']);
@@ -111,7 +81,7 @@ export class PlaylistSyncQueue {
       return duplicate;
     }
 
-    const job = await this.queue.add('sync-playlist', data, {
+    const job = await this.queue.add("sync-playlist", data, {
       priority: data.priority || 10,
       jobId: `sync-${data.userId}-${data.youtubePlaylistId}-${Date.now()}`,
     });
@@ -162,9 +132,7 @@ export class PlaylistSyncQueue {
 
   async cleanOldJobs() {
     await this.queue.clean(7 * 24 * 3600 * 1000, 'completed');
-
     await this.queue.clean(14 * 24 * 3600 * 1000, 'failed');
-
     console.log('[Queue] Jobs antigos limpos');
   }
 
@@ -179,41 +147,35 @@ export class PlaylistSyncQueue {
   }
 
   async getStats() {
-    const [waiting, active, completed, failed, delayed, paused] = await Promise.all([
-      this.queue.getWaitingCount(),
-      this.queue.getActiveCount(),
-      this.queue.getCompletedCount(),
-      this.queue.getFailedCount(),
-      this.queue.getDelayedCount(),
-      this.queue.getPausedCount(),
-    ]);
+    const counts = await this.queue.getJobCounts();
 
     return {
-      waiting,
-      active,
-      completed,
-      failed,
-      delayed,
-      paused,
-      total: waiting + active + completed + failed + delayed + paused,
+      waiting: counts.waiting || 0,
+      active: counts.active || 0,
+      completed: counts.completed || 0,
+      failed: counts.failed || 0,
+      delayed: counts.delayed || 0,
+      total: Object.values(counts).reduce((sum, count) => sum + count, 0),
     };
   }
 
-  async getUserJobs(userId: string, states: Bull.JobStatus[] = ['waiting', 'active', 'completed', 'failed']) {
+  async getUserJobs(userId: string, states: ('waiting' | 'active' | 'completed' | 'failed' | 'delayed')[] = ['waiting', 'active', 'completed', 'failed']) {
     const jobs = await this.queue.getJobs(states);
 
-    return jobs
-      .filter((job) => job.data.userId === userId)
-      .map((job) => ({
-        id: job.id,
-        state: job.getState(),
-        progress: job.progress(),
-        data: job.data,
-        finishedOn: job.finishedOn,
-        processedOn: job.processedOn,
-        failedReason: job.failedReason,
-        returnvalue: job.returnvalue,
-      }));
+    return Promise.all(
+      jobs
+        .filter((job) => job.data.userId === userId)
+        .map(async (job) => ({
+          id: job.id,
+          state: await job.getState(),
+          progress: job.progress(),
+          data: job.data,
+          finishedOn: job.finishedOn,
+          processedOn: job.processedOn,
+          failedReason: job.failedReason,
+          returnvalue: job.returnvalue,
+        }))
+    );
   }
 
   getQueue(): Queue<SyncPlaylistJobData> {

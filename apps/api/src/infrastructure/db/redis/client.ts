@@ -1,28 +1,31 @@
-import Redis from 'ioredis';
+import { createClient } from "redis";
 
-let redis: Redis;
-if (process.env.NODE_ENV === "dev") {
-  redis = new Redis({
-    host: process.env.REDIS_HOST || 'localhost',
-    port: parseInt(process.env.REDIS_PORT || '6379'),
-    password: process.env.REDIS_PASSWORD,
-    db: parseInt(process.env.REDIS_DB || '0'),
-    retryStrategy(times) {
-      const delay = Math.min(times * 50, 2000);
+const redisClient = createClient({
+  socket: {
+    host: process.env.NODE_ENV === "dev"
+      ? (process.env.REDIS_HOST || 'localhost')
+      : undefined,
+    port: process.env.NODE_ENV === "dev"
+      ? parseInt(process.env.REDIS_PORT || '6379')
+      : undefined,
+    reconnectStrategy: (retries) => {
+      const delay = Math.min(retries * 50, 2000);
       return delay;
     },
-  });
-} else {
-  redis = new Redis(process.env.REDIS_URL || "")
-}
+  },
+  database: parseInt(process.env.REDIS_DB || '0'),
+  url: process.env.NODE_ENV !== "dev" ? process.env.REDIS_URL : undefined,
+});
 
-
-redis.on('error', (err) => {
+redisClient.on('error', (err) => {
   console.error('Redis connection error:', err);
 });
 
-redis.on('connect', () => {
+redisClient.on('connect', () => {
   console.log('✅ Redis connected, ambiente:', process.env.NODE_ENV);
 });
 
-export { redis };
+// Conectar ao Redis
+redisClient.connect().catch(console.error);
+
+export { redisClient as redis };
