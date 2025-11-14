@@ -5,12 +5,33 @@ export class PlaylistSyncQueue {
   private queue: Queue<SyncPlaylistJobData>;
 
   constructor() {
-    this.queue = new Bull<SyncPlaylistJobData>('playlist-sync', {
-      redis: {
+    const isProduction = process.env.NODE_ENV === 'production' ||
+      !!process.env.UPSTASH_REDIS_REST_URL;
+
+    let redisConfig: any;
+
+    if (isProduction) {
+      const redisUrl = process.env.UPSTASH_REDIS_REST_URL;
+
+      if (!redisUrl) {
+        throw new Error('❌ UPSTASH_REDIS_REST_URL deve estar definida em produção');
+      }
+
+      const upstashUrl = process.env.REDIS_URL || redisUrl.replace('https://', 'rediss://');
+
+      redisConfig = upstashUrl;
+      console.log('🔍 [Queue] Usando Upstash Redis em produção');
+    } else {
+      redisConfig = {
         host: process.env.REDIS_HOST || 'localhost',
         port: parseInt(process.env.REDIS_PORT || '6379'),
         password: process.env.REDIS_PASSWORD,
-      },
+      };
+      console.log('🔍 [Queue] Usando Redis local em desenvolvimento');
+    }
+
+    this.queue = new Bull<SyncPlaylistJobData>('playlist-sync', {
+      redis: redisConfig,
       defaultJobOptions: {
         attempts: 3,
         backoff: {
