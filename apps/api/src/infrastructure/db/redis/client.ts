@@ -1,6 +1,10 @@
 import Redis from 'ioredis';
 
 let redis: Redis;
+
+console.log('🔍 NODE_ENV:', process.env.NODE_ENV);
+console.log('🔍 REDIS_URL exists:', !!process.env.REDIS_URL);
+
 if (process.env.NODE_ENV === "dev") {
   redis = new Redis({
     host: process.env.REDIS_HOST || 'localhost',
@@ -13,7 +17,15 @@ if (process.env.NODE_ENV === "dev") {
     },
   });
 } else {
-  redis = new Redis(process.env.REDIS_URL || "", {
+  const redisUrl = process.env.REDIS_URL;
+
+  if (!redisUrl) {
+    throw new Error('❌ REDIS_URL não está definida no ambiente de produção');
+  }
+
+  console.log('🔍 Conectando no Redis URL:', redisUrl.replace(/:([^:@]+)@/, ':****@'));
+
+  redis = new Redis(redisUrl, {
     maxRetriesPerRequest: null,
     enableReadyCheck: false,
     enableOfflineQueue: true,
