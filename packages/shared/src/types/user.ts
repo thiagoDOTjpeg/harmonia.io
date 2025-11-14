@@ -19,6 +19,7 @@ export interface UserSummary {
   synced_playlists: number;
   total_songs: number;
   synced_songs: number;
+  synced_songs_last_7_days: number;
   last_sync_at: string | null;
   recent_syncs: RecentSync[];
 }

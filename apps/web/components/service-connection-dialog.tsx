@@ -9,6 +9,14 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { useAuthContext } from "@/context/AuthContext";
+import { useUser } from "@/hooks/use-user";
+import { formatFullDate } from "@/lib/utils";
+import {
+  OAuthMethod,
+  ServiceConnection,
+  ServiceProvider,
+} from "@harmonia/shared";
 import {
   CheckCircle2,
   ExternalLink,
@@ -16,29 +24,78 @@ import {
   Unplug,
   XCircle,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 interface ServiceConnectionDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  service: "youtube" | "spotify";
+  service: ServiceProvider;
 }
+
+const SCOPES = {
+  [ServiceProvider.GOOGLE]: {
+    openid: "Identificar sua conta",
+    email: "Acessar seu endereço de e-mail",
+    profile: "Visualizar informações básicas do perfil",
+    "https://www.googleapis.com/auth/youtube.readonly":
+      "Visualizar seus dados do YouTube (playlists, vídeos e canais)",
+  },
+  [ServiceProvider.SPOTIFY]: {
+    "playlist-read-private": "Acessar suas playlists privadas",
+    "playlist-read-collaborative": "Acessar suas playlists colaborativas",
+    "playlist-modify-private": "Gerenciar suas playlists privadas",
+    "playlist-modify-public": "Gerenciar suas playlists públicas",
+    "user-read-email": "Acessar seu endereço de e-mail",
+  },
+};
 
 export function ServiceConnectionDialog({
   open,
   onOpenChange,
   service,
 }: ServiceConnectionDialogProps) {
+  const { getServiceConnections, _hasHydrated, serviceConnections } = useUser();
+  const { openOAuthPopup } = useAuthContext();
+  const [selectedService, setSelectedService] = useState<ServiceConnection>();
   const [isConnected, setIsConnected] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
 
+  const hasScope = (scopeKey: string): boolean => {
+    if (!selectedService?.scopes) return false;
+
+    try {
+      const userScopes = selectedService.scopes.split(" ");
+      return userScopes.includes(scopeKey);
+    } catch (error) {
+      console.error("Error parsing scopes:", error);
+      return false;
+    }
+  };
+
+  useEffect(() => {
+    if (_hasHydrated && !serviceConnections) {
+      getServiceConnections();
+    }
+
+    const connection = serviceConnections?.find(
+      (serviceConnection) => serviceConnection.provider === service
+    );
+
+    setSelectedService(connection);
+    setIsConnected(!!connection);
+  }, [_hasHydrated, serviceConnections, getServiceConnections, service]);
+
   const serviceConfig = {
-    youtube: {
+    [ServiceProvider.GOOGLE]: {
       name: "YouTube",
       color: "text-accent",
-      bgColor: "bg-accent/20",
+      bgColor: "bg-white/75",
       icon: (
-        <svg className="h-6 w-6" viewBox="0 0 24 24" fill="currentColor">
+        <svg
+          className="h-6 w-6 text-red-600"
+          viewBox="0 0 24 24"
+          fill="currentColor"
+        >
           <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
         </svg>
       ),
@@ -54,7 +111,7 @@ export function ServiceConnectionDialog({
         connectedSince: "15 de Janeiro, 2024",
       },
     },
-    spotify: {
+    [ServiceProvider.SPOTIFY]: {
       name: "Spotify",
       color: "text-primary",
       bgColor: "bg-primary/20",
@@ -87,14 +144,6 @@ export function ServiceConnectionDialog({
     setIsLoading(false);
   };
 
-  const handleConnect = async () => {
-    setIsLoading(true);
-    // Simulate OAuth flow
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-    setIsConnected(true);
-    setIsLoading(false);
-  };
-
   const handleReauthorize = async () => {
     setIsLoading(true);
     // Simulate reauthorization
@@ -114,7 +163,7 @@ export function ServiceConnectionDialog({
             </div>
             <div>
               <DialogTitle className="text-xl">
-                Gerenciar {config.name}
+                Gerenciar {service.at(0) + service.slice(1).toLocaleLowerCase()}
               </DialogTitle>
               <DialogDescription>
                 {isConnected ? "Conexão ativa" : "Não conectado"}
@@ -157,17 +206,7 @@ export function ServiceConnectionDialog({
                 <div className="flex justify-between">
                   <span className="text-sm text-muted-foreground">Email</span>
                   <span className="text-sm font-medium">
-                    {config.connectedInfo.email}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-sm text-muted-foreground">
-                    {service === "youtube" ? "Canal" : "Nome de Exibição"}
-                  </span>
-                  <span className="text-sm font-medium">
-                    {service === "youtube"
-                      ? config.connectedInfo.channel
-                      : config.connectedInfo.displayName}
+                    {selectedService?.email}
                   </span>
                 </div>
                 <div className="flex justify-between">
@@ -175,7 +214,7 @@ export function ServiceConnectionDialog({
                     Conectado desde
                   </span>
                   <span className="text-sm font-medium">
-                    {config.connectedInfo.connectedSince}
+                    {formatFullDate(selectedService?.createdAt)}
                   </span>
                 </div>
               </div>
@@ -188,12 +227,26 @@ export function ServiceConnectionDialog({
               Permissões Necessárias
             </h4>
             <div className="space-y-2">
-              {config.permissions.map((permission, index) => (
-                <div key={index} className="flex items-start gap-2 text-sm">
-                  <CheckCircle2 className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
-                  <span className="text-muted-foreground">{permission}</span>
-                </div>
-              ))}
+              {Object.entries(SCOPES[service]).map(([key, description]) => {
+                const isGranted = hasScope(key);
+
+                return (
+                  <div key={key} className="flex items-start gap-2 text-sm">
+                    {isGranted ? (
+                      <CheckCircle2 className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+                    ) : (
+                      <XCircle className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
+                    )}
+                    <span
+                      className={
+                        isGranted ? "text-foreground" : "text-muted-foreground"
+                      }
+                    >
+                      {description}
+                    </span>
+                  </div>
+                );
+              })}
             </div>
           </div>
 
@@ -225,7 +278,7 @@ export function ServiceConnectionDialog({
             ) : (
               <Button
                 className="w-full"
-                onClick={handleConnect}
+                onClick={() => openOAuthPopup(service, OAuthMethod.connect)}
                 disabled={isLoading}
               >
                 <ExternalLink className="mr-2 h-4 w-4" />

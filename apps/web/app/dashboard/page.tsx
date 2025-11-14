@@ -1,5 +1,6 @@
 "use client";
 
+import { ServiceConnectionDialog } from "@/components/service-connection-dialog";
 import DashboardSkeleton from "@/components/skeleton/dashboard-skeleton";
 import { Button } from "@/components/ui/button";
 import {
@@ -9,14 +10,24 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { useDashboard } from "@/hooks/use-dashboard";
+import { useUser } from "@/hooks/use-user";
 import { formatTimeAgo } from "@/lib/utils";
+import { ServiceProvider } from "@harmonia/shared";
 import { Clock, Music2, TrendingUp, Zap } from "lucide-react";
 import Link from "next/link";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 export default function DashboardPage() {
-  const { getSummary, isLoading, summary, _hasHydrated } = useDashboard();
+  const { getSummary, isLoading, summary, _hasHydrated } = useUser();
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [selectedService, setSelectedService] = useState<ServiceProvider>(
+    ServiceProvider.GOOGLE
+  );
+
+  const handleManageService = (service: ServiceProvider) => {
+    setSelectedService(service);
+    setDialogOpen(true);
+  };
 
   useEffect(() => {
     if (_hasHydrated && !summary) {
@@ -68,7 +79,7 @@ export default function DashboardPage() {
               {summary?.synced_songs ?? 0}
             </div>
             <p className="text-xs text-muted-foreground mt-1">
-              +23 esta semana
+              +{summary?.synced_songs_last_7_days} esta semana
             </p>
           </CardContent>
         </Card>
@@ -139,9 +150,9 @@ export default function DashboardPage() {
           <CardContent className="space-y-3">
             <div className="flex items-center justify-between p-3 border border-border rounded-lg">
               <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-full bg-accent/20 flex items-center justify-center">
+                <div className="h-10 w-10 rounded-full bg-white/75 flex items-center justify-center">
                   <svg
-                    className="h-5 w-5 text-accent"
+                    className="h-5 w-5 text-red-600"
                     viewBox="0 0 24 24"
                     fill="currentColor"
                   >
@@ -159,7 +170,11 @@ export default function DashboardPage() {
                   </p>
                 </div>
               </div>
-              <Button variant="outline" size="sm">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handleManageService(ServiceProvider.GOOGLE)}
+              >
                 Gerenciar
               </Button>
             </div>
@@ -186,7 +201,11 @@ export default function DashboardPage() {
                   </p>
                 </div>
               </div>
-              <Button variant="outline" size="sm">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handleManageService(ServiceProvider.SPOTIFY)}
+              >
                 Gerenciar
               </Button>
             </div>
@@ -227,6 +246,11 @@ export default function DashboardPage() {
           </div>
         </CardContent>
       </Card>
+      <ServiceConnectionDialog
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        service={selectedService}
+      />
     </div>
   );
 }

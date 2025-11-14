@@ -2,12 +2,12 @@ import { syncService } from "@/lib/services/sync-service";
 import { useAuthStore } from "@/lib/store/auth-store";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { useDashboard } from "./use-dashboard";
 import { toast } from "./use-toast";
+import { useUser } from "./use-user";
 
 export function usePlaylist() {
   const router = useRouter()
-  const { clearDashboard } = useDashboard();
+  const { setPlaylists, setSummary } = useUser();
   const { token } = useAuthStore();
   const [isLoading, setIsLoading] = useState(false);
 
@@ -28,7 +28,8 @@ export function usePlaylist() {
       toast({ variant: "destructive", title: "Erro", description: message })
       return null
     } finally {
-      clearDashboard();
+      setPlaylists(null);
+      setSummary(null);
       setIsLoading(false);
     }
   }

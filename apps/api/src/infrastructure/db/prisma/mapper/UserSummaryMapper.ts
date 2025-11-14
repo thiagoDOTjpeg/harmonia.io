@@ -39,6 +39,7 @@ export class UserSummaryMapper {
       last_sync_at: summary.lastSyncAt?.toISOString() ?? null,
       synced_playlists: Number(summary.syncedPlaylists),
       synced_songs: Number(summary.syncedSongs),
+      synced_songs_last_7_days: Number(summary.syncedSongsLast7Days),
       total_playlists: Number(summary.totalPlaylists),
       total_songs: Number(summary.totalSongs),
       user_id: summary.userId,

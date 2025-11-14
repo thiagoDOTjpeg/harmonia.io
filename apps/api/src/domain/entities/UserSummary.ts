@@ -12,6 +12,7 @@ export class UserSummary {
     public synced_playlists: number,
     public total_songs: number,
     public synced_songs: number,
+    public synced_songs_last_7_days: number,
     public last_sync_at: string | null,
     public recent_syncs: RecentSync[] | null,
   ) { }

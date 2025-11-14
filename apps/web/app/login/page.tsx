@@ -14,6 +14,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuthContext } from "@/context/AuthContext";
+import { OAuthMethod, ServiceProvider } from "@harmonia/shared";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2 } from "lucide-react";
 import Link from "next/link";
@@ -153,7 +154,9 @@ export default function LoginPage() {
                 variant="outline"
                 type="button"
                 className="hover:border-primary/50 hover:bg-primary/5 transition-colors bg-transparent"
-                onClick={() => openOAuthPopup("google", "login")}
+                onClick={() =>
+                  openOAuthPopup(ServiceProvider.GOOGLE, OAuthMethod.login)
+                }
                 disabled={isLoading}
               >
                 {isLoading ? (
@@ -172,7 +175,9 @@ export default function LoginPage() {
                 variant="outline"
                 type="button"
                 className="hover:border-primary/50 hover:bg-primary/5 transition-colors bg-transparent"
-                onClick={() => openOAuthPopup("spotify", "login")}
+                onClick={() =>
+                  openOAuthPopup(ServiceProvider.GOOGLE, OAuthMethod.login)
+                }
                 disabled={isLoading}
               >
                 {isLoading ? (

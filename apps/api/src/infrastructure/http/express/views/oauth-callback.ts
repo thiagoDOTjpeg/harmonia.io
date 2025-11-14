@@ -1,3 +1,5 @@
+import { OAuthMethod } from "@harmonia/shared";
+
 interface OAuthCallbackData {
   success: boolean;
   token?: string;
@@ -6,12 +8,13 @@ interface OAuthCallbackData {
     email: string;
     name: string;
   };
+  method?: OAuthMethod;
   error?: string;
 }
 
 export function getOAuthCallbackHTML(data: OAuthCallbackData, returnTo?: string): string {
   const messagePayload = data.success
-    ? { type: 'oauth-success', data: { token: data.token, user: data.user } }
+    ? { type: 'oauth-success', data: { token: data.token, user: data.user }, method: data.method }
     : { type: 'oauth-error', error: data.error || 'Unknown error' };
 
   const messageJson = JSON.stringify(messagePayload);

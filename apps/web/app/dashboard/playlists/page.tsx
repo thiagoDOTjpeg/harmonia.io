@@ -9,13 +9,13 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { useDashboard } from "@/hooks/use-dashboard";
+import { useUser } from "@/hooks/use-user";
 import { formatTimeAgo } from "@harmonia/shared";
 import { Music2, Pause, Play, Settings, Trash2 } from "lucide-react";
 import { useEffect } from "react";
 
 export default function PlaylistsPage() {
-  const { getPlaylists, playlists, isLoading, _hasHydrated } = useDashboard();
+  const { getPlaylists, playlists, isLoading, _hasHydrated } = useUser();
 
   useEffect(() => {
     if (_hasHydrated && !playlists) {

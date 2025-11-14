@@ -22,7 +22,7 @@
     "db:push": "turbo db:push --filter=@harmonia/api",
     "db:pull": "turbo db:pull --filter=@harmonia/api",
     "db:migrate": "turbo db:migrate --filter=@harmonia/api",
-    "clean": "turbo clean && rm -rf node_modules",
+    "clean": "rm -rf node_modules dist .next .turbo && find . -name 'node_modules' -type d -prune -exec rm -rf '{}' + && find . -name 'dist' -type d -prune -exec rm -rf '{}' +",
     "format": "prettier --write \"**/*.{ts,tsx,md,json}\""
   },
   "devDependencies": {

@@ -11,6 +11,7 @@ export * from './types/google';
 export * from './types/oauth';
 export * from "./types/oauth/index";
 export * from './types/playlist';
+export * from "./types/service-connections";
 export * from './types/spotify';
 export * from './types/sync-job';
 export * from './types/token';

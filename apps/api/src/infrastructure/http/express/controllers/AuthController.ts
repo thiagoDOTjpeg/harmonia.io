@@ -1,17 +1,30 @@
-import { AppError, BadRequestError, OAuthMethod, ServiceProvider } from '@harmonia/shared';
+import { AppError, BadRequestError, InvalidCredentialsError, OAuthMethod, ServiceProvider } from '@harmonia/shared';
 import { NextFunction, Request, Response } from 'express';
+import jwt from 'jsonwebtoken';
 import { Container } from '../../../../main/container';
 import { LoginSchema, OAuthQuerySchema, RegisterSchema } from '../../schemas/auth';
-import { AuthMiddleware } from '../middlewares/AuthMiddleware';
 import { getOAuthCallbackHTML } from '../views/oauth-callback';
+
 
 export class AuthController {
   static async googleConnect(req: Request, res: Response, next: NextFunction) {
     try {
-      const user = await AuthMiddleware.getAuthenticatedUser(req, res);
       const { returnTo } = OAuthQuerySchema.parse(req.query);
+      const stateParam = req.query.state;
+      if (!stateParam) {
+        throw new InvalidCredentialsError("State é necessário para fazer a conexão")
+      }
+      const stateData = JSON.parse(Buffer.from(stateParam as string, "base64").toString());
+
+      if (Date.now() - stateData.timestamp > 5 * 60 * 1000) {
+        throw new AppError("State expirado.");
+      }
+
+      const decoded = jwt.verify(stateData.token, process.env.JWT_SECRET || "") as jwt.JwtPayload
+      const userId = decoded.sub;
+
       const useCase = Container.getStartOAuthUseCase();
-      const { redirectTo } = await useCase.execute(OAuthMethod.connect, Container.getGoogleClient(), returnTo, user.id);
+      const { redirectTo } = await useCase.execute(OAuthMethod.connect, Container.getGoogleClient(), returnTo, userId);
       res.redirect(redirectTo);
     } catch (error) {
       console.error('Google login error:', error);
@@ -61,8 +74,10 @@ export class AuthController {
       return res.send(getOAuthCallbackHTML({
         success: true,
         token: result.token,
-        user: { email: result.user.email || '', id: result.user.id, name: result.user.name || '' }
-      }, result.returnTo));
+        user: { email: result.user.email || '', id: result.user.id, name: result.user.name || '' },
+        method: result.method
+      },
+        result.returnTo));
     } catch (error) {
       console.error('Google callback error:', error);
       if (error instanceof AppError) {
@@ -80,10 +95,23 @@ export class AuthController {
 
   static async spotifyConnect(req: Request, res: Response, next: NextFunction) {
     try {
-      const user = await AuthMiddleware.getAuthenticatedUser(req, res);
       const { returnTo } = OAuthQuerySchema.parse(req.query)
+
+      const stateParam = req.query.state;
+      if (!stateParam) {
+        throw new InvalidCredentialsError("State é necessário para fazer a conexão")
+      }
+      const stateData = JSON.parse(Buffer.from(stateParam as string, "base64").toString());
+
+      if (Date.now() - stateData.timestamp > 5 * 60 * 1000) {
+        throw new AppError("State expirado.");
+      }
+
+      const decoded = jwt.verify(stateData.token, process.env.JWT_SECRET || "") as jwt.JwtPayload
+      const userId = decoded.sub;
+
       const useCase = Container.getStartOAuthUseCase();
-      const { redirectTo } = await useCase.execute(OAuthMethod.connect, Container.getSpotifyClient(), returnTo, user.id);
+      const { redirectTo } = await useCase.execute(OAuthMethod.connect, Container.getSpotifyClient(), returnTo, userId);
       res.redirect(redirectTo);
     } catch (error) {
       console.error('Spotify login error:', error);
@@ -133,7 +161,8 @@ export class AuthController {
       return res.send(getOAuthCallbackHTML({
         success: true,
         token: result.token,
-        user: { email: result.user.email || '', id: result.user.id, name: result.user.name || '' }
+        user: { email: result.user.email || '', id: result.user.id, name: result.user.name || '' },
+        method: result.method
       }, result.returnTo));
     } catch (error) {
       console.error('Spotify callback error:', error);

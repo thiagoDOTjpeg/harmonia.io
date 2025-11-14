@@ -16,6 +16,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuthContext } from "@/context/AuthContext";
+import { OAuthMethod, ServiceProvider } from "@harmonia/shared";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AlertCircle, Loader2 } from "lucide-react";
 import Link from "next/link";
@@ -69,7 +70,6 @@ export default function CadastroPage() {
 
   return (
     <div className="flex min-h-screen flex-col">
-      z
       <Header />
       <main className="flex-1 flex items-center justify-center py-16">
         <div className="absolute top-[40%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary/5 rounded-full blur-[100px] pointer-events-none" />
@@ -209,7 +209,9 @@ export default function CadastroPage() {
               <Button
                 variant="outline"
                 type="button"
-                onClick={() => openOAuthPopup("google", "register")}
+                onClick={() =>
+                  openOAuthPopup(ServiceProvider.GOOGLE, OAuthMethod.register)
+                }
                 disabled={isLoading}
               >
                 {isLoading ? (
@@ -227,7 +229,9 @@ export default function CadastroPage() {
               <Button
                 variant="outline"
                 type="button"
-                onClick={() => openOAuthPopup("spotify", "register")}
+                onClick={() =>
+                  openOAuthPopup(ServiceProvider.SPOTIFY, OAuthMethod.register)
+                }
                 disabled={isLoading}
               >
                 {isLoading ? (

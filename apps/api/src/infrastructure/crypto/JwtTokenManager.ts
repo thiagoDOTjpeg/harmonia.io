@@ -1,6 +1,6 @@
+import { InvalidCredentialsError, TokenResponse } from '@harmonia/shared';
 import jwt from 'jsonwebtoken';
 import { ITokenManager } from '../../application/ports/crypto/ITokenManager';
-import { TokenResponse } from '@harmonia/shared';
 
 export class JwtTokenManager implements ITokenManager {
   private readonly secret = process.env.JWT_SECRET || 'dev-secret';
@@ -12,7 +12,7 @@ export class JwtTokenManager implements ITokenManager {
 
   decode(token: string): TokenResponse {
     const decodedJwt = jwt.verify(token, this.secret) as jwt.JwtPayload;
-    if (!decodedJwt || !decodedJwt.sub) return { error: "invalid_token" };
+    if (!decodedJwt || !decodedJwt.sub) throw new InvalidCredentialsError("Credenciais do token inválidas");
     return {
       token: {
         sub: decodedJwt.sub.toString(),
