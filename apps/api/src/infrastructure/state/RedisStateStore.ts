@@ -4,7 +4,7 @@ import { redis } from '../db/redis/client';
 
 export class RedisStateStore implements IOAuthStateStore {
   private readonly prefix = 'oauth:state:';
-  private readonly ttl = 600; // 10 minutos
+  private readonly ttl = 600;
 
   private getKey(state: string): string {
     return `${this.prefix}${state}`;
@@ -27,7 +27,7 @@ export class RedisStateStore implements IOAuthStateStore {
   async set(state: string, value: OAuthState): Promise<void> {
     try {
       const key = this.getKey(state);
-      await redis.setex(key, this.ttl, JSON.stringify(value));
+      await redis.setEx(key, this.ttl, JSON.stringify(value));
     } catch (error) {
       console.error('Redis set error:', error);
       throw error;
