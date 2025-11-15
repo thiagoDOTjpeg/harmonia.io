@@ -3,6 +3,11 @@ import { SpotifyTokenResponse } from "@harmonia/shared";
 import { IAuthProvider } from "../ports/auth/IAuthProvider";
 
 export class SpotifyAuthProvider implements IAuthProvider {
+
+  revokeToken(accessToken: string): Promise<void> {
+    throw new Error("Method not implemented.");
+  }
+
   public isExpired(serviceConnection: ServiceConnection): boolean {
     if (!serviceConnection.expiresAt) {
       throw new Error("Data de expiração do token é inválida")

@@ -1,7 +1,8 @@
 import { ServiceConnection } from "@/domain/entities/ServiceConnection";
-import { SpotifyTokenResponse } from "@harmonia/shared";
+import { OAuthProviderToken } from "@harmonia/shared";
 
 export interface IAuthProvider {
   isExpired(serviceConnection: ServiceConnection): boolean;
-  refreshToken(refreshToken: string | null): Promise<SpotifyTokenResponse>;
+  refreshToken(refreshToken: string | null): Promise<OAuthProviderToken>;
+  revokeToken(accessToken: string): Promise<void>
 }

@@ -43,4 +43,20 @@ export class UserController {
       next(error)
     }
   }
+
+  static async deleteServiceConnectionRevoke(req: Request, res: Response, next: NextFunction) {
+    try {
+      const user = await AuthMiddleware.getAuthenticatedUser(req, res);
+      if (!user) {
+        throw new UnathorizedError("Usuário não logado")
+      }
+
+      const { id } = req.params
+      await Container.getRevokeServiceConnectionUseCase().execute(user.id, id);
+      return res.status(204).send();
+    } catch (error) {
+      console.error("Ocorreu um erro ao revogar a conexão", error);
+      next(error)
+    }
+  }
 }

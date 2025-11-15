@@ -17,6 +17,7 @@ import { SpotifyAuthProvider } from '@/application/providers/SpotifyAuthProvider
 import { SyncMusicService } from '@/application/services/SyncMusicService';
 import { HandleOAuthCallback } from '@/application/use_cases/auth/HandleOAuthCallback';
 import { StartOAuthUseCase } from '@/application/use_cases/auth/StartOAuthUseCase';
+import { RevokeServiceConnectionUseCase } from '@/application/use_cases/service-connection/RevokeServiceConnectionUseCase';
 import { EnsureValidConnectionsUseCase } from '@/application/use_cases/sync_playlist/EnsureValidConnectionsUseCase';
 import { GoogleOAuthCallbackStrategy } from '@/infrastructure/adapter/oauth/GoogleOAuthCallbackStrategy';
 import { OAuthCallbackStrategyFactory } from '@/infrastructure/adapter/oauth/OAuthCallbackStrategyFactory';
@@ -108,6 +109,15 @@ export class Container {
     );
   }
 
+  // ===== GETTERS - PROVIDERS =====
+
+  static getGoogleProvider() {
+    return new GoogleAuthProvider();
+  }
+
+  static getSpotifyProvider() {
+    return new SpotifyAuthProvider();
+  }
 
   // ===== GETTERS - SERVICES =====
 
@@ -174,6 +184,15 @@ export class Container {
       this.tokenSerializer,
       this.clock,
       providers
+    );
+  }
+
+  static getRevokeServiceConnectionUseCase() {
+    return new RevokeServiceConnectionUseCase(
+      this.serviceConnectionRepository,
+      this.AESEncrypter,
+      this.tokenSerializer,
+      this.getGoogleProvider()
     );
   }
 

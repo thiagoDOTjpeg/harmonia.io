@@ -6,5 +6,6 @@ const router = Router();
 
 router.get("/user/dashboard", AuthMiddleware.authenticate, UserController.getUserSummary);
 router.get("/user/connections", AuthMiddleware.authenticate, UserController.getUserConnections);
+router.delete("/user/connection/:id", AuthMiddleware.authenticate, UserController.deleteServiceConnectionRevoke);
 
 export default router;

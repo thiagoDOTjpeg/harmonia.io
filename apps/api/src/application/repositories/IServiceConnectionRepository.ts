@@ -8,6 +8,8 @@ export interface IServiceConnectionRepository {
   findByService(serviceProvider: ServiceProvider): Promise<ServiceConnection | null>
   findByServiceId(providerAccountId: string): Promise<ServiceConnection | null>
   findAllByUserId(userId: string): Promise<ServiceConnection[] | null>
+  findById(serviceConnectionId: string): Promise<ServiceConnection | null>
+  delete(serviceConnection: ServiceConnection): Promise<void>
   createServiceConnection(data: Prisma.ServiceConnectionUncheckedCreateInput): Promise<ServiceConnection>
   updateServiceConnection(data: Prisma.ServiceConnectionUncheckedUpdateInput, serviceConnectionId: string): Promise<ServiceConnection>
 }
