@@ -1,43 +1,36 @@
-import { OAuthState } from '@harmonia/shared';
-import { IOAuthStateStore } from '../../application/ports/oauth/IOAuthStateStore';
+import { IStateStore } from '../../application/ports/oauth/IStateStore';
 import { redis } from '../db/redis/client';
 
-export class RedisStateStore implements IOAuthStateStore {
-  private readonly prefix = 'oauth:state:';
-  private readonly ttl = 600;
+export class RedisStateStore<T> implements IStateStore<T> {
+  constructor(private readonly prefix: string) { }
 
-  private getKey(state: string): string {
-    return `${this.prefix}${state}`;
+  private buildKey(key: string): string {
+    return `${this.prefix}:${key}`
   }
 
-  async get(state: string): Promise<OAuthState | undefined> {
+  async get(key: string): Promise<T | undefined> {
     try {
-      const key = this.getKey(state);
-      const data = await redis.get(key);
-
+      const data = await redis.get(this.buildKey(key));
       if (!data) return undefined;
-
-      return JSON.parse(data) as OAuthState;
+      return JSON.parse(data) as T;
     } catch (error) {
       console.error('Redis get error:', error);
       return undefined;
     }
   }
 
-  async set(state: string, value: OAuthState): Promise<void> {
+  async set(key: string, value: T, expirationInSeconds: number): Promise<void> {
     try {
-      const key = this.getKey(state);
-      await redis.setEx(key, this.ttl, JSON.stringify(value));
+      await redis.setEx(this.buildKey(key), expirationInSeconds, JSON.stringify(value));
     } catch (error) {
       console.error('Redis set error:', error);
       throw error;
     }
   }
 
-  async delete(state: string): Promise<void> {
+  async delete(key: string): Promise<void> {
     try {
-      const key = this.getKey(state);
-      await redis.del(key);
+      await redis.del(this.buildKey(key));
     } catch (error) {
       console.error('Redis delete error:', error);
     }

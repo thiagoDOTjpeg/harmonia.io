@@ -11,4 +11,6 @@ export interface IUserRepository {
     name: string | null;
     passwordHash?: string;
   }): Promise<User>;
+
+  update(userId: string, userData: Partial<User>): Promise<User>;
 }

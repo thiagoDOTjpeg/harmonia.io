@@ -8,3 +8,17 @@ export interface RegisterInput {
   password: string;
   name?: string;
 }
+
+export type ResetState = {
+  randomCode: number,
+}
+
+export type RequestResetPasswordInput = {
+  email: string
+}
+
+export type ResetPasswordInput = {
+  email: string
+  code: number
+  newPassword: string
+}

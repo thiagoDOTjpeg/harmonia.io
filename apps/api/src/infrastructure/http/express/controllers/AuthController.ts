@@ -1,4 +1,4 @@
-import { AppError, BadRequestError, InvalidCredentialsError, OAuthMethod, ServiceProvider } from '@harmonia/shared';
+import { AppError, BadRequestError, InvalidCredentialsError, OAuthMethod, RequestResetPasswordInput, ResetPasswordInput, ServiceProvider } from '@harmonia/shared';
 import { NextFunction, Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 import { Container } from '../../../../main/container';
@@ -222,6 +222,34 @@ export class AuthController {
     } catch (error) {
       console.error('Local login error:', error);
       next(error);
+    }
+  }
+
+  static async requestReset(req: Request, res: Response, next: NextFunction) {
+    try {
+      const body = req.body as RequestResetPasswordInput;
+      if (!body) throw new BadRequestError("Todos os campos devem estar preenchidos")
+
+      const useCase = Container.getRequestPasswordResetUseCase();
+      await useCase.execute({ email: body.email });
+      return res.status(204).send();
+    } catch (error) {
+      console.error("Ocorreu um erro ao fazer o request de reset de senha", error)
+      return res.status(204).send();
+    }
+  }
+
+  static async resetPassowrd(req: Request, res: Response, next: NextFunction) {
+    try {
+      const body = req.body as ResetPasswordInput
+      if (!body) throw new BadRequestError("Todos os campos devem estar preenchidos")
+
+      const useCase = Container.getResetPasswordUseCase();
+      await useCase.execute({ code: body.code, email: body.email, newPassword: body.newPassword })
+      return res.status(204).send();
+    } catch (error) {
+      console.error("Ocorreu um erro ao fazer o reset da senha", error)
+      return res.status(204).send();
     }
   }
 }

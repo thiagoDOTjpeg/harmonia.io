@@ -3,6 +3,10 @@ import { AuthController } from '../controllers/AuthController';
 
 const router = Router();
 
+router.post("/auth/request-reset", AuthController.requestReset)
+
+router.post("/auth/reset-password", AuthController.resetPassowrd)
+
 router.get(
   '/auth/google/connect',
   AuthController.googleConnect
