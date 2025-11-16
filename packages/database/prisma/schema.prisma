@@ -119,8 +119,8 @@ model UserPlaylists {
 }
 
 enum ServiceProvider {
-  GOOGLE
-  SPOTIFY
+  google
+  spotify
 }
 
 model ServiceConnection {

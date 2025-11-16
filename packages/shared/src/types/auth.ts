@@ -13,6 +13,10 @@ export type ResetState = {
   randomCode: number,
 }
 
+export type SetPasswordInput = {
+  newPassword: string
+}
+
 export type RequestResetPasswordInput = {
   email: string
 }

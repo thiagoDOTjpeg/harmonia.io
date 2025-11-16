@@ -185,7 +185,7 @@ export class GoogleOAuthCallbackStrategy implements IOAuthCallbackStrategy {
       scopes: SCOPES,
       email: user.email,
       metadata: {
-        youtubeChannelId: exchangeData.youtubeChannelId
+        youtubeChannelId: exchangeData?.youtubeChannelId || ""
       }
     });
     return createdServiceConnection;

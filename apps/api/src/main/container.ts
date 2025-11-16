@@ -19,6 +19,7 @@ import { SyncMusicService } from '@/application/services/SyncMusicService';
 import { HandleOAuthCallback } from '@/application/use_cases/auth/HandleOAuthCallback';
 import { RequestPasswordResetUseCase } from '@/application/use_cases/auth/RequestPasswordResetUseCase';
 import { ResetPasswordUseCase } from '@/application/use_cases/auth/ResetPasswordUseCase';
+import { SetPasswordUseCase } from '@/application/use_cases/auth/SetPasswordUseCase';
 import { StartOAuthUseCase } from '@/application/use_cases/auth/StartOAuthUseCase';
 import { RevokeServiceConnectionUseCase } from '@/application/use_cases/service-connection/RevokeServiceConnectionUseCase';
 import { EnsureValidConnectionsUseCase } from '@/application/use_cases/sync_playlist/EnsureValidConnectionsUseCase';
@@ -31,8 +32,7 @@ import { AESTokenEncrypter } from '@/infrastructure/crypto/AESTokenEncrypter';
 import { prisma } from '@/infrastructure/db/prisma/client';
 import { PrismaServiceConnectionRepository } from '@/infrastructure/db/prisma/repositories/PrismaServiceConnectionRepository';
 import { PlaylistSyncQueue } from '@/infrastructure/queue/PlaylistSyncQueue';
-import { OAuthState, ResetState } from '@harmonia/shared';
-import { ServiceProvider } from '@prisma/client';
+import { OAuthState, ResetState, ServiceProvider } from '@harmonia/shared';
 import { StartLocalLogin } from '../application/use_cases/auth/StartLocalLogin';
 import { StartLocalRegister } from '../application/use_cases/auth/StartLocalRegister';
 import { SpotifyOAuthClient } from '../infrastructure/client/SpotifyOAuthClient';
@@ -63,6 +63,15 @@ export class Container {
   private static clock = new SystemClock();
 
   // ===== GETTERS - CLIENTS =====
+
+  static getOAuthClient(serviceProvider: ServiceProvider) {
+    switch (serviceProvider) {
+      case "google":
+        return this.googleClient;
+      case "spotify":
+        return this.spotifyClient;
+    }
+  }
 
   static getGoogleClient() {
     return this.googleClient;
@@ -182,6 +191,13 @@ export class Container {
   }
 
   // ===== GETTERS - USE CASES AUTH =====
+
+  static getSetPasswordUseCase() {
+    return new SetPasswordUseCase(
+      this.userRepository,
+      this.passwordHasher
+    );
+  }
 
   static getRequestPasswordResetUseCase() {
     return new RequestPasswordResetUseCase(
