@@ -1,7 +1,20 @@
-import type { AuthResponse, LoginInput, RegisterInput } from '@harmonia/shared';
+import type { AuthResponse, LoginInput, RegisterInput, RequestResetPasswordInput, ResetPasswordInput } from '@harmonia/shared';
 import { fetchApi } from './api';
 
 export const authService = {
+  requestResetPassword: async (data: RequestResetPasswordInput) => {
+    return fetchApi<void>("/auth/request-reset", {
+      method: "POST",
+      body: JSON.stringify(data),
+    })
+  },
+  resetPassword: async (data: ResetPasswordInput) => {
+    return fetchApi<void>("/auth/reset-password", {
+      method: "POST",
+      body: JSON.stringify(data),
+    })
+  },
+
   register: async (data: RegisterInput): Promise<AuthResponse> => {
     return fetchApi<AuthResponse>('/auth/register', {
       method: 'POST',

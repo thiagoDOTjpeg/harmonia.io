@@ -1,4 +1,4 @@
-import { BadRequestError, InvalidCredentialsError, NotFoundError, TokenExchangeError, UnathorizedError } from "@harmonia/shared";
+import { AppError, BadRequestError, InvalidCredentialsError, NotFoundError, TokenExchangeError, UnathorizedError } from "@harmonia/shared";
 import { NextFunction, Request, Response } from "express";
 
 export class ErrorHandlerMiddleware {
@@ -18,6 +18,8 @@ export class ErrorHandlerMiddleware {
       return res.status(500).json({ error: "token_exchange", message: err.message })
     } else if (err instanceof UnathorizedError) {
       return res.status(401).json({ error: "unathorized", message: err.message })
+    } else if (err instanceof AppError) {
+      return res.status(500).json({ error: "internal_error", message: err.message })
     }
 
     return res.status(500).json({ message: "Erro Interno de Servidor" })

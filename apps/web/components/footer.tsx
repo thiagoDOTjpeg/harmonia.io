@@ -1,9 +1,10 @@
+import { Github, Globe, Linkedin } from "lucide-react";
 import Link from "next/link";
 
 export function Footer() {
   return (
     <footer className="border-t border-border bg-card">
-      <div className="container m-auto py-12">
+      <div className="container py-12 m-auto">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div className="space-y-3">
             <div className="flex items-center gap-3">
@@ -65,37 +66,39 @@ export function Footer() {
               </span>
             </div>
             <p className="text-sm text-muted-foreground">
-              Sincronize suas playlists do YouTube para o Spotify em segundos.
+              Sincronização de playlists open source.
             </p>
           </div>
 
           <div>
             <h3 className="font-semibold mb-3 font-display uppercase tracking-wider text-sm">
-              Produto
+              Projeto
             </h3>
             <ul className="space-y-2 text-sm text-muted-foreground">
               <li>
                 <Link
-                  href="/#como-funciona"
+                  href="/docs"
                   className="hover:text-foreground transition-colors"
                 >
-                  Como Funciona
+                  Documentation
                 </Link>
               </li>
               <li>
                 <Link
-                  href="/planos"
+                  href="https://github.com/thiagogritti/harmonia"
+                  target="_blank"
                   className="hover:text-foreground transition-colors"
                 >
-                  Planos
+                  GitHub
                 </Link>
               </li>
               <li>
                 <Link
-                  href="/dashboard"
+                  href="https://github.com/thiagogritti/harmonia/contribute"
+                  target="_blank"
                   className="hover:text-foreground transition-colors"
                 >
-                  Dashboard
+                  Contributing
                 </Link>
               </li>
             </ul>
@@ -108,10 +111,11 @@ export function Footer() {
             <ul className="space-y-2 text-sm text-muted-foreground">
               <li>
                 <Link
-                  href="#"
+                  href="https://github.com/thiagogritti/harmonia/blob/main/LICENSE"
+                  target="_blank"
                   className="hover:text-foreground transition-colors"
                 >
-                  Termos de Serviço
+                  License (MIT)
                 </Link>
               </li>
               <li>
@@ -132,28 +136,46 @@ export function Footer() {
             <ul className="space-y-2 text-sm text-muted-foreground">
               <li>
                 <Link
-                  href="#"
+                  href="mailto:contato@harmonia.io"
                   className="hover:text-foreground transition-colors"
                 >
-                  Suporte
+                  contato@harmonia.io
                 </Link>
               </li>
-              <li>
+              <li className="flex items-center gap-3 pt-2">
                 <Link
-                  href="#"
-                  className="hover:text-foreground transition-colors"
+                  href="https://github.com/thiagogritti"
+                  target="_blank"
+                  className="hover:text-primary transition-colors"
                 >
-                  Email
+                  <Github className="h-4 w-4" />
+                </Link>
+                <Link
+                  href="https://linkedin.com/in/thiagogritti"
+                  target="_blank"
+                  className="hover:text-primary transition-colors"
+                >
+                  <Linkedin className="h-4 w-4" />
+                </Link>
+                <Link
+                  href="https://thiagogritti.dev"
+                  target="_blank"
+                  className="hover:text-primary transition-colors"
+                >
+                  <Globe className="h-4 w-4" />
                 </Link>
               </li>
             </ul>
           </div>
         </div>
 
-        <div className="mt-8 pt-8 border-t border-border text-center text-sm text-muted-foreground">
+        <div className="mt-8 pt-8 border-t border-border text-center text-sm text-muted-foreground space-y-2">
+          <p className="font-display">
+            Built with ❤️ by developers, for developers
+          </p>
           <p>
-            &copy; {new Date().getFullYear()} Harmonia.io. Todos os direitos
-            reservados.
+            &copy; {new Date().getFullYear()} Thiago Gritti - Open Source
+            Project
           </p>
         </div>
       </div>

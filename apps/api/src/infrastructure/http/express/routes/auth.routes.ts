@@ -1,47 +1,18 @@
 import { Router } from 'express';
 import { AuthController } from '../controllers/AuthController';
+import { AuthMiddleware } from '../middlewares/AuthMiddleware';
 
 const router = Router();
 
-router.get(
-  '/auth/google/connect',
-  AuthController.googleConnect
-);
+router.post("/auth/request-reset", AuthController.requestReset)
 
-router.get(
-  '/auth/google/login',
-  AuthController.googleLogin
-);
+router.post("/auth/reset-password", AuthController.resetPassword)
 
-router.get(
-  '/auth/google/register',
-  AuthController.googleRegister
-);
+router.post("/auth/set-password", AuthMiddleware.authenticate, AuthController.setPassword)
 
-router.get(
-  '/auth/google/callback',
-  AuthController.googleCallback
-);
+router.get("/auth/:provider", AuthController.startOAuthFlow)
 
-router.get(
-  '/auth/spotify/connect',
-  AuthController.spotifyConnect
-);
-
-router.get(
-  '/auth/spotify/login',
-  AuthController.spotifyLogin
-);
-
-router.get(
-  '/auth/spotify/register',
-  AuthController.spotifyRegister
-);
-
-router.get(
-  '/auth/spotify/callback',
-  AuthController.spotifyCallback
-);
+router.get("/auth/:provider/callback", AuthController.handleOAuthCallback)
 
 router.post(
   '/auth/register',

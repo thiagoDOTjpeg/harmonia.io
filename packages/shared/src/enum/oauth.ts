@@ -1,5 +1,5 @@
 export enum OAuthMethod {
-  login,
-  register,
-  connect
+  login = 'login',
+  register = 'register',
+  connect = 'connect'
 }

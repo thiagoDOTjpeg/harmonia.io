@@ -12,11 +12,16 @@ import { SystemClock } from '../infrastructure/time/SystemClock';
 // Use cases Auth
 import { IAuthProvider } from '@/application/ports/auth/IAuthProvider';
 import { IOAuthCallbackStrategy } from '@/application/ports/strategy/IOAuthCallbackStrategy';
+import { EmailProvider } from '@/application/providers/EmailProvider';
 import { GoogleAuthProvider } from '@/application/providers/GoogleAuthProvider';
 import { SpotifyAuthProvider } from '@/application/providers/SpotifyAuthProvider';
 import { SyncMusicService } from '@/application/services/SyncMusicService';
 import { HandleOAuthCallback } from '@/application/use_cases/auth/HandleOAuthCallback';
+import { RequestPasswordResetUseCase } from '@/application/use_cases/auth/RequestPasswordResetUseCase';
+import { ResetPasswordUseCase } from '@/application/use_cases/auth/ResetPasswordUseCase';
+import { SetPasswordUseCase } from '@/application/use_cases/auth/SetPasswordUseCase';
 import { StartOAuthUseCase } from '@/application/use_cases/auth/StartOAuthUseCase';
+import { RevokeServiceConnectionUseCase } from '@/application/use_cases/service-connection/RevokeServiceConnectionUseCase';
 import { EnsureValidConnectionsUseCase } from '@/application/use_cases/sync_playlist/EnsureValidConnectionsUseCase';
 import { GoogleOAuthCallbackStrategy } from '@/infrastructure/adapter/oauth/GoogleOAuthCallbackStrategy';
 import { OAuthCallbackStrategyFactory } from '@/infrastructure/adapter/oauth/OAuthCallbackStrategyFactory';
@@ -27,7 +32,7 @@ import { AESTokenEncrypter } from '@/infrastructure/crypto/AESTokenEncrypter';
 import { prisma } from '@/infrastructure/db/prisma/client';
 import { PrismaServiceConnectionRepository } from '@/infrastructure/db/prisma/repositories/PrismaServiceConnectionRepository';
 import { PlaylistSyncQueue } from '@/infrastructure/queue/PlaylistSyncQueue';
-import { ServiceProvider } from '@prisma/client';
+import { OAuthState, ResetState, ServiceProvider } from '@harmonia/shared';
 import { StartLocalLogin } from '../application/use_cases/auth/StartLocalLogin';
 import { StartLocalRegister } from '../application/use_cases/auth/StartLocalRegister';
 import { SpotifyOAuthClient } from '../infrastructure/client/SpotifyOAuthClient';
@@ -41,7 +46,6 @@ export class Container {
   private static googleClient = new GoogleOAuthClient();
   private static spotifyClient = new SpotifyOAuthClient();
   private static googleMusicClient = new GoogleMusicClient();
-  private static stateStore = new RedisStateStore();
   private static syncQueue = new PlaylistSyncQueue();
 
   // Repositories
@@ -59,6 +63,15 @@ export class Container {
   private static clock = new SystemClock();
 
   // ===== GETTERS - CLIENTS =====
+
+  static getOAuthClient(serviceProvider: ServiceProvider) {
+    switch (serviceProvider) {
+      case "google":
+        return this.googleClient;
+      case "spotify":
+        return this.spotifyClient;
+    }
+  }
 
   static getGoogleClient() {
     return this.googleClient;
@@ -108,6 +121,19 @@ export class Container {
     );
   }
 
+  // ===== GETTERS - PROVIDERS =====
+
+  static getGoogleProvider() {
+    return new GoogleAuthProvider();
+  }
+
+  static getSpotifyProvider() {
+    return new SpotifyAuthProvider();
+  }
+
+  static getEmailProvider() {
+    return new EmailProvider();
+  }
 
   // ===== GETTERS - SERVICES =====
 
@@ -145,10 +171,13 @@ export class Container {
 
   // ===== GETTERS - INFRA =====
 
-  static getStateManager() {
-    return this.stateStore;
+  static getOAuthStateStore() {
+    return new RedisStateStore<OAuthState>("oauth");
   }
 
+  static getPasswordResetStateStore() {
+    return new RedisStateStore<ResetState>("reset");
+  }
   static getTokenManager() {
     return this.tokenManager;
   }
@@ -162,6 +191,29 @@ export class Container {
   }
 
   // ===== GETTERS - USE CASES AUTH =====
+
+  static getSetPasswordUseCase() {
+    return new SetPasswordUseCase(
+      this.userRepository,
+      this.passwordHasher
+    );
+  }
+
+  static getRequestPasswordResetUseCase() {
+    return new RequestPasswordResetUseCase(
+      this.userRepository,
+      this.getPasswordResetStateStore(),
+      this.getEmailProvider()
+    )
+  }
+
+  static getResetPasswordUseCase() {
+    return new ResetPasswordUseCase(
+      this.userRepository,
+      this.getPasswordResetStateStore(),
+      this.passwordHasher
+    );
+  }
 
   static getEnsureValidConnectionsUseCase() {
     const providers: Record<ServiceProvider, IAuthProvider> = {
@@ -177,12 +229,21 @@ export class Container {
     );
   }
 
+  static getRevokeServiceConnectionUseCase() {
+    return new RevokeServiceConnectionUseCase(
+      this.serviceConnectionRepository,
+      this.AESEncrypter,
+      this.tokenSerializer,
+      this.getGoogleProvider()
+    );
+  }
+
   static getStartOAuthUseCase() {
-    return new StartOAuthUseCase(this.stateStore);
+    return new StartOAuthUseCase(this.getOAuthStateStore());
   }
 
   static getHandleOAuthCallback() {
-    return new HandleOAuthCallback(this.stateStore, this.getStrategyFactory())
+    return new HandleOAuthCallback(this.getOAuthStateStore(), this.getStrategyFactory())
   }
 
   static getStartLocalLogin() {

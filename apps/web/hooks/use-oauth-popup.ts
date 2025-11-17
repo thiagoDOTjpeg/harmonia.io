@@ -1,14 +1,14 @@
 import { useAuthStore } from "@/lib/store/auth-store";
-import { useUserStore } from "@/lib/store/user-store";
-import { AuthResponse } from "@harmonia/shared";
+import { AuthResponse, OAuthMethod, ServiceProvider } from "@harmonia/shared";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "./use-toast";
+import { useUser } from "./use-user";
 
 export function useOAuthPopup() {
   const router = useRouter();
   const { setToken } = useAuthStore();
-  const { setUser } = useUserStore();
+  const { setServiceConnections, getServiceConnections, setSummary, setUser } = useUser();
   const [isLoading, setIsLoading] = useState(false)
   const popupRef = useRef<Window | null>(null);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -25,45 +25,58 @@ export function useOAuthPopup() {
     setIsLoading(false);
   }, []);
 
-  const handleMessage = useCallback((event: MessageEvent) => {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
-    const expectedOrigin = new URL(apiUrl).origin;
-
-    if (event.origin !== expectedOrigin) return;
-    if (!event.data?.type?.startsWith('oauth-')) return;
-
-    console.log('✅ Mensagem OAuth recebida:', event.data);
-
-    if (event.data.type === 'oauth-success') {
-      const authData: AuthResponse = event.data.data;
-      setUser(authData.user)
-      setToken(authData.token)
-
-      toast({
-        title: "Autenticação bem-sucedida!",
-        description: `Bem-vindo, ${authData.user.name}!`,
-      });
-      router.push('/dashboard');
-    } else {
-      toast({
-        variant: "destructive",
-        title: "Erro na autenticação",
-        description: event.data.error || "Ocorreu uma falha durante o processo.",
-      });
-    }
-
-    cleanup();
-  }, [router, setUser, setToken, toast, cleanup]);
-
   useEffect(() => {
-    window.addEventListener('message', handleMessage);
-    return () => {
-      window.removeEventListener('message', handleMessage);
+    const handleMessage = (event: MessageEvent) => {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+      const expectedOrigin = new URL(apiUrl).origin;
+
+      if (event.origin !== expectedOrigin) return;
+      if (!event.data?.type?.startsWith('oauth-')) return;
+
+      console.log('✅ Mensagem OAuth recebida:', event.data);
+
+      if (event.data.type === 'oauth-success') {
+        const authData: AuthResponse = event.data.data;
+        const method = event.data.method as OAuthMethod;
+
+        if (method === OAuthMethod.connect) {
+          toast({
+            title: "Serviço conectado!",
+            description: "A conexão foi estabelecida com sucesso.",
+          });
+
+          setServiceConnections(null);
+          setSummary(null);
+        } else {
+          setUser(authData.user);
+          setToken(authData.token);
+
+          toast({
+            title: "Autenticação bem-sucedida!",
+            description: `Bem-vindo, ${authData.user.name}!`,
+          });
+
+          router.push('/dashboard');
+        }
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Erro na autenticação",
+          description: event.data.error || "Ocorreu uma falha durante o processo.",
+        });
+      }
+
       cleanup();
     };
-  }, [handleMessage, cleanup]);
 
-  const openOAuthPopup = (provider: 'google' | 'spotify', method: "register" | "login") => {
+    window.addEventListener('message', handleMessage);
+
+    return () => {
+      window.removeEventListener('message', handleMessage);
+    };
+  }, []);
+
+  const openOAuthPopup = (provider: ServiceProvider, method: OAuthMethod) => {
     if (isLoading) return;
 
     const width = 600, height = 700;
@@ -72,12 +85,39 @@ export function useOAuthPopup() {
 
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
     const returnTo = encodeURIComponent(window.location.origin);
-    const url = `${apiUrl}/auth/${provider}/${method}?returnTo=${returnTo}`;
+
+    let url = `${apiUrl}/auth/${provider.toLowerCase()}?intent=${method}&returnTo=${returnTo}`;
+
+    if (method === OAuthMethod.connect) {
+      const token = useAuthStore.getState().token;
+
+      if (!token) {
+        toast({
+          variant: "destructive",
+          title: "Erro",
+          description: "Você precisa estar autenticado para conectar serviços."
+        });
+        return;
+      }
+
+      const state = encodeURIComponent(btoa(JSON.stringify({
+        method,
+        token,
+        timestamp: Date.now()
+      })));
+
+      url += `&state=${state}`;
+    }
 
     const popup = window.open(url, `oauth-${provider}`, `width=${width},height=${height},left=${left},top=${top}`);
 
     if (!popup) {
-      toast({ variant: "destructive", title: "Popup bloqueado" });
+      toast({
+        variant: "destructive",
+        title: "Popup bloqueado",
+        description: "Por favor, permita popups para este site."
+      });
+      setIsLoading(false);
       return;
     }
 
@@ -98,6 +138,7 @@ export function useOAuthPopup() {
         cleanup();
       }
     }, 1000);
+
   };
   return { openOAuthPopup, isLoading }
 }

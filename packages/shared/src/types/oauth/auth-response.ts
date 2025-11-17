@@ -1,3 +1,5 @@
+import { OAuthMethod } from "../../enum/oauth";
+
 export interface AuthSuccess {
   success: boolean;
   token: string;
@@ -6,6 +8,7 @@ export interface AuthSuccess {
     email: string | null;
     name: string | null;
   };
+  method: OAuthMethod;
   returnTo?: string;
 }
 

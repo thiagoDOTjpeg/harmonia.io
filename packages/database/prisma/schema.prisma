@@ -85,18 +85,19 @@ model PlaylistTrack {
 }
 
 model UserSummary {
-  userId             String    @id @map("user_id")
-  email              String
-  name               String?
-  userCreatedAt      DateTime  @map("user_created_at")
-  isSpotifyConnected Boolean   @map("is_spotify_connected")
-  isYoutubeConnected Boolean   @map("is_youtube_connected")
-  totalPlaylists     BigInt    @map("total_playlists")
-  syncedPlaylists    BigInt    @map("synced_playlists")
-  totalSongs         BigInt    @map("total_songs")
-  syncedSongs        BigInt    @map("synced_songs")
-  lastSyncAt         DateTime? @map("last_sync_at")
-  recentSyncs        Json      @map("recent_syncs")
+  userId                      String             @id @map("user_id")
+  email                       String
+  name                        String?
+  userCreatedAt               DateTime           @map("user_created_at")
+  isSpotifyConnected          Boolean            @map("is_spotify_connected")
+  isYoutubeConnected          Boolean            @map("is_youtube_connected")
+  totalPlaylists              BigInt             @map("total_playlists")
+  syncedPlaylists             BigInt             @map("synced_playlists")
+  totalSongs                  BigInt             @map("total_songs")
+  syncedSongs                 BigInt             @map("synced_songs")
+  syncedSongsLast7Days        BigInt             @map("synced_songs_last_7_days")
+  lastSyncAt                  DateTime?          @map("last_sync_at")
+  recentSyncs                 Json               @map("recent_syncs")
 
   @@map("user_summary")
 }
@@ -118,8 +119,8 @@ model UserPlaylists {
 }
 
 enum ServiceProvider {
-  GOOGLE
-  SPOTIFY
+  google
+  spotify
 }
 
 model ServiceConnection {

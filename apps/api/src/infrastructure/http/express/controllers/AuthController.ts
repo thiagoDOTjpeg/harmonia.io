@@ -1,142 +1,57 @@
-import { AppError, BadRequestError, OAuthMethod, ServiceProvider } from '@harmonia/shared';
+import { AppError, BadRequestError, OAuthMethod, RequestResetPasswordInput, ResetPasswordInput, SetPasswordInput, UnathorizedError } from '@harmonia/shared';
 import { NextFunction, Request, Response } from 'express';
+import jwt from 'jsonwebtoken';
 import { Container } from '../../../../main/container';
-import { LoginSchema, OAuthQuerySchema, RegisterSchema } from '../../schemas/auth';
+import { LoginSchema, OAuthParamCallbackSchema, OAuthParamSchema, OAuthQuerySchema, RegisterSchema } from '../../schemas/auth';
 import { AuthMiddleware } from '../middlewares/AuthMiddleware';
 import { getOAuthCallbackHTML } from '../views/oauth-callback';
 
+
 export class AuthController {
-  static async googleConnect(req: Request, res: Response, next: NextFunction) {
+  static async startOAuthFlow(req: Request, res: Response, next: NextFunction) {
     try {
-      const user = await AuthMiddleware.getAuthenticatedUser(req, res);
-      const { returnTo } = OAuthQuerySchema.parse(req.query);
-      const useCase = Container.getStartOAuthUseCase();
-      const { redirectTo } = await useCase.execute(OAuthMethod.connect, Container.getGoogleClient(), returnTo, user.id);
-      res.redirect(redirectTo);
-    } catch (error) {
-      console.error('Google login error:', error);
-      next(error)
-    }
-  }
+      const { provider } = OAuthParamSchema.parse(req.params)
+      const { intent, returnTo, state } = OAuthQuerySchema.parse(req.query)
+      let userId: string | undefined
+      if (intent === OAuthMethod.connect) {
+        if (!state) throw new BadRequestError("State é necessário para fazer a conexão");
 
-  static async googleLogin(req: Request, res: Response, next: NextFunction) {
-    try {
-      const { returnTo } = OAuthQuerySchema.parse(req.query)
-      const useCase = Container.getStartOAuthUseCase();
-      const { redirectTo } = await useCase.execute(OAuthMethod.login, Container.getGoogleClient(), returnTo);
-      res.redirect(redirectTo);
-    } catch (error) {
-      console.error('Google login error:', error);
-      next(error)
-    }
-  }
+        const stateData = JSON.parse(Buffer.from(state as string, "base64").toString());
 
-  static async googleRegister(req: Request, res: Response, next: NextFunction) {
-    try {
-      const { returnTo } = OAuthQuerySchema.parse(req.query)
-      const useCase = Container.getStartOAuthUseCase();
-      const { redirectTo } = await useCase.execute(OAuthMethod.register, Container.getGoogleClient(), returnTo);
-      res.redirect(redirectTo);
-    } catch (error) {
-      console.error('Google register error:', error);
-      next(error)
-    }
-  }
+        if (Date.now() - stateData.timestamp > 5 * 60 * 1000) {
+          throw new AppError("State expirado.");
+        }
 
-  static async googleCallback(req: Request, res: Response, next: NextFunction) {
-    try {
-      const code = String(req.query.code || '');
-      const state = String(req.query.state || '');
-
-      if (!code || !state) {
-        return res.send(getOAuthCallbackHTML({
-          success: false,
-          error: 'Código ou estado inválido'
-        }, undefined));
+        const decoded = jwt.verify(stateData.token, process.env.JWT_SECRET || "") as jwt.JwtPayload
+        userId = decoded.sub;
       }
+      const client = Container.getOAuthClient(provider)
+      if (!client) throw new AppError("Serviço não suportado")
+      const useCase = Container.getStartOAuthUseCase();
+      const { redirectTo } = await useCase.execute(intent, client, returnTo, userId)
+      res.redirect(redirectTo)
+    } catch (error) {
+      console.error("Ocorreu um erro ao fazer o login OAuth", error);
+      next(error);
+    }
+  }
+
+  static async handleOAuthCallback(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { code, state } = OAuthParamCallbackSchema.parse(req.query);
+      const { provider } = OAuthParamSchema.parse(req.params)
 
       const useCase = Container.getHandleOAuthCallback();
-      const result = await useCase.execute(ServiceProvider.GOOGLE, { code, state });
+      const result = await useCase.execute(provider, { code, state });
 
       return res.send(getOAuthCallbackHTML({
         success: true,
         token: result.token,
-        user: { email: result.user.email || '', id: result.user.id, name: result.user.name || '' }
+        user: { email: result.user.email || '', id: result.user.id, name: result.user.name || '' },
+        method: result.method
       }, result.returnTo));
     } catch (error) {
       console.error('Google callback error:', error);
-      if (error instanceof AppError) {
-        return res.send(getOAuthCallbackHTML({
-          success: false,
-          error: error.message
-        }, 'http://127.0.0.1:3001'));
-      }
-      return res.send(getOAuthCallbackHTML({
-        success: false,
-        error: 'Falha na autenticação. Tente novamente.'
-      }, 'http://127.0.0.1:3001'));
-    }
-  }
-
-  static async spotifyConnect(req: Request, res: Response, next: NextFunction) {
-    try {
-      const user = await AuthMiddleware.getAuthenticatedUser(req, res);
-      const { returnTo } = OAuthQuerySchema.parse(req.query)
-      const useCase = Container.getStartOAuthUseCase();
-      const { redirectTo } = await useCase.execute(OAuthMethod.connect, Container.getSpotifyClient(), returnTo, user.id);
-      res.redirect(redirectTo);
-    } catch (error) {
-      console.error('Spotify login error:', error);
-      next(error)
-    }
-  }
-
-  static async spotifyLogin(req: Request, res: Response, next: NextFunction) {
-    try {
-      const { returnTo } = OAuthQuerySchema.parse(req.query)
-      const useCase = Container.getStartOAuthUseCase();
-      const { redirectTo } = await useCase.execute(OAuthMethod.login, Container.getSpotifyClient(), returnTo);
-      res.redirect(redirectTo);
-    } catch (error) {
-      console.error('Spotify login error:', error);
-      next(error)
-    }
-  }
-
-  static async spotifyRegister(req: Request, res: Response, next: NextFunction) {
-    try {
-      const { returnTo } = OAuthQuerySchema.parse(req.query)
-      const useCase = Container.getStartOAuthUseCase();
-      const { redirectTo } = await useCase.execute(OAuthMethod.register, Container.getSpotifyClient(), returnTo);
-      res.redirect(redirectTo);
-    } catch (error) {
-      console.error('Spotify register error:', error);
-      next(error)
-    }
-  }
-
-  static async spotifyCallback(req: Request, res: Response, next: NextFunction) {
-    try {
-      const code = String(req.query.code || '');
-      const state = String(req.query.state || '');
-
-      if (!code || !state) {
-        return res.send(getOAuthCallbackHTML({
-          success: false,
-          error: 'Código ou estado inválido'
-        }, undefined));
-      }
-
-      const useCase = Container.getHandleOAuthCallback();
-      const result = await useCase.execute(ServiceProvider.SPOTIFY, { code, state });
-
-      return res.send(getOAuthCallbackHTML({
-        success: true,
-        token: result.token,
-        user: { email: result.user.email || '', id: result.user.id, name: result.user.name || '' }
-      }, result.returnTo));
-    } catch (error) {
-      console.error('Spotify callback error:', error);
       if (error instanceof AppError) {
         return res.send(getOAuthCallbackHTML({
           success: false,
@@ -192,6 +107,50 @@ export class AuthController {
       return res.json(result);
     } catch (error) {
       console.error('Local login error:', error);
+      next(error);
+    }
+  }
+
+  static async requestReset(req: Request, res: Response, next: NextFunction) {
+    try {
+      const body = req.body as RequestResetPasswordInput;
+      if (!body) throw new BadRequestError("Todos os campos devem estar preenchidos")
+
+      const useCase = Container.getRequestPasswordResetUseCase();
+      await useCase.execute({ email: body.email });
+      return res.status(204).send();
+    } catch (error) {
+      console.error("Ocorreu um erro ao fazer o request de reset de senha", error)
+      next(error);
+    }
+  }
+
+  static async resetPassword(req: Request, res: Response, next: NextFunction) {
+    try {
+      const body = req.body as ResetPasswordInput
+      if (!body) throw new BadRequestError("Todos os campos devem estar preenchidos")
+
+      const useCase = Container.getResetPasswordUseCase();
+      await useCase.execute({ code: body.code, email: body.email, newPassword: body.newPassword })
+      return res.status(204).send();
+    } catch (error) {
+      console.error("Ocorreu um erro ao fazer o reset da senha", error)
+      next(error);
+    }
+  }
+
+  static async setPassword(req: Request, res: Response, next: NextFunction) {
+    try {
+      const user = await AuthMiddleware.getAuthenticatedUser(req, res);
+      if (!user) throw new UnathorizedError("Usuário não autenticado");
+      const body = req.body as SetPasswordInput
+      if (!body) throw new BadRequestError("Todos os campos devem estar preenchidos")
+
+      const useCase = Container.getSetPasswordUseCase();
+      await useCase.execute(user, body);
+      res.status(204).send()
+    } catch (error) {
+      console.error("Ocorreu um erro ao setar a senha do usuário", error);
       next(error);
     }
   }

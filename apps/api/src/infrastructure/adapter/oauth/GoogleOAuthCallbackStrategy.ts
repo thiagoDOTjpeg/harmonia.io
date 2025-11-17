@@ -86,7 +86,9 @@ export class GoogleOAuthCallbackStrategy implements IOAuthCallbackStrategy {
         id: createdServiceConnection.userId,
         email: createdServiceConnection.email,
         name: user.name
-      }, returnTo
+      },
+      method: OAuthMethod.register,
+      returnTo
     }
   }
 
@@ -120,7 +122,9 @@ export class GoogleOAuthCallbackStrategy implements IOAuthCallbackStrategy {
         id: serviceConnection.userId,
         email: serviceConnection.email,
         name: user.name
-      }, returnTo
+      },
+      method: OAuthMethod.login,
+      returnTo
     }
   }
 
@@ -159,7 +163,9 @@ export class GoogleOAuthCallbackStrategy implements IOAuthCallbackStrategy {
         id: serviceConnection.userId,
         email: serviceConnection.email,
         name: user.name
-      }, returnTo
+      },
+      method: OAuthMethod.connect,
+      returnTo
     }
   }
 
@@ -179,7 +185,7 @@ export class GoogleOAuthCallbackStrategy implements IOAuthCallbackStrategy {
       scopes: SCOPES,
       email: user.email,
       metadata: {
-        youtubeChannelId: exchangeData.youtubeChannelId
+        youtubeChannelId: exchangeData?.youtubeChannelId || ""
       }
     });
     return createdServiceConnection;

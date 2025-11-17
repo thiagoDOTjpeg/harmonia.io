@@ -2,7 +2,7 @@ import { ApiError } from "@/lib/services/api";
 import { authService } from "@/lib/services/auth-service";
 import { useAuthStore } from "@/lib/store/auth-store";
 import { useUserStore } from "@/lib/store/user-store";
-import { LoginInput, RegisterInput } from "@harmonia/shared";
+import { LoginInput, RegisterInput, RequestResetPasswordInput, ResetPasswordInput } from "@harmonia/shared";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useOAuthPopup } from "./use-oauth-popup";
@@ -14,6 +14,42 @@ export function useAuth() {
   const { setUser, clearUser } = useUserStore();
   const { openOAuthPopup, isLoading: oauthLoading } = useOAuthPopup();
   const [isLoading, setIsLoading] = useState(false);
+
+  const requestResetPassword = async (data: RequestResetPasswordInput) => {
+    setIsLoading(true);
+
+    try {
+      await authService.requestResetPassword(data);
+    } catch (error) {
+      toast({
+        variant: 'destructive',
+        title: "Erro ao fazer login",
+        description: "Ocorreu um erro fazer o pedido de reset de senha",
+        duration: 5000
+      })
+      return { error: true }
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  const resetPassword = async (data: ResetPasswordInput) => {
+    setIsLoading(true);
+
+    try {
+      await authService.resetPassword(data);
+    } catch (error) {
+      toast({
+        variant: 'destructive',
+        title: "Erro ao fazer login",
+        description: "Ocorreu um erro fazer o pedido de reset de senha",
+        duration: 5000
+      })
+      return { error: true }
+    } finally {
+      setIsLoading(false);
+    }
+  }
 
   const login = async (data: LoginInput) => {
     setIsLoading(true);
@@ -113,6 +149,8 @@ export function useAuth() {
     login,
     logout,
     openOAuthPopup,
+    requestResetPassword,
+    resetPassword,
     isLoading: isLoading || oauthLoading
   }
 }

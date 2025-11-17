@@ -1,3 +1,4 @@
+import { OAuthProviderToken } from "./oauth";
 
 export interface YouTubePlaylistItem {
   id: string;
@@ -31,13 +32,8 @@ export interface GoogleUserInfo {
 }
 
 
-export interface GoogleTokenResponse {
-  access_token: string;
-  refresh_token?: string;
-  expires_in: number;
+export interface GoogleTokenResponse extends OAuthProviderToken {
   id_token?: string;
-  scope: string;
-  token_type: string;
 }
 
 export interface GoogleExchangeResult {

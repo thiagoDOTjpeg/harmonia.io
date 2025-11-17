@@ -60,6 +60,15 @@ export class PrismaServiceConnectionRepository implements IServiceConnectionRepo
     return serviceConnection ? ServiceConnectionMapper.toDomain(serviceConnection) : null;
   }
 
+  async findById(serviceConnectionId: string): Promise<ServiceConnection | null> {
+    const serviceConnection = await this.prisma.serviceConnection.findUnique({
+      where: {
+        id: serviceConnectionId
+      }
+    })
+    return serviceConnection ? ServiceConnectionMapper.toDomain(serviceConnection) : null;
+  }
+
   async createServiceConnection(data: Prisma.ServiceConnectionUncheckedCreateInput): Promise<ServiceConnection> {
     const serviceConnection = await this.prisma.serviceConnection.create({ data })
     return ServiceConnectionMapper.toDomain(serviceConnection);
@@ -68,6 +77,15 @@ export class PrismaServiceConnectionRepository implements IServiceConnectionRepo
   async updateServiceConnection(data: Prisma.ServiceConnectionUncheckedUpdateInput, serviceConnectionId: string): Promise<ServiceConnection> {
     const serviceConnection = await this.prisma.serviceConnection.update({ where: { providerAccountId: serviceConnectionId }, data });
     return ServiceConnectionMapper.toDomain(serviceConnection);
+  }
+
+  async delete(serviceConnection: ServiceConnection): Promise<void> {
+    await this.prisma.serviceConnection.delete({
+      where: {
+        id: serviceConnection.id,
+        userId: serviceConnection.userId,
+      }
+    });
   }
 
 }

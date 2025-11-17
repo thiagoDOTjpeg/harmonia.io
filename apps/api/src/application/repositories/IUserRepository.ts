@@ -1,5 +1,6 @@
 import { User } from '@/domain/entities/User';
 import { UserSummary } from '@/domain/entities/UserSummary';
+import { Prisma } from '@prisma/client';
 
 export interface IUserRepository {
   findByEmail(email: string): Promise<User | null>;
@@ -11,4 +12,6 @@ export interface IUserRepository {
     name: string | null;
     passwordHash?: string;
   }): Promise<User>;
+
+  update(userId: string, userData: Prisma.UserUpdateInput): Promise<User>;
 }

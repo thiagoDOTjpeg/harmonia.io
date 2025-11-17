@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { useAuthContext } from "@/context/AuthContext";
-import { useDashboardStore } from "@/lib/store/dashboard-store";
+import { useUser } from "@/hooks/use-user";
 import { cn } from "@/lib/utils";
 import {
   Crown,
@@ -28,11 +28,11 @@ export function DashboardSidebar() {
   const pathname = usePathname();
   const router = useRouter();
   const { logout } = useAuthContext();
-  const { clearDashboard } = useDashboardStore();
+  const { clearUser } = useUser();
 
   const handelLogout = () => {
     logout();
-    clearDashboard();
+    clearUser();
     router.push("/");
   };
 

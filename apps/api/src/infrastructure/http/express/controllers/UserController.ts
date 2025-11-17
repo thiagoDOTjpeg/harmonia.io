@@ -24,4 +24,39 @@ export class UserController {
       next(error)
     }
   }
+
+  static async getUserConnections(req: Request, res: Response, next: NextFunction) {
+    try {
+      const user = await AuthMiddleware.getAuthenticatedUser(req, res) as User;
+      if (!user) {
+        throw new UnathorizedError("Usuário não logado")
+      }
+
+      const serviceConnections = await Container.getServiceConnectionRepository().findAllByUserId(user.id);
+
+      if (!serviceConnections) {
+        throw new NotFoundError("Nenhum serviço conectado");
+      }
+      return res.json(serviceConnections)
+    } catch (error) {
+      console.error("Ocorreu um erro ao buscar os serviços do usuário", error);
+      next(error)
+    }
+  }
+
+  static async deleteServiceConnectionRevoke(req: Request, res: Response, next: NextFunction) {
+    try {
+      const user = await AuthMiddleware.getAuthenticatedUser(req, res);
+      if (!user) {
+        throw new UnathorizedError("Usuário não logado")
+      }
+
+      const { id } = req.params
+      await Container.getRevokeServiceConnectionUseCase().execute(user.id, id);
+      return res.status(204).send();
+    } catch (error) {
+      console.error("Ocorreu um erro ao revogar a conexão", error);
+      next(error)
+    }
+  }
 }
