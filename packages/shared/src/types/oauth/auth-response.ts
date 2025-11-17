@@ -8,7 +8,7 @@ export interface AuthSuccess {
     email: string | null;
     name: string | null;
   };
-  method: OAuthMethod;
+  method?: OAuthMethod;
   returnTo?: string;
 }
 

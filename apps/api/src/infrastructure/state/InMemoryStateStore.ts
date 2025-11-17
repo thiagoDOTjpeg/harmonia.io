@@ -8,8 +8,8 @@ export class InMemoryStateStore implements IStateStore<OAuthState> {
     return this.store.get(state);
   }
 
-  async set(prefix: string, expiration: number, state: string, value: OAuthState): Promise<void> {
-    this.store.set(state, value);
+  async set(key: string, value: OAuthState, expirationInSeconds: number): Promise<void> {
+    this.store.set(key, value);
   }
 
   async delete(state: string): Promise<void> {
