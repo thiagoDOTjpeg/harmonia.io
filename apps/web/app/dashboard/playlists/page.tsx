@@ -12,6 +12,7 @@ import {
 import { useUser } from "@/hooks/use-user";
 import { formatTimeAgo } from "@harmonia/shared";
 import { Music2, Pause, Play, Settings, Trash2 } from "lucide-react";
+import Link from "next/link";
 import { useEffect } from "react";
 
 export default function PlaylistsPage() {
@@ -36,14 +37,10 @@ export default function PlaylistsPage() {
             Gerencie suas playlists sincronizadas
           </p>
         </div>
-        <Button>
-          <Music2 className="mr-2 h-4 w-4" />
-          Nova Playlist
-        </Button>
       </div>
 
       <div className="grid grid-cols-1 gap-6">
-        {playlists ? (
+        {playlists && playlists.length > 0 ? (
           playlists.map((playlist) => (
             <Card key={playlist.id}>
               <CardHeader>
@@ -93,7 +90,26 @@ export default function PlaylistsPage() {
             </Card>
           ))
         ) : (
-          <>Nenhuma playlista sincronizada</>
+          <Card className="border-dashed">
+            <CardHeader className="flex flex-col items-center justify-center py-16 text-center">
+              <div className="rounded-full bg-primary/10 p-6 mb-4">
+                <Music2 className="h-12 w-12 text-primary" />
+              </div>
+              <CardTitle className="text-2xl mb-2">
+                Nenhuma playlist encontrada
+              </CardTitle>
+              <CardDescription className="max-w-md mb-6">
+                Comece criando sua primeira playlist ou sincronize suas
+                playlists do YouTube para gerenciá-las aqui.
+              </CardDescription>
+              <Link href={"/dashboard/nova"}>
+                <Button>
+                  <Music2 className="mr-2 h-4 w-4" />
+                  Criar Primeira Playlist
+                </Button>
+              </Link>
+            </CardHeader>
+          </Card>
         )}
       </div>
     </div>

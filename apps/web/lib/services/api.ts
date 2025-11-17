@@ -38,6 +38,8 @@ export async function fetchApi<T>(
       error.message || 'Erro ao processar requisição',
       error.details
     );
+  } else if (response.status === 204) {
+    return undefined as T;
   }
 
   return response.json();

@@ -109,7 +109,7 @@ export default function LoginPage() {
                     Senha
                   </Label>
                   <Link
-                    href="#"
+                    href="/esqueci-senha"
                     className="text-sm text-primary hover:text-primary/80 transition-colors"
                   >
                     Esqueceu a senha?
@@ -176,7 +176,7 @@ export default function LoginPage() {
                 type="button"
                 className="hover:border-primary/50 hover:bg-primary/5 transition-colors bg-transparent"
                 onClick={() =>
-                  openOAuthPopup(ServiceProvider.GOOGLE, OAuthMethod.login)
+                  openOAuthPopup(ServiceProvider.SPOTIFY, OAuthMethod.login)
                 }
                 disabled={isLoading}
               >

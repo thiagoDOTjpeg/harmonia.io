@@ -1,10 +1,11 @@
 import { Button } from "@/components/ui/button";
+import { Github } from "lucide-react";
 import Link from "next/link";
 
 export function Header() {
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60">
-      <div className="container flex h-16 m-auto items-center justify-between">
+      <div className="container m-auto flex h-16 items-center justify-between">
         <Link href="/" className="flex items-center gap-3">
           <svg
             viewBox="0 0 40 40"
@@ -57,10 +58,17 @@ export function Header() {
             Como Funciona
           </Link>
           <Link
-            href="/planos"
+            href="/docs"
             className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors uppercase tracking-wider"
           >
-            Planos
+            Docs
+          </Link>
+          <Link
+            href="https://github.com/thiagogritti/harmonia"
+            target="_blank"
+            className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors uppercase tracking-wider"
+          >
+            GitHub
           </Link>
         </nav>
 
@@ -72,7 +80,13 @@ export function Header() {
             asChild
             className="bg-linear-to-r from-primary to-secondary text-primary-foreground hover:opacity-90 transition-opacity glow-primary"
           >
-            <Link href="/cadastro">Começar Grátis</Link>
+            <Link
+              href="https://github.com/thiagogritti/harmonia"
+              target="_blank"
+            >
+              <Github className="mr-2 h-4 w-4" />
+              Star on GitHub
+            </Link>
           </Button>
         </div>
       </div>

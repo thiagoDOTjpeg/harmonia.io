@@ -37,8 +37,6 @@ export class AuthController {
   }
 
   static async handleOAuthCallback(req: Request, res: Response, next: NextFunction) {
-    console.log("fui chamado");
-
     try {
       const { code, state } = OAuthParamCallbackSchema.parse(req.query);
       const { provider } = OAuthParamSchema.parse(req.params)

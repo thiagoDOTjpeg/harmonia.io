@@ -86,7 +86,7 @@ export function useOAuthPopup() {
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
     const returnTo = encodeURIComponent(window.location.origin);
 
-    let url = `${apiUrl}/auth/${provider.toLowerCase()}/${method}?returnTo=${returnTo}`;
+    let url = `${apiUrl}/auth/${provider.toLowerCase()}?intent=${method}&returnTo=${returnTo}`;
 
     if (method === OAuthMethod.connect) {
       const token = useAuthStore.getState().token;

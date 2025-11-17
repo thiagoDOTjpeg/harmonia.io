@@ -8,7 +8,7 @@ export class ServiceConnectionMapper {
     return new ServiceConnection(
       serviceConnection.id,
       serviceConnection.userId,
-      ServiceProvider[serviceConnection.provider as keyof typeof ServiceProvider],
+      ServiceProvider[serviceConnection.provider.toLocaleUpperCase() as keyof typeof ServiceProvider],
       serviceConnection.providerAccountId || "",
       serviceConnection.email,
       serviceConnection.accessToken,
