@@ -64,7 +64,7 @@ export function Header() {
             Docs
           </Link>
           <Link
-            href="https://github.com/thiagogritti/harmonia"
+            href="https://github.com/thiagoDOTjpeg/harmonia.io"
             target="_blank"
             className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors uppercase tracking-wider"
           >
@@ -81,7 +81,7 @@ export function Header() {
             className="bg-linear-to-r from-primary to-secondary text-primary-foreground hover:opacity-90 transition-opacity glow-primary"
           >
             <Link
-              href="https://github.com/thiagogritti/harmonia"
+              href="https://github.com/thiagoDOTjpeg/harmonia.io"
               target="_blank"
             >
               <Github className="mr-2 h-4 w-4" />
