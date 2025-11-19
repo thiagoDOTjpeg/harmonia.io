@@ -48,7 +48,7 @@ export default function DashboardPage() {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium">
@@ -223,7 +223,9 @@ export default function DashboardPage() {
                   </div>
                 </div>
                 <span className="text-sm text-primary font-medium">
-                  {activity.status.toLocaleUpperCase()}
+                  {activity.status === "completed"
+                    ? "Sincronizado"
+                    : "Sincronização Parcial"}
                 </span>
               </div>
             ))}

@@ -11,6 +11,8 @@ export class MusicMatchingService {
       .replace(/\|\s*Tiny Desk.*$/i, '')
       .replace(/-\s*Tiny Desk.*$/i, '')
 
+      .replace(/\(?(?:ft\.|feat\.|featuring)\s+[^)]+\)?/gi, '')
+
       .replace(/\([^)]*\)/g, '')
       .replace(/\[[^\]]*\]/g, '')
       .replace(/official\s*(video|audio|music\s*video)/gi, '')
@@ -37,6 +39,14 @@ export class MusicMatchingService {
     return { title: cleaned };
   }
 
+  static cleanString(str: string): string {
+    return str
+      .replace(/\(?(?:ft\.|feat\.|featuring)\s+[^)]+\)?/gi, '')
+      .replace(/\([^)]*\)/g, '')
+      .trim();
+  }
+
+
   static normalize(str: string): string {
     return str
       .toLowerCase()
@@ -56,8 +66,13 @@ export class MusicMatchingService {
     if (str1.includes(str2) || str2.includes(str1)) {
       const longer = Math.max(str1.length, str2.length);
       const shorter = Math.min(str1.length, str2.length);
+
+      if (shorter / longer > 0.4) {
+        return 0.95;
+      }
       return shorter / longer;
     }
+
 
     const matrix: number[][] = [];
 
@@ -104,7 +119,10 @@ export class MusicMatchingService {
 
     const vevoMatch = channelTitle.match(/^(.+?)\s*VEVO$/i);
     if (vevoMatch) {
-      const artist = vevoMatch[1].trim();
+      let artist = vevoMatch[1].trim();
+      if (!artist.includes(' ') && /[a-z][A-Z]/.test(artist)) {
+        artist = artist.replace(/([a-z])([A-Z])/g, '$1 $2');
+      }
       console.log(`[Query] Canal VEVO oficial: track:"${title}" artist:"${artist}"`);
       return {
         query: `track:"${title}" artist:"${artist}"`,
@@ -169,25 +187,28 @@ export class MusicMatchingService {
     referenceData: { title: string; artist: string | null },
     spotifyTrack: { name: string; artists: Array<{ name: string }> }
   ): number {
-
     const referenceTitle = referenceData.title;
     const referenceArtist = referenceData.artist;
 
-    const spotifyTitle = spotifyTrack.name;
+    const spotifyTitle = this.cleanString(spotifyTrack.name);
     const spotifyArtists = spotifyTrack.artists.map((a) => a.name).join(' ');
 
     const titleScore = this.similarity(referenceTitle, spotifyTitle);
 
     let artistScore: number;
-
     if (referenceArtist) {
-      artistScore = this.similarity(referenceArtist, spotifyArtists);
+      const normalizedRefArtist = this.normalize(referenceArtist);
+      const normalizedSpotArtist = this.normalize(spotifyArtists);
+      if (normalizedSpotArtist.includes(normalizedRefArtist)) {
+        artistScore = 1.0;
+      } else {
+        artistScore = this.similarity(referenceArtist, spotifyArtists);
+      }
 
       console.log(`[Match] Título: ${titleScore.toFixed(2)} | Artista: ${artistScore.toFixed(2)} | Final: ${(titleScore * 0.7 + artistScore * 0.3).toFixed(2)}`);
-      console.log(`[Match] (Ref): "${referenceTitle}" by "${referenceArtist}" <-> (Spotify): "${spotifyTitle}" by "${spotifyArtists}"`);
+      console.log(`[Match] (Ref): "${referenceTitle}" by "${referenceArtist}" <-> (Spotify Cleaned): "${spotifyTitle}" by "${spotifyArtists}"`);
 
       return titleScore * 0.7 + artistScore * 0.3;
-
     } else {
       artistScore = 0.5;
 

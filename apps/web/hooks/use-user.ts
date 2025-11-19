@@ -8,7 +8,7 @@ import { toast } from "./use-toast";
 export function useUser() {
   const router = useRouter();
   const { token } = useAuthStore();
-  const { setServiceConnections, setPlaylists, setSummary, summary, setHasHydrated, _hasHydrated, playlists, serviceConnections, clearUser, setUser } = useUserStore();
+  const { setServiceConnections, setPlaylists, setSummary, summary, setHasHydrated, _hasHydrated, playlists, serviceConnections, clearUser, setUser, user } = useUserStore();
   const [isLoading, setIsLoading] = useState(false);
 
   const getPlaylists = async () => {
@@ -74,5 +74,5 @@ export function useUser() {
     }
   }
 
-  return { getSummary, getPlaylists, getServiceConnections, isLoading, _hasHydrated, summary, playlists, serviceConnections, setHasHydrated, setServiceConnections, setPlaylists, setUser, setSummary, clearUser };
+  return { getSummary, getPlaylists, getServiceConnections, isLoading, _hasHydrated, summary, user, playlists, serviceConnections, setHasHydrated, setServiceConnections, setPlaylists, setUser, setSummary, clearUser };
 }

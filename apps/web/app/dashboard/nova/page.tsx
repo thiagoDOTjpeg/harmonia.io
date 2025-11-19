@@ -18,7 +18,6 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { usePlaylist } from "@/hooks/use-playlist";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -110,7 +109,7 @@ export default function NovaPage() {
                 )}
               />
 
-              <FormField
+              {/* <FormField
                 control={form.control}
                 name="playlistName"
                 render={({ field }) => (
@@ -168,7 +167,7 @@ export default function NovaPage() {
                     <FormMessage />
                   </FormItem>
                 )}
-              />
+              /> */}
 
               <Button disabled={isLoading} type="submit" className="w-full">
                 Iniciar Sincronização
