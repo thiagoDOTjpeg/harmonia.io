@@ -1,5 +1,5 @@
 import { ServiceConnection } from "@/domain/entities/ServiceConnection";
-import { SpotifyTokenResponse } from "@harmonia/shared";
+import { SpotifyTokenResponse } from "@/types/spotify";
 import { IAuthProvider } from "../ports/auth/IAuthProvider";
 
 export class SpotifyAuthProvider implements IAuthProvider {

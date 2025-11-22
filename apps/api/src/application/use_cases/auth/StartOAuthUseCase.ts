@@ -1,6 +1,7 @@
 import { IAuthUrlProvider } from "@/application/ports/oauth/IAuthUrlProvider";
 import { IStateStore } from "@/application/ports/oauth/IStateStore";
-import { OAuthMethod, OAuthState } from "@harmonia/shared";
+import { OAuthState } from "@/types/oauth/state";
+import { OAuthMethod } from "@harmonia/shared";
 
 export class StartOAuthUseCase {
   constructor(

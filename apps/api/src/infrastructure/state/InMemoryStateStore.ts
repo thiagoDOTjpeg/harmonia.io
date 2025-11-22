@@ -1,4 +1,4 @@
-import { OAuthState } from '@harmonia/shared';
+import { OAuthState } from '@/types/oauth/state';
 import { IStateStore } from '../../application/ports/oauth/IStateStore';
 
 export class InMemoryStateStore implements IStateStore<OAuthState> {

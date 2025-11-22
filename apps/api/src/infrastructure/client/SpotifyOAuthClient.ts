@@ -1,6 +1,8 @@
 import { IAuthUrlProvider } from '@/application/ports/oauth/IAuthUrlProvider';
 import { ICodeExchanger } from '@/application/ports/oauth/ICodeExchanger';
-import { SpotifyOAuthProfile, SpotifyOAuthResult, SpotifyTokenResponse } from '@harmonia/shared';
+import { SpotifyOAuthProfile } from '@/types/oauth/profiles';
+import { SpotifyOAuthResult } from '@/types/oauth/results';
+import { SpotifyTokenResponse } from '@/types/spotify';
 
 export class SpotifyOAuthClient implements IAuthUrlProvider, ICodeExchanger<SpotifyOAuthResult> {
   constructor(

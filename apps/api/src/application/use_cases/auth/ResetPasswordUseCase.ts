@@ -1,7 +1,8 @@
 import { IHasher } from "@/application/ports/crypto/IHasher";
 import { IStateStore } from "@/application/ports/oauth/IStateStore";
 import { IUserRepository } from "@/application/repositories/IUserRepository";
-import { AppError, ResetPasswordInput, ResetState } from "@harmonia/shared";
+import { ResetState } from "@/types/auth";
+import { AppError, ResetPasswordDTO } from "@harmonia/shared";
 
 export class ResetPasswordUseCase {
   constructor(
@@ -10,7 +11,7 @@ export class ResetPasswordUseCase {
     private readonly hasher: IHasher
   ) { }
 
-  async execute(data: ResetPasswordInput): Promise<void> {
+  async execute(data: ResetPasswordDTO): Promise<void> {
     const user = await this.userRepository.findByEmail(data.email);
     if (!user) throw new AppError("O código, e-mail ou senha estão inválidos ou expirados.");
     const state = await this.redisStore.get(user.id)

@@ -1,8 +1,8 @@
+import { baseSyncPlaylistSchema, createSyncPlaylistSchema } from '@harmonia/shared';
 import { NextFunction, Request, Response } from 'express';
 import { User } from '../../../../domain/entities/User';
 import { Container } from '../../../../main/container';
 import { PlaylistSyncQueue } from '../../../queue/PlaylistSyncQueue';
-import { cancelSyncPlaylistSchema, createSyncPlaylistSchema, getSyncPlaylistStatusSchema, retrySyncPlaylistSchema } from '../../schemas/playlist-sync.schema';
 import { AuthMiddleware } from '../middlewares/AuthMiddleware';
 
 const syncQueue = new PlaylistSyncQueue();
@@ -25,7 +25,7 @@ export class SyncController {
 
   static async getSyncStatus(req: Request, res: Response, next: NextFunction) {
     try {
-      const queryParsed = getSyncPlaylistStatusSchema.parse(req.params);
+      const queryParsed = baseSyncPlaylistSchema.parse(req.params);
 
       const service = Container.getSyncMusicService();
       const result = service.getSyncStatus(queryParsed);
@@ -39,7 +39,7 @@ export class SyncController {
 
   static async cancelSync(req: Request, res: Response, next: NextFunction) {
     try {
-      const queryParsed = cancelSyncPlaylistSchema.parse(req.params)
+      const queryParsed = baseSyncPlaylistSchema.parse(req.params)
       const service = Container.getSyncMusicService();
       const result = service.cancelSync(queryParsed);
 
@@ -52,7 +52,7 @@ export class SyncController {
 
   static async retrySync(req: Request, res: Response, next: NextFunction) {
     try {
-      const queryParsed = retrySyncPlaylistSchema.parse(req.params);
+      const queryParsed = baseSyncPlaylistSchema.parse(req.params);
       const service = Container.getSyncMusicService();
       const result = service.cancelSync(queryParsed);
 

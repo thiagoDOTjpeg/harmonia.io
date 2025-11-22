@@ -2,7 +2,7 @@ import { IAuthProvider } from "@/application/ports/auth/IAuthProvider";
 import { IEncryptor } from "@/application/ports/crypto/IEncryptor";
 import { ITokenSerializer } from "@/application/ports/serializer/ITokenSerializer";
 import { IServiceConnectionRepository } from "@/application/repositories/IServiceConnectionRepository";
-import { TokenEncrypted } from "@/infrastructure/http/types/encrypter";
+import { TokenEncrypted } from "@/types/encrypter";
 import { NotFoundError, ServiceProvider, UnathorizedError } from "@harmonia/shared";
 
 export class RevokeServiceConnectionUseCase {

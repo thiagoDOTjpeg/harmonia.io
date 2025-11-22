@@ -1,9 +1,21 @@
 import { ServiceConnection } from "@/domain/entities/ServiceConnection";
-import { updateServiceConnectionDto } from "@/infrastructure/http/schemas/service-connection.schema";
-import { ServiceProvider } from "@harmonia/shared";
-import { Prisma, ServiceConnection as PrismaServiceConnection, ServiceProvider as PrismaServiceProvider } from "@prisma/client";
+import { ServiceConnectionDTO, ServiceProvider } from "@harmonia/shared";
+import { ServiceConnection as PrismaServiceConnection, ServiceProvider as PrismaServiceProvider } from "@prisma/client";
 
 export class ServiceConnectionMapper {
+  static toDTO(serviceConnection: ServiceConnection): ServiceConnectionDTO {
+    return {
+      id: serviceConnection.id,
+      email: serviceConnection.email,
+      expiresAt: serviceConnection.expiresAt?.toISOString(),
+      metadata: JSON.stringify(serviceConnection.metadata),
+      provider: serviceConnection.provider,
+      providerAccountId: serviceConnection.providerAccountId,
+      scopes: serviceConnection.scopes,
+      userId: serviceConnection.userId,
+    }
+  }
+
   static toDomain(serviceConnection: PrismaServiceConnection): ServiceConnection {
     return new ServiceConnection(
       serviceConnection.id,
@@ -38,45 +50,5 @@ export class ServiceConnectionMapper {
       accessTokenIv: "",
       refreshTokenIv: ""
     }
-  }
-
-  static updateToPrisma(dto: updateServiceConnectionDto): Prisma.ServiceConnectionUncheckedUpdateInput {
-    const data: Prisma.ServiceConnectionUncheckedUpdateInput = {
-      updatedAt: new Date(),
-    };
-
-    if (dto.accessToken) {
-      data.accessToken = dto.accessToken;
-    }
-
-    if (dto.scopes) {
-      data.scopes = dto.scopes;
-    }
-
-    if (dto.provider) {
-      data.provider = dto.provider as unknown as PrismaServiceProvider;
-    }
-
-    if (dto.email !== undefined) {
-      data.email = dto.email;
-    }
-
-    if (dto.refreshToken !== undefined) {
-      data.refreshToken = dto.refreshToken;
-    }
-
-    if (dto.providerAccountId !== undefined) {
-      data.providerAccountId = dto.providerAccountId;
-    }
-
-    if (dto.expiresAt !== undefined) {
-      data.expiresAt = dto.expiresAt;
-    }
-
-    if (dto.metadata !== undefined) {
-      data.metadata = dto.metadata === null ? Prisma.DbNull : dto.metadata;
-    }
-
-    return data;
   }
 }

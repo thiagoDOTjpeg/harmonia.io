@@ -1,4 +1,4 @@
-import { GoogleOAuthProfile, SpotifyOAuthProfile } from './profiles';
+import { GoogleOAuthProfile, SpotifyOAuthProfile } from '../../../../../apps/api/src/types/oauth/profiles';
 import { OAuthTokens } from './tokens';
 
 export type OAuthProviderResult = GoogleOAuthResult | SpotifyOAuthResult;

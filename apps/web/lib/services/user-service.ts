@@ -1,4 +1,4 @@
-import { ServiceConnection, UserPlaylist, UserSummary } from "@harmonia/shared";
+import { ServiceConnectionDTO, UserPlaylist, UserSummary } from "@harmonia/shared";
 import { fetchApi } from "./api";
 
 
@@ -21,8 +21,8 @@ export const userService = {
       }
     })
   },
-  getServiceConnections: async (token: string): Promise<ServiceConnection[]> => {
-    return fetchApi<ServiceConnection[]>("/user/connections", {
+  getServiceConnections: async (token: string): Promise<ServiceConnectionDTO[]> => {
+    return fetchApi<ServiceConnectionDTO[]>("/user/connections", {
       method: "GET",
       headers: {
         "Content-Type": "application/json",

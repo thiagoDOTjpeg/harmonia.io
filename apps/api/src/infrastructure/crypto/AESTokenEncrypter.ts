@@ -1,6 +1,6 @@
 import { IEncryptor } from "@/application/ports/crypto/IEncryptor";
 import { createCipheriv, createDecipheriv, randomBytes } from "node:crypto";
-import { TokenEncrypted } from "../http/types/encrypter";
+import { TokenEncrypted } from "../../types/encrypter";
 
 const ALGORITHM = "aes-256-gcm"
 const IV_LENGTH = 12;

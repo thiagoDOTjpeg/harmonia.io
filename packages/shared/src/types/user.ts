@@ -8,7 +8,7 @@ export interface RecentSync {
   status: string;
 }
 
-export interface UserSummary {
+export interface UserSummaryDTO {
   user_id: string;
   email: string;
   name: string | null;
@@ -21,5 +21,5 @@ export interface UserSummary {
   synced_songs: number;
   synced_songs_last_7_days: number;
   last_sync_at: string | null;
-  recent_syncs: RecentSync[];
+  recent_syncs: RecentSync[] | null;
 }

@@ -1,5 +1,5 @@
 import { ServiceConnection } from "@/domain/entities/ServiceConnection";
-import { OAuthProviderToken } from "@harmonia/shared";
+import { OAuthProviderToken } from "@/types/oauth/tokens";
 
 export interface IAuthProvider {
   isExpired(serviceConnection: ServiceConnection): boolean;

@@ -1,5 +1,6 @@
 "use client";
 
+import { PlaylistManagerDialog } from "@/components/playlist-manager-dialog";
 import PlaylistsSkeleton from "@/components/skeleton/playlists-skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -10,13 +11,29 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { useUser } from "@/hooks/use-user";
-import { formatTimeAgo } from "@harmonia/shared";
-import { Music2, Pause, Play, Settings, Trash2 } from "lucide-react";
+import { formatTimeAgo, UserPlaylist } from "@harmonia/shared";
+import {
+  ExternalLink,
+  Music2,
+  Pause,
+  Play,
+  RefreshCw,
+  Trash2,
+} from "lucide-react";
 import Link from "next/link";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 export default function PlaylistsPage() {
   const { getPlaylists, playlists, isLoading, _hasHydrated } = useUser();
+  const [selectedPlaylist, setSelectedPlaylist] = useState<UserPlaylist | null>(
+    null
+  );
+  const [dialogOpen, setDialogOpen] = useState(false);
+
+  const handleManage = (playlist: UserPlaylist) => {
+    setSelectedPlaylist(playlist);
+    setDialogOpen(true);
+  };
 
   useEffect(() => {
     if (_hasHydrated && !playlists) {
@@ -67,23 +84,72 @@ export default function PlaylistsPage() {
                             ? "Sincronizada"
                             : "Desincronizada"}
                         </Badge>
+                        <Badge
+                          variant="outline"
+                          className="cursor-pointer hover:bg-red-500/10 hover:border-red-500/40 transition-colors"
+                          onClick={() =>
+                            window.open(
+                              `https://youtube.com/playlist?list=${playlist.youtube_playlist_id}`,
+                              "_blank"
+                            )
+                          }
+                        >
+                          <Play className="mr-1 h-3 w-3 text-red-500" />
+                          YouTube
+                          <ExternalLink className="ml-1 h-3 w-3" />
+                        </Badge>
+                        <Badge
+                          variant="outline"
+                          className="cursor-pointer hover:bg-green-500/10 hover:border-green-500/40 transition-colors"
+                          onClick={() =>
+                            window.open(
+                              `https://open.spotify.com/playlist/${playlist.spotify_playlist_id}`,
+                              "_blank"
+                            )
+                          }
+                        >
+                          <Music2 className="mr-1 h-3 w-3 text-green-500" />
+                          Spotify
+                          <ExternalLink className="ml-1 h-3 w-3" />
+                        </Badge>
                       </div>
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Button variant="outline" size="icon">
-                      {playlist.sync_status === "completed" ? (
-                        <Pause className="h-4 w-4" />
-                      ) : (
-                        <Play className="h-4 w-4" />
+                    <div className="flex items-center gap-2">
+                      {playlist.sync_status === "partial" && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="border-yellow-500/40 hover:bg-yellow-500/10"
+                        >
+                          <RefreshCw className="mr-2 h-4 w-4" />
+                          Resincronizar
+                        </Button>
                       )}
-                    </Button>
-                    <Button variant="outline" size="icon">
-                      <Settings className="h-4 w-4" />
-                    </Button>
-                    <Button variant="outline" size="icon">
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+                      <Button variant="outline" size="icon">
+                        {playlist.sync_status === "completed" ? (
+                          <Pause className="h-4 w-4" />
+                        ) : (
+                          <Play className="h-4 w-4" />
+                        )}
+                      </Button>
+                      {/* <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleManage(playlist)}
+                      >
+                        <Music2 className="mr-2 h-4 w-4" />
+                        Gerenciar
+                      </Button> */}
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        className="hover:border-destructive hover:text-destructive"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </div>
                 </div>
               </CardHeader>
@@ -112,6 +178,14 @@ export default function PlaylistsPage() {
           </Card>
         )}
       </div>
+
+      {selectedPlaylist && (
+        <PlaylistManagerDialog
+          open={dialogOpen}
+          onOpenChange={setDialogOpen}
+          playlist={selectedPlaylist}
+        />
+      )}
     </div>
   );
 }

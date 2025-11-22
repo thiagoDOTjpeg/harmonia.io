@@ -13,7 +13,7 @@ import {
 import { useUser } from "@/hooks/use-user";
 import { formatTimeAgo } from "@/lib/utils";
 import { ServiceProvider } from "@harmonia/shared";
-import { Clock, Music2, TrendingUp, Zap } from "lucide-react";
+import { Clock, Music2, TrendingUp } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
@@ -48,7 +48,7 @@ export default function DashboardPage() {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium">
@@ -95,19 +95,6 @@ export default function DashboardPage() {
               {formatTimeAgo(summary?.last_sync_at)}
             </div>
             <p className="text-xs text-muted-foreground mt-1">atrás</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Plano Atual</CardTitle>
-            <Zap className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">Pro</div>
-            <p className="text-xs text-muted-foreground mt-1">
-              Renovação em 23 dias
-            </p>
           </CardContent>
         </Card>
       </div>
@@ -236,7 +223,9 @@ export default function DashboardPage() {
                   </div>
                 </div>
                 <span className="text-sm text-primary font-medium">
-                  {activity.status.toLocaleUpperCase()}
+                  {activity.status === "completed"
+                    ? "Sincronizado"
+                    : "Sincronização Parcial"}
                 </span>
               </div>
             ))}

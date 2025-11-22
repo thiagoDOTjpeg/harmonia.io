@@ -14,7 +14,7 @@ import { useUser } from "@/hooks/use-user";
 import { formatFullDate } from "@/lib/utils";
 import {
   OAuthMethod,
-  ServiceConnection,
+  ServiceConnectionDTO,
   ServiceProvider,
 } from "@harmonia/shared";
 import {
@@ -56,7 +56,8 @@ export function ServiceConnectionDialog({
 }: ServiceConnectionDialogProps) {
   const { getServiceConnections, _hasHydrated, serviceConnections } = useUser();
   const { openOAuthPopup } = useAuthContext();
-  const [selectedService, setSelectedService] = useState<ServiceConnection>();
+  const [selectedService, setSelectedService] =
+    useState<ServiceConnectionDTO>();
   const [isConnected, setIsConnected] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
 

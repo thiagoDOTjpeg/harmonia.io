@@ -1,5 +1,7 @@
 import { IGoogleMusicClient } from "@/application/ports/google/IGoogleMusicClient";
-import { AppError, YouTubePlaylistInfo, YouTubePlaylistItemsResponse, YouTubePlaylistResponse, YouTubeVideo } from "@harmonia/shared";
+import { YouTubePlaylistInfo, YouTubeVideo } from "@/types/google";
+import { YouTubePlaylistItemsResponse, YouTubePlaylistResponse } from "@/types/playlist";
+import { AppError } from "@harmonia/shared";
 
 export class GoogleMusicClient implements IGoogleMusicClient {
   async getPlaylistInfo(playlistId: string, accessToken: string): Promise<YouTubePlaylistInfo> {

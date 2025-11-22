@@ -1,8 +1,8 @@
-import { AppError, BadRequestError, OAuthMethod, RequestResetPasswordInput, ResetPasswordInput, SetPasswordInput, UnathorizedError } from '@harmonia/shared';
+import { OAuthParamCallbackSchema, OAuthParamSchema } from '@/schemas/oauth';
+import { AppError, BadRequestError, LoginSchema, OAuthMethod, OAuthQuerySchema, RegisterSchema, RequestResetPasswordDTO, ResetPasswordDTO, SetPasswordDTO, UnathorizedError } from '@harmonia/shared';
 import { NextFunction, Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 import { Container } from '../../../../main/container';
-import { LoginSchema, OAuthParamCallbackSchema, OAuthParamSchema, OAuthQuerySchema, RegisterSchema } from '../../schemas/auth';
 import { AuthMiddleware } from '../middlewares/AuthMiddleware';
 import { getOAuthCallbackHTML } from '../views/oauth-callback';
 
@@ -113,7 +113,7 @@ export class AuthController {
 
   static async requestReset(req: Request, res: Response, next: NextFunction) {
     try {
-      const body = req.body as RequestResetPasswordInput;
+      const body = req.body as RequestResetPasswordDTO;
       if (!body) throw new BadRequestError("Todos os campos devem estar preenchidos")
 
       const useCase = Container.getRequestPasswordResetUseCase();
@@ -123,11 +123,12 @@ export class AuthController {
       console.error("Ocorreu um erro ao fazer o request de reset de senha", error)
       next(error);
     }
+
   }
 
   static async resetPassword(req: Request, res: Response, next: NextFunction) {
     try {
-      const body = req.body as ResetPasswordInput
+      const body = req.body as ResetPasswordDTO
       if (!body) throw new BadRequestError("Todos os campos devem estar preenchidos")
 
       const useCase = Container.getResetPasswordUseCase();
@@ -143,7 +144,7 @@ export class AuthController {
     try {
       const user = await AuthMiddleware.getAuthenticatedUser(req, res);
       if (!user) throw new UnathorizedError("Usuário não autenticado");
-      const body = req.body as SetPasswordInput
+      const body = req.body as SetPasswordDTO
       if (!body) throw new BadRequestError("Todos os campos devem estar preenchidos")
 
       const useCase = Container.getSetPasswordUseCase();

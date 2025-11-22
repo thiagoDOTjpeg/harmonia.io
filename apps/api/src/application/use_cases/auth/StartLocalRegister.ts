@@ -1,6 +1,5 @@
 import { IHasher } from '@/application/ports/crypto/IHasher';
-import { RegisterDto } from '@/infrastructure/http/schemas/auth';
-import { AppError, AuthResponse } from '@harmonia/shared';
+import { AppError, AuthResponse, RegisterDTO } from '@harmonia/shared';
 import { ITokenManager } from '../../ports/crypto/ITokenManager';
 import { IUserRepository } from '../../repositories/IUserRepository';
 
@@ -11,7 +10,7 @@ export class StartLocalRegister {
     private readonly tokenManager: ITokenManager,
   ) { }
 
-  async execute(input: RegisterDto): Promise<AuthResponse> {
+  async execute(input: RegisterDTO): Promise<AuthResponse> {
     try {
       const normalizedEmail = input.email.trim().toLowerCase();
 
@@ -31,7 +30,6 @@ export class StartLocalRegister {
       const token = this.tokenManager.sign({ sub: user.id });
 
       return {
-        success: true,
         token,
         user: {
           id: user.id,

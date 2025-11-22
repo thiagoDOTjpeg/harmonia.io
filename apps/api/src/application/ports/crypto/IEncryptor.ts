@@ -1,4 +1,4 @@
-import { TokenEncrypted } from "@/infrastructure/http/types/encrypter";
+import { TokenEncrypted } from "@/types/encrypter";
 
 export interface IEncryptor {
   encrypt(token: string): TokenEncrypted;

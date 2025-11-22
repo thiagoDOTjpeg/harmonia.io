@@ -1,4 +1,4 @@
-import { SpotifyCreatePlaylistResponse, SpotifySearchResponse, SpotifySearchResult } from '@harmonia/shared';
+import { SpotifyCreatePlaylistResponse, SpotifySearchResponse, SpotifySearchResult } from '@/types/spotify';
 import { ISpotifyMusicClient } from '../../application/ports/spotify/ISpotifyMusicClient';
 import { MusicMatchingService } from '../../domain/services/MusicMatchingService';
 

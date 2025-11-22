@@ -1,5 +1,5 @@
 import { ITokenSerializer } from "@/application/ports/serializer/ITokenSerializer";
-import { TokenEncrypted } from "@/infrastructure/http/types/encrypter";
+import { TokenEncrypted } from "@/types/encrypter";
 
 export class AESSerializer implements ITokenSerializer<TokenEncrypted> {
   serialize(data: TokenEncrypted): string {
