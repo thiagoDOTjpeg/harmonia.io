@@ -1,8 +1,21 @@
 import { ServiceConnection } from "@/domain/entities/ServiceConnection";
-import { ServiceProvider } from "@harmonia/shared";
+import { ServiceConnectionDTO, ServiceProvider } from "@harmonia/shared";
 import { ServiceConnection as PrismaServiceConnection, ServiceProvider as PrismaServiceProvider } from "@prisma/client";
 
 export class ServiceConnectionMapper {
+  static toDTO(serviceConnection: ServiceConnection): ServiceConnectionDTO {
+    return {
+      id: serviceConnection.id,
+      email: serviceConnection.email,
+      expiresAt: serviceConnection.expiresAt?.toISOString(),
+      metadata: JSON.stringify(serviceConnection.metadata),
+      provider: serviceConnection.provider,
+      providerAccountId: serviceConnection.providerAccountId,
+      scopes: serviceConnection.scopes,
+      userId: serviceConnection.userId,
+    }
+  }
+
   static toDomain(serviceConnection: PrismaServiceConnection): ServiceConnection {
     return new ServiceConnection(
       serviceConnection.id,

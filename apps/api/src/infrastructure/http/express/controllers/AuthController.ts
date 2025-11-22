@@ -1,6 +1,5 @@
 import { OAuthParamCallbackSchema, OAuthParamSchema } from '@/schemas/oauth';
-import { AppError, BadRequestError, OAuthMethod, RequestResetPasswordDTO, ResetPasswordDTO, SetPasswordDTO, UnathorizedError } from '@harmonia/shared';
-import { LoginSchema, OAuthQuerySchema, RegisterSchema } from '@harmonia/shared/src/schemas/auth';
+import { AppError, BadRequestError, LoginSchema, OAuthMethod, OAuthQuerySchema, RegisterSchema, RequestResetPasswordDTO, ResetPasswordDTO, SetPasswordDTO, UnathorizedError } from '@harmonia/shared';
 import { NextFunction, Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 import { Container } from '../../../../main/container';
@@ -124,6 +123,7 @@ export class AuthController {
       console.error("Ocorreu um erro ao fazer o request de reset de senha", error)
       next(error);
     }
+
   }
 
   static async resetPassword(req: Request, res: Response, next: NextFunction) {

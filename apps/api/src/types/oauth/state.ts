@@ -1,4 +1,4 @@
-import { OAuthMethod } from "@harmonia/shared/src/enum/oauth";
+import { OAuthMethod } from "@harmonia/shared";
 
 export interface OAuthState {
   method: OAuthMethod;

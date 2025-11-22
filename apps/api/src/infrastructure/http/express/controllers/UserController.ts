@@ -1,4 +1,6 @@
 import { User } from '@/domain/entities/User';
+import { ServiceConnectionMapper } from '@/infrastructure/db/prisma/mapper/ServiceConnectionMapper';
+import { UserSummaryMapper } from '@/infrastructure/db/prisma/mapper/UserSummaryMapper';
 import { Container } from '@/main/container';
 import { NotFoundError, UnathorizedError } from '@harmonia/shared';
 import { NextFunction, Request, Response } from 'express';
@@ -18,7 +20,9 @@ export class UserController {
         throw new NotFoundError("Resumo não encontrado")
       }
 
-      return res.json(summary);
+      const summaryDTO = UserSummaryMapper.toDTO(summary);
+
+      return res.json(summaryDTO);
     } catch (error) {
       console.error("Ocorreu um erro ao buscar o resumo", error);
       next(error)
@@ -37,7 +41,12 @@ export class UserController {
       if (!serviceConnections) {
         throw new NotFoundError("Nenhum serviço conectado");
       }
-      return res.json(serviceConnections)
+
+      const serviceConnectionsDTO = serviceConnections.map((service) => {
+        return ServiceConnectionMapper.toDTO(service);
+      })
+
+      return res.json(serviceConnectionsDTO)
     } catch (error) {
       console.error("Ocorreu um erro ao buscar os serviços do usuário", error);
       next(error)

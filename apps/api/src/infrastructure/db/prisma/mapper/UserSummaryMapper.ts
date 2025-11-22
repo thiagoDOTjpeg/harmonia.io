@@ -1,11 +1,28 @@
 import { RecentSync } from "@/domain/entities/RecentSync";
 import { UserSummary } from "@/domain/entities/UserSummary";
+import { UserSummaryDTO } from "@harmonia/shared";
 import { Prisma, UserSummary as PrismaUserSummary } from "@prisma/client";
 
 export class UserSummaryMapper {
-  static toDomain(summary: PrismaUserSummary): UserSummary {
-    console.log(summary);
+  static toDTO(summary: UserSummary): UserSummaryDTO {
+    return {
+      email: summary.email,
+      name: summary.name,
+      is_spotify_connected: summary.is_spotify_connected,
+      is_youtube_connected: summary.is_youtube_connected,
+      last_sync_at: summary.last_sync_at,
+      synced_playlists: summary.synced_playlists,
+      synced_songs: summary.synced_songs,
+      synced_songs_last_7_days: summary.synced_songs_last_7_days,
+      total_playlists: summary.total_playlists,
+      total_songs: summary.total_songs,
+      user_id: summary.user_id,
+      user_created_at: summary.user_created_at,
+      recent_syncs: summary.recent_syncs,
+    }
+  }
 
+  static toDomain(summary: PrismaUserSummary): UserSummary {
     function mapRecentSync(): RecentSync[] | null {
       if (!summary.recentSyncs) {
         return null;

@@ -1,15 +1,15 @@
-import { AuthSuccess, ServiceConnection, UserPlaylist, UserSummary } from '@harmonia/shared';
+import { AuthSuccess, ServiceConnectionDTO, UserPlaylist, UserSummary } from '@harmonia/shared';
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
 interface UserState {
   user: AuthSuccess["user"] | null;
-  serviceConnections: ServiceConnection[] | null,
+  serviceConnections: ServiceConnectionDTO[] | null,
   summary: UserSummary | null;
   playlists: UserPlaylist[] | null;
   _hasHydrated: boolean;
   setUser: (user: AuthSuccess["user"]) => void;
-  setServiceConnections: (serviceConnections: ServiceConnection[] | null) => void;
+  setServiceConnections: (serviceConnections: ServiceConnectionDTO[] | null) => void;
   setSummary: (summary: UserSummary | null) => void;
   setPlaylists: (playlists: UserPlaylist[] | null) => void;
   clearUser: () => void;
@@ -29,7 +29,7 @@ export const useUserStore = create<UserState>()(
         set({ user });
       },
 
-      setServiceConnections: (serviceConnections: ServiceConnection[] | null) => {
+      setServiceConnections: (serviceConnections: ServiceConnectionDTO[] | null) => {
         set({ serviceConnections })
       },
 
