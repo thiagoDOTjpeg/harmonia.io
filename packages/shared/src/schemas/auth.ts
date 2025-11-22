@@ -1,5 +1,5 @@
-import { OAuthMethod, ServiceProvider } from "@harmonia/shared";
 import { z } from "zod";
+import { OAuthMethod } from "../enum/oauth";
 
 const base64Regex = /^[A-Za-z0-9+/]*={0,2}$/;
 
@@ -27,15 +27,23 @@ export const OAuthQuerySchema = z.object({
   returnTo: z.string().url('URL inválida').optional(),
 });
 
-export const OAuthParamSchema = z.object({
-  provider: z.enum([ServiceProvider.GOOGLE, ServiceProvider.SPOTIFY]),
-});
-
-export const OAuthParamCallbackSchema = z.object({
-  code: z.string(),
-  state: z.string()
+export const RequestResetPasswordInput = z.object({
+  email: z.string().email("Por favor digite um email válido")
 })
 
-export type RegisterDto = z.infer<typeof RegisterSchema>;
-export type LoginDto = z.infer<typeof LoginSchema>;
-export type OAuthQueryDto = z.infer<typeof OAuthQuerySchema>;
+export const ResetPasswordInput = z.object({
+  email: z.string().email("Por favor digite um email válido"),
+  code: z.number().min(6).max(6),
+  newPassword: z.string().min(8, "Por favor digite uma senha com no minímo 8 caracteres")
+})
+
+export const SetPasswordInput = z.object({
+  newPassword: z.string().min(8, "Por favor digite uma senha com no minímo 8 caracteres")
+})
+
+export type RequestResetPasswordDTO = z.infer<typeof RequestResetPasswordInput>
+export type ResetPasswordDTO = z.infer<typeof ResetPasswordInput>
+export type RegisterDTO = z.infer<typeof RegisterSchema>;
+export type SetPasswordDTO = z.infer<typeof SetPasswordInput>;
+export type LoginDTO = z.infer<typeof LoginSchema>;
+export type OAuthQueryDTO = z.infer<typeof OAuthQuerySchema>;

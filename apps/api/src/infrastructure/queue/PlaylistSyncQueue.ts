@@ -1,4 +1,4 @@
-import { SyncPlaylistJobData } from '@harmonia/shared';
+import { SyncPlaylistJobData } from '@/types/sync-job';
 import Bull, { Job, Queue } from 'bull';
 
 export class PlaylistSyncQueue {

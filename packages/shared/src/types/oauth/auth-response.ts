@@ -1,7 +1,6 @@
 import { OAuthMethod } from "../../enum/oauth";
 
-export interface AuthSuccess {
-  success: boolean;
+export interface AuthResponse {
   token: string;
   user: {
     id: string;
@@ -11,5 +10,3 @@ export interface AuthSuccess {
   method?: OAuthMethod;
   returnTo?: string;
 }
-
-export type AuthResponse = AuthSuccess;

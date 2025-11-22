@@ -1,6 +1,8 @@
 import { IStateStore } from "@/application/ports/oauth/IStateStore";
 import { OAuthCallbackStrategyFactory } from "@/infrastructure/adapter/oauth/OAuthCallbackStrategyFactory";
-import { NotFoundError, OAuthCallbackData, OAuthMethod, OAuthState, ServiceProvider } from "@harmonia/shared";
+import { OAuthCallbackData } from "@/types/oauth/callback";
+import { OAuthState } from "@/types/oauth/state";
+import { NotFoundError, OAuthMethod, ServiceProvider } from "@harmonia/shared";
 
 export class HandleOAuthCallback {
   constructor(

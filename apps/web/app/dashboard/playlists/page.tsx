@@ -1,5 +1,6 @@
 "use client";
 
+import { PlaylistManagerDialog } from "@/components/playlist-manager-dialog";
 import PlaylistsSkeleton from "@/components/skeleton/playlists-skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -10,7 +11,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { useUser } from "@/hooks/use-user";
-import { formatTimeAgo } from "@harmonia/shared";
+import { formatTimeAgo, UserPlaylist } from "@harmonia/shared";
 import {
   ExternalLink,
   Music2,
@@ -20,10 +21,19 @@ import {
   Trash2,
 } from "lucide-react";
 import Link from "next/link";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 export default function PlaylistsPage() {
   const { getPlaylists, playlists, isLoading, _hasHydrated } = useUser();
+  const [selectedPlaylist, setSelectedPlaylist] = useState<UserPlaylist | null>(
+    null
+  );
+  const [dialogOpen, setDialogOpen] = useState(false);
+
+  const handleManage = (playlist: UserPlaylist) => {
+    setSelectedPlaylist(playlist);
+    setDialogOpen(true);
+  };
 
   useEffect(() => {
     if (_hasHydrated && !playlists) {
@@ -124,10 +134,14 @@ export default function PlaylistsPage() {
                           <Play className="h-4 w-4" />
                         )}
                       </Button>
-                      <Button variant="outline" size="sm">
+                      {/* <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleManage(playlist)}
+                      >
                         <Music2 className="mr-2 h-4 w-4" />
                         Gerenciar
-                      </Button>
+                      </Button> */}
                       <Button
                         variant="outline"
                         size="icon"
@@ -164,6 +178,14 @@ export default function PlaylistsPage() {
           </Card>
         )}
       </div>
+
+      {selectedPlaylist && (
+        <PlaylistManagerDialog
+          open={dialogOpen}
+          onOpenChange={setDialogOpen}
+          playlist={selectedPlaylist}
+        />
+      )}
     </div>
   );
 }

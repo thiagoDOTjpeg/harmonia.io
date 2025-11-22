@@ -1,7 +1,6 @@
 import { ServiceConnection } from "@/domain/entities/ServiceConnection";
-import { updateServiceConnectionDto } from "@/infrastructure/http/schemas/service-connection.schema";
 import { ServiceProvider } from "@harmonia/shared";
-import { Prisma, ServiceConnection as PrismaServiceConnection, ServiceProvider as PrismaServiceProvider } from "@prisma/client";
+import { ServiceConnection as PrismaServiceConnection, ServiceProvider as PrismaServiceProvider } from "@prisma/client";
 
 export class ServiceConnectionMapper {
   static toDomain(serviceConnection: PrismaServiceConnection): ServiceConnection {
@@ -38,45 +37,5 @@ export class ServiceConnectionMapper {
       accessTokenIv: "",
       refreshTokenIv: ""
     }
-  }
-
-  static updateToPrisma(dto: updateServiceConnectionDto): Prisma.ServiceConnectionUncheckedUpdateInput {
-    const data: Prisma.ServiceConnectionUncheckedUpdateInput = {
-      updatedAt: new Date(),
-    };
-
-    if (dto.accessToken) {
-      data.accessToken = dto.accessToken;
-    }
-
-    if (dto.scopes) {
-      data.scopes = dto.scopes;
-    }
-
-    if (dto.provider) {
-      data.provider = dto.provider as unknown as PrismaServiceProvider;
-    }
-
-    if (dto.email !== undefined) {
-      data.email = dto.email;
-    }
-
-    if (dto.refreshToken !== undefined) {
-      data.refreshToken = dto.refreshToken;
-    }
-
-    if (dto.providerAccountId !== undefined) {
-      data.providerAccountId = dto.providerAccountId;
-    }
-
-    if (dto.expiresAt !== undefined) {
-      data.expiresAt = dto.expiresAt;
-    }
-
-    if (dto.metadata !== undefined) {
-      data.metadata = dto.metadata === null ? Prisma.DbNull : dto.metadata;
-    }
-
-    return data;
   }
 }

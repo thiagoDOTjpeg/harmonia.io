@@ -1,6 +1,8 @@
 import { IAuthUrlProvider } from '@/application/ports/oauth/IAuthUrlProvider';
 import { ICodeExchanger } from '@/application/ports/oauth/ICodeExchanger';
-import { GoogleOAuthResult, GoogleTokenResponse, GoogleUserInfo, TokenExchangeError } from '@harmonia/shared';
+import { GoogleTokenResponse, GoogleUserInfo } from '@/types/google';
+import { GoogleOAuthResult } from '@/types/oauth/results';
+import { TokenExchangeError } from '@harmonia/shared';
 
 export class GoogleOAuthClient implements IAuthUrlProvider, ICodeExchanger<GoogleOAuthResult> {
   constructor(

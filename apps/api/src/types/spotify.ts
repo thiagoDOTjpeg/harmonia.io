@@ -1,4 +1,4 @@
-import { OAuthProviderToken } from "./oauth";
+import { OAuthProviderToken } from "./oauth/tokens";
 
 export interface SpotifyPlaylist {
   id: string;

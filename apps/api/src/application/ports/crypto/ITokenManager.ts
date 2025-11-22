@@ -1,4 +1,4 @@
-import { TokenResponse } from '@harmonia/shared';
+import { TokenResponse } from "@/types/token";
 
 export interface ITokenManager {
   sign(payload: object): string;

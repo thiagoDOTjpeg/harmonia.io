@@ -1,4 +1,4 @@
-import { SyncPlaylistJobData, SyncProgress, SyncResult } from '@harmonia/shared';
+import { SyncPlaylistJobData, SyncProgress, SyncResult } from '@/types/sync-job';
 import { Job } from 'bull';
 import { MusicMatchingService } from '../../../domain/services/MusicMatchingService';
 import { Container } from '../../../main/container';

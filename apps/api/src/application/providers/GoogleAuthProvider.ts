@@ -1,5 +1,6 @@
 import { ServiceConnection } from "@/domain/entities/ServiceConnection";
-import { AppError, GoogleTokenResponse } from "@harmonia/shared";
+import { GoogleTokenResponse } from "@/types/google";
+import { AppError } from "@harmonia/shared";
 import { IAuthProvider } from "../ports/auth/IAuthProvider";
 
 export class GoogleAuthProvider implements IAuthProvider {

@@ -1,7 +1,8 @@
 import { IEmailProvider } from "@/application/ports/email/IEmailProvider";
 import { IStateStore } from "@/application/ports/oauth/IStateStore";
 import { IUserRepository } from "@/application/repositories/IUserRepository";
-import { RequestResetPasswordInput, ResetState } from "@harmonia/shared";
+import { ResetState } from "@/types/auth";
+import { RequestResetPasswordDTO } from "@harmonia/shared";
 
 export class RequestPasswordResetUseCase {
   constructor(
@@ -10,7 +11,7 @@ export class RequestPasswordResetUseCase {
     private readonly emailProvider: IEmailProvider
   ) { }
 
-  async execute(data: RequestResetPasswordInput) {
+  async execute(data: RequestResetPasswordDTO) {
     const user = await this.userRepository.findByEmail(data.email);
     if (!user) return null;
     const randomCode = Math.floor(Math.random() * (999999 - 100000 + 1)) + 100000;

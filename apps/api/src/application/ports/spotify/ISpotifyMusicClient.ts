@@ -1,4 +1,4 @@
-import { SpotifySearchResult } from '@harmonia/shared';
+import { SpotifySearchResult } from "@/types/spotify";
 
 export interface ISpotifyMusicClient {
   searchTrack(youtubeTitle: string, channelTitle: string): Promise<SpotifySearchResult | null>;

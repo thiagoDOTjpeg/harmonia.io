@@ -16,6 +16,10 @@
     "./types": {
       "types": "./dist/types/index.d.ts",
       "default": "./dist/types/index.js"
+    },
+    "./enum": {
+      "types": "./dist/enum/index.d.ts",
+      "default": "./dist/enum/index.js"
     }
   },
   "scripts": {

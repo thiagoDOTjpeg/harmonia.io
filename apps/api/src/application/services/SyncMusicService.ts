@@ -2,10 +2,9 @@ import { IEncryptor } from "@/application/ports/crypto/IEncryptor";
 import { ITokenSerializer } from "@/application/ports/serializer/ITokenSerializer";
 import { EnsureValidConnectionsUseCase } from "@/application/use_cases/sync_playlist/EnsureValidConnectionsUseCase";
 import { PrismaPlaylistRepository } from "@/infrastructure/db/prisma/repositories/PrismaPlaylistRepository";
-import { cancelSyncPlaylistDto, createSyncPlaylistDto, getSyncPlaylistStatusDto, retrySyncPlaylistDto } from "@/infrastructure/http/schemas/playlist-sync.schema";
-import { TokenEncrypted } from "@/infrastructure/http/types/encrypter";
 import { PlaylistSyncQueue } from "@/infrastructure/queue/PlaylistSyncQueue";
-import { ServiceProvider } from "@harmonia/shared";
+import { TokenEncrypted } from "@/types/encrypter";
+import { cancelSyncPlaylistDTO, createSyncPlaylistDTO, getSyncPlaylistStatusDTO, retrySyncPlaylistDTO, ServiceProvider } from "@harmonia/shared";
 import { ServiceConnection } from "../../domain/entities/ServiceConnection";
 import { User } from "../../domain/entities/User";
 
@@ -18,7 +17,7 @@ export class SyncMusicService {
     private readonly ensureValidConnectionsUseCase: EnsureValidConnectionsUseCase
   ) { }
 
-  public async syncPlaylist(user: User, bodyParsed: createSyncPlaylistDto) {
+  public async syncPlaylist(user: User, bodyParsed: createSyncPlaylistDTO) {
     const { youtubePlaylistId, priority } = bodyParsed;
     let connections: Map<ServiceProvider, ServiceConnection>;
 
@@ -61,7 +60,7 @@ export class SyncMusicService {
     };
   }
 
-  public async getSyncStatus(queryParsed: getSyncPlaylistStatusDto) {
+  public async getSyncStatus(queryParsed: getSyncPlaylistStatusDTO) {
     const { jobId } = queryParsed;
     const job = await this.syncQueue.getQueue().getJob(jobId);
 
@@ -89,7 +88,7 @@ export class SyncMusicService {
     };
   }
 
-  public async cancelSync(queryParsed: cancelSyncPlaylistDto) {
+  public async cancelSync(queryParsed: cancelSyncPlaylistDTO) {
     const cancelled = await this.syncQueue.cancelSync(queryParsed.jobId)
     if (!cancelled) {
       return {
@@ -103,7 +102,7 @@ export class SyncMusicService {
     }
   }
 
-  public async retrySync(queryParsed: retrySyncPlaylistDto) {
+  public async retrySync(queryParsed: retrySyncPlaylistDTO) {
     const cancelled = await this.syncQueue.cancelSync(queryParsed.jobId)
     if (!cancelled) {
       return {

@@ -4,7 +4,7 @@ import { IEncryptor } from "@/application/ports/crypto/IEncryptor";
 import { ITokenSerializer } from "@/application/ports/serializer/ITokenSerializer";
 import { IServiceConnectionRepository } from "@/application/repositories/IServiceConnectionRepository";
 import { ServiceConnection } from "@/domain/entities/ServiceConnection";
-import { TokenEncrypted } from "@/infrastructure/http/types/encrypter";
+import { TokenEncrypted } from "@/types/encrypter";
 import { ServiceProvider } from "@harmonia/shared";
 import { Prisma } from "@prisma/client";
 

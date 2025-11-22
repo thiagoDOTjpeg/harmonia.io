@@ -1,8 +1,7 @@
-import { IHasher } from '@/application/ports/crypto/IHasher.js';
-import { ITokenManager } from '@/application/ports/crypto/ITokenManager.js';
-import { IUserRepository } from '@/application/repositories/IUserRepository.js';
-import { LoginDto } from '@/infrastructure/http/schemas/auth.js';
-import { AuthResponse, InvalidCredentialsError } from '@harmonia/shared';
+import { IHasher } from '@/application/ports/crypto/IHasher';
+import { ITokenManager } from '@/application/ports/crypto/ITokenManager';
+import { IUserRepository } from '@/application/repositories/IUserRepository';
+import { AuthResponse, InvalidCredentialsError, LoginDTO } from '@harmonia/shared';
 
 export class StartLocalLogin {
   constructor(
@@ -11,7 +10,7 @@ export class StartLocalLogin {
     private readonly tokenManager: ITokenManager,
   ) { }
 
-  async execute(input: LoginDto): Promise<AuthResponse> {
+  async execute(input: LoginDTO): Promise<AuthResponse> {
     const normalizedEmail = input.email.trim().toLowerCase();
 
     const user = await this.userRepository.findByEmail(normalizedEmail);
@@ -26,7 +25,6 @@ export class StartLocalLogin {
     const token = this.tokenManager.sign({ sub: user.id });
 
     return {
-      success: true,
       token,
       user: {
         id: user.id,

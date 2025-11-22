@@ -8,8 +8,10 @@ import { IServiceConnectionRepository } from "@/application/repositories/IServic
 import { IUserRepository } from "@/application/repositories/IUserRepository";
 import { ServiceConnection } from "@/domain/entities/ServiceConnection";
 import { User } from "@/domain/entities/User";
-import { TokenEncrypted } from "@/infrastructure/http/types/encrypter";
-import { AuthResponse, InvalidCredentialsError, NotFoundError, OAuthMethod, OAuthState, ServiceProvider, SpotifyOAuthResult, UnathorizedError } from "@harmonia/shared";
+import { TokenEncrypted } from "@/types/encrypter";
+import { SpotifyOAuthResult } from "@/types/oauth/results";
+import { OAuthState } from "@/types/oauth/state";
+import { AppError, AuthResponse, InvalidCredentialsError, NotFoundError, OAuthMethod, ServiceProvider, UnathorizedError } from "@harmonia/shared";
 import { Prisma, ServiceProvider as PrismaServiceProvider } from "@prisma/client";
 
 const SCOPES = [
@@ -57,6 +59,8 @@ export class SpotifyOAuthCallbackStrategy implements IOAuthCallbackStrategy {
         return this.handleLogin(exchangeData, expiresAt, normalizedEmail, returnTo)
       case OAuthMethod.connect:
         return this.handleConnect(exchangeData, expiresAt, normalizedEmail, returnTo, loggedUserId)
+      default:
+        throw new AppError("Metodo não suportado")
     }
   }
 
@@ -80,7 +84,6 @@ export class SpotifyOAuthCallbackStrategy implements IOAuthCallbackStrategy {
     const createdServiceConnection = await this.createServiceConnection(user, exchangeData, expiresAt);
     const jwt = this.tokens.sign({ sub: user.id });
     return {
-      success: true,
       token: jwt,
       user: {
         id: createdServiceConnection.userId,
@@ -117,7 +120,6 @@ export class SpotifyOAuthCallbackStrategy implements IOAuthCallbackStrategy {
 
     const jwt = this.tokens.sign({ sub: user.id });
     return {
-      success: true,
       token: jwt,
       user: {
         id: serviceConnection.userId,
@@ -157,7 +159,6 @@ export class SpotifyOAuthCallbackStrategy implements IOAuthCallbackStrategy {
     }
     const jwt = this.tokens.sign({ sub: user.id });
     return {
-      success: true,
       token: jwt,
       user: {
         id: serviceConnection.userId,

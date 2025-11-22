@@ -1,5 +1,5 @@
 import { IGoogleMusicClient } from "@/application/ports/google/IGoogleMusicClient";
-import { SyncPlaylistInput, SyncPlaylistResult } from '@harmonia/shared';
+import { SyncPlaylistInput, SyncPlaylistResult } from "@/types/playlist";
 import { SpotifyMusicClient } from "../../../infrastructure/client/SpotifyMusicClient";
 import { IPlaylistRepository } from "../../repositories/IPlaylistRepository";
 import { IPlaylistTrackRepository } from "../../repositories/IPlaylistTrackRepository";
