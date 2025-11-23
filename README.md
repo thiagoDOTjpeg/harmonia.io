@@ -1,534 +1,370 @@
 # 🎵 Harmonia.io
 
-Monorepo full-stack para sincronizar playlists do YouTube para o Spotify com autenticação OAuth e processamento de filas.
+> Sincronize suas playlists entre YouTube e Spotify de forma automática, privada e gratuita.
 
-## 📦 Stack
+[![MIT License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue.svg)](https://www.typescriptlang.org/)
+[![Next.js](https://img.shields.io/badge/Next.js-15-black.svg)](https://nextjs.org/)
+[![Node.js](https://img.shields.io/badge/Node.js-22+-green.svg)](https://nodejs.org/)
 
-### Monorepo
+**Harmonia.io** é uma solução **open-source** para sincronizar suas playlists do YouTube para o Spotify. Auto-hospedável, com processamento em background via filas, autenticação OAuth segura e interface web moderna.
 
-- **Turbo** - Build system e task runner
-- **npm workspaces** - Gerenciamento de dependências
+---
 
-### Backend (API)
+## ✨ Features
 
-- **Node.js 22+** - Runtime JavaScript
-- **TypeScript 5** - Type safety
-- **Express** - Web framework
-- **Prisma** - ORM para PostgreSQL
-- **Bull** - Queue system com Redis
-- **JWT** - Autenticação stateless
-- **Zod** - Validação de schemas
+- 🔄 **Sincronização Bidirecional** - YouTube ↔ Spotify (em desenvolvimento)
+- 🔐 **OAuth 2.0** - Login seguro com Google e Spotify
+- ⚡ **Processamento Assíncrono** - Sistema de filas com BullMQ + Redis
+- 🎨 **Interface Moderna** - Dashboard Next.js 15 com shadcn/ui
+- 🏗️ **Clean Architecture** - Código organizado e escalável
+- 🐳 **Docker Ready** - Deploy em 5 minutos
+- 🔒 **Privacidade Total** - Seus dados, sua infraestrutura
+- 📊 **Monitoramento** - Bull Board para acompanhar sincronizações
 
-### Frontend (Web) - Em desenvolvimento
+---
 
-- **Next.js 15** - React framework
-- **TypeScript** - Type safety
+## 🖼️ Screenshots
+
+### Dashboard
+
+<!-- TODO: Adicionar screenshot do dashboard -->
+
+### Gerenciamento de Playlists
+
+<!-- TODO: Adicionar screenshot de playlists -->
+
+---
+
+## 🚀 Quick Start
+
+### Pré-requisitos
+
+```bash
+node -v   # >= 18.0.0
+npm -v    # >= 7.0.0
+docker -v # >= 20.0.0
+```
+
+### Instalação Rápida
+
+```bash
+# 1. Clone o repositório
+git clone https://github.com/thiagoDOTjpeg/harmonia.io.git
+cd harmonia.io
+
+# 2. Instale as dependências
+npm install
+
+# 3. Configure as variáveis de ambiente
+cp .env.example .env
+# Edite o .env com suas credenciais OAuth
+
+# 4. Inicie o Docker (PostgreSQL + Redis)
+cd apps/api && docker-compose up -d && cd ../..
+
+# 5. Configure o banco de dados
+npm run db:generate && npm run db:push
+
+# 6. Inicie a aplicação
+npm run dev
+```
+
+🎉 Acesse:
+
+- **Web App**: [http://localhost:3001](http://localhost:3001)
+- **API**: [http://localhost:3000](http://localhost:3000)
+- **Queue Monitor**: [http://localhost:3000/queues](http://localhost:3000/queues)
+
+---
+
+## 📦 Stack Tecnológica
+
+### Backend
+
+| Tecnologia                                      | Descrição              |
+| ----------------------------------------------- | ---------------------- |
+| [Node.js 22+](https://nodejs.org/)              | Runtime JavaScript     |
+| [TypeScript 5](https://www.typescriptlang.org/) | Type Safety            |
+| [Express](https://expressjs.com/)               | Web Framework          |
+| [Prisma](https://www.prisma.io/)                | ORM para PostgreSQL    |
+| [BullMQ](https://docs.bullmq.io/)               | Sistema de Filas       |
+| [JWT](https://jwt.io/)                          | Autenticação Stateless |
+| [Zod](https://zod.dev/)                         | Validação de Schemas   |
+
+### Frontend
+
+| Tecnologia                                    | Descrição        |
+| --------------------------------------------- | ---------------- |
+| [Next.js 15](https://nextjs.org/)             | React Framework  |
+| [TypeScript](https://www.typescriptlang.org/) | Type Safety      |
+| [Tailwind CSS](https://tailwindcss.com/)      | Styling          |
+| [shadcn/ui](https://ui.shadcn.com/)           | Componentes      |
+| [Zustand](https://zustand-demo.pmnd.rs/)      | State Management |
 
 ### Infraestrutura
 
-- **PostgreSQL** - Banco de dados relacional
-- **Redis** - Cache e filas
-- **Docker Compose** - Orquestração local
+| Tecnologia                                | Descrição       |
+| ----------------------------------------- | --------------- |
+| [PostgreSQL](https://www.postgresql.org/) | Banco de Dados  |
+| [Redis](https://redis.io/)                | Cache + Filas   |
+| [Docker](https://www.docker.com/)         | Containerização |
+| [Turborepo](https://turbo.build/)         | Monorepo        |
+
+---
 
 ## 🏗️ Arquitetura
 
 ```
 harmonia.io/
 ├── apps/
-│   ├── api/              # Backend Node.js + Express
+│   ├── api/                      # Backend (Express + TypeScript)
 │   │   ├── src/
-│   │   │   ├── application/    # Use cases e portas
-│   │   │   ├── domain/         # Entidades e regras de negócio
-│   │   │   ├── infrastructure/ # Implementações (DB, OAuth, Queue)
-│   │   │   └── main/           # Entry points (server + worker)
-│   │   └── docker-compose.yml  # PostgreSQL + Redis
-│   └── web/              # Frontend Next.js (futuro)
+│   │   │   ├── application/      # Use Cases (regras de negócio)
+│   │   │   ├── domain/           # Entidades + Value Objects
+│   │   │   ├── infrastructure/   # Adaptadores (DB, OAuth, Queue)
+│   │   │   └── main/             # Entry Points (server + worker)
+│   │   └── docker-compose.yml    # PostgreSQL + Redis
+│   │
+│   └── web/                      # Frontend (Next.js 15)
+│       ├── app/                  # Pages (App Router)
+│       ├── components/           # UI Components
+│       └── hooks/                # Custom Hooks
+│
 ├── packages/
-│   ├── shared/           # Tipos e schemas compartilhados
-│   ├── database/         # Prisma schema e client
-│   └── config-typescript/# Configurações TypeScript
-└── turbo.json            # Pipeline de tasks
+│   ├── shared/                   # Tipos + Schemas Compartilhados
+│   ├── database/                 # Prisma Schema
+│   └── config-typescript/        # Configurações TS
+│
+└── turbo.json                    # Pipeline de Tasks
 ```
 
-### Clean Architecture + DDD
+### Clean Architecture
 
-- **Domain Layer**: Entidades (`User`, `Track`, `SyncedPlaylist`) e Value Objects (`Email`)
-- **Application Layer**: Use Cases (login, sync) e interfaces (ports)
-- **Infrastructure Layer**: Implementações concretas (Prisma, OAuth clients, Redis)
-- **Main Layer**: Composição de dependências (DI container)
+O projeto segue os princípios de **Clean Architecture** e **Domain-Driven Design**:
 
-## 🚀 Início Rápido
+- **Domain Layer**: Entidades puras sem dependências externas
+- **Application Layer**: Use Cases e interfaces (ports)
+- **Infrastructure Layer**: Implementações concretas (adapters)
+- **Dependency Injection**: Container no `main/container.ts`
 
-### 1. Pré-requisitos
+---
 
-```bash
-node -v  # >= 18.0.0
-npm -v   # >= 7.0.0
-docker --version
-docker-compose --version
-```
-
-### 2. Clonar e instalar
-
-```bash
-git clone https://github.com/seu-usuario/harmonia.io.git
-cd harmonia.io
-
-# Instalar dependências de todo o monorepo
-npm install
-```
-
-### 3. Configurar variáveis de ambiente
-
-```bash
-# Copiar template
-cp .env.example .env
-
-# Editar com suas credenciais
-nano .env
-```
-
-**`.env`** (raiz do projeto):
-
-```env
-# Application
-NODE_ENV=development
-BASE_URL=http://localhost:3000
-PORT=3000
-
-# Database
-DATABASE_URL="postgresql://postgres:postgres@localhost:5432/harmonia?schema=public"
-
-# Redis
-REDIS_HOST=localhost
-REDIS_PORT=6379
-
-# JWT
-JWT_SECRET=your-super-secret-jwt-key-change-in-production-min-32-chars
-JWT_REFRESH_SECRET=your-super-secret-refresh-key-change-in-production-min-32-chars
-
-# Google OAuth (https://console.cloud.google.com)
-GOOGLE_CLIENT_ID=your-google-client-id.apps.googleusercontent.com
-GOOGLE_CLIENT_SECRET=your-google-client-secret
-GOOGLE_REDIRECT_URI=http://localhost:3000/api/auth/google/login/callback
-
-# Spotify OAuth (https://developer.spotify.com/dashboard)
-SPOTIFY_CLIENT_ID=your-spotify-client-id
-SPOTIFY_CLIENT_SECRET=your-spotify-client-secret
-SPOTIFY_REDIRECT_URI=http://localhost:3000/api/auth/spotify/login/callback
-```
-
-### 4. Iniciar infraestrutura (PostgreSQL + Redis)
-
-```bash
-cd apps/api
-docker-compose up -d
-cd ../..
-```
-
-### 5. Configurar banco de dados
-
-```bash
-# Gerar Prisma Client
-npm run db:generate
-
-# Aplicar migrations
-npm run db:push
-
-# (Opcional) Abrir Prisma Studio
-cd packages/database
-npx prisma studio
-```
-
-### 6. Iniciar aplicação
-
-```bash
-# Terminal 1: API
-npm run dev:api
-
-# Terminal 2: Worker (processamento de filas)
-npm run worker
-```
-
-Acesse: http://localhost:3000/health
-
-## 🔐 Configurar OAuth
+## 🔐 Configuração OAuth
 
 ### Spotify
 
 1. Acesse [Spotify Developer Dashboard](https://developer.spotify.com/dashboard)
-2. Crie um novo app
-3. Em **Settings** → **Redirect URIs**, adicione:
+2. Crie um novo aplicativo
+3. Adicione em **Redirect URIs**:
    ```
    http://localhost:3000/api/auth/spotify/login/callback
    http://localhost:3000/api/auth/spotify/register/callback
    ```
-4. Copie **Client ID** e **Client Secret** para o `.env`
+4. Copie o **Client ID** e **Client Secret** para o `.env`:
+   ```env
+   SPOTIFY_CLIENT_ID=your_client_id
+   SPOTIFY_CLIENT_SECRET=your_client_secret
+   SPOTIFY_REDIRECT_URI=http://localhost:3000/api/auth/spotify/login/callback
+   ```
 
-### Google/YouTube
+### Google (YouTube)
 
 1. Acesse [Google Cloud Console](https://console.cloud.google.com/apis/credentials)
-2. Crie um novo projeto ou selecione existente
+2. Crie um novo projeto
 3. Crie **OAuth 2.0 Client ID** (Web application)
-4. Em **Authorized redirect URIs**, adicione:
+4. Adicione em **Authorized redirect URIs**:
    ```
    http://localhost:3000/api/auth/google/login/callback
    http://localhost:3000/api/auth/google/register/callback
    ```
-5. Ative a **YouTube Data API v3** no projeto
-6. Copie **Client ID** e **Client Secret** para o `.env`
+5. Ative a **YouTube Data API v3**
+6. Copie as credenciais para o `.env`:
+   ```env
+   GOOGLE_CLIENT_ID=your_client_id.apps.googleusercontent.com
+   GOOGLE_CLIENT_SECRET=your_client_secret
+   GOOGLE_REDIRECT_URI=http://localhost:3000/api/auth/google/login/callback
+   ```
 
-## 📡 API Endpoints
+---
 
-Base URL: `http://localhost:3000/api`
+## 📡 API Documentation
 
-### Autenticação
+### Base URL
 
-#### Registro Local
+```
+http://localhost:3000/api
+```
 
-```bash
-POST /auth/register
-Content-Type: application/json
+### Endpoints Principais
 
+#### Autenticação
+
+**POST** `/auth/register` - Criar conta
+
+```json
 {
   "email": "user@example.com",
   "password": "senha123",
   "name": "Nome do Usuário"
 }
-
-# Response 201
-{
-  "token": "eyJhbGc...",
-  "refreshToken": "eyJhbGc...",
-  "user": {
-    "id": "uuid",
-    "email": "user@example.com",
-    "name": "Nome do Usuário"
-  }
-}
 ```
 
-#### Login Local
+**POST** `/auth/login` - Fazer login
 
-```bash
-POST /auth/login
-Content-Type: application/json
-
+```json
 {
   "email": "user@example.com",
   "password": "senha123"
 }
-
-# Response 200
-{
-  "token": "eyJhbGc...",
-  "refreshToken": "eyJhbGc...",
-  "user": { ... }
-}
 ```
 
-#### OAuth Google
+**GET** `/auth/google/login` - OAuth Google (redireciona)
+
+**GET** `/auth/spotify/login` - OAuth Spotify (redireciona)
+
+**GET** `/auth/me` - Obter usuário autenticado
 
 ```bash
-# 1. Iniciar fluxo (redireciona para Google)
-GET /auth/google/login
-GET /auth/google/register
-
-# 2. Callback (automático após autorização)
-GET /auth/google/login/callback?code=...&state=...
-
-# Response 200
-{
-  "token": "eyJhbGc...",
-  "refreshToken": "eyJhbGc...",
-  "user": { ... }
-}
+Authorization: Bearer {token}
 ```
 
-#### OAuth Spotify
+#### Sincronização
 
-```bash
-# 1. Iniciar fluxo (redireciona para Spotify)
-GET /auth/spotify/login
-GET /auth/spotify/register
+**POST** `/sync` - Sincronizar playlist
 
-# 2. Callback (automático após autorização)
-GET /auth/spotify/login/callback?code=...&state=...
-
-# Response 200
-{
-  "token": "eyJhbGc...",
-  "refreshToken": "eyJhbGc...",
-  "user": { ... }
-}
-```
-
-#### Refresh Token
-
-```bash
-POST /auth/refresh
-Content-Type: application/json
-
-{
-  "refreshToken": "eyJhbGc..."
-}
-
-# Response 200
-{
-  "token": "eyJhbGc...",
-  "refreshToken": "eyJhbGc..."
-}
-```
-
-#### Obter Usuário Autenticado
-
-```bash
-GET /auth/me
-Authorization: Bearer eyJhbGc...
-
-# Response 200
-{
-  "id": "uuid",
-  "email": "user@example.com",
-  "name": "Nome do Usuário",
-  "spotifyId": "spotify-user-id",
-  "googleId": "google-user-id",
-  "youtubeChannelId": "UCxxxx"
-}
-```
-
-### Sincronização de Playlists
-
-#### Sincronizar Playlist do YouTube para Spotify
-
-```bash
-POST /sync
-Authorization: Bearer eyJhbGc...
-Content-Type: application/json
-
+```json
 {
   "youtubePlaylistId": "PLxxxxxxxxxxxxx"
 }
-
-# Response 202 Accepted
-{
-  "jobId": "sync-uuid-timestamp",
-  "status": "queued",
-  "message": "Playlist adicionada à fila de sincronização"
-}
 ```
 
-#### Obter Status de Sincronização
+**GET** `/sync/playlists` - Listar playlists sincronizadas
+
+**GET** `/sync/:jobId` - Status de sincronização
+
+**POST** `/sync/:playlistId/resync` - Re-sincronizar
+
+📚 [Documentação Completa da API](#-api-endpoints)
+
+---
+
+## 🛠️ Scripts
+
+### Desenvolvimento
 
 ```bash
-GET /sync/:jobId
-Authorization: Bearer eyJhbGc...
-
-# Response 200
-{
-  "jobId": "sync-uuid-timestamp",
-  "status": "completed", // ou "processing", "failed"
-  "progress": {
-    "currentTrack": 50,
-    "totalTracks": 50,
-    "syncedTracks": 48,
-    "failedTracks": 2,
-    "duplicates": 3
-  },
-  "result": {
-    "playlistId": "uuid",
-    "spotifyPlaylistId": "spotify-id",
-    "spotifyUrl": "https://open.spotify.com/playlist/..."
-  }
-}
+npm run dev              # Inicia API + Web em paralelo
+npm run dev:api          # Apenas a API (porta 3000)
+npm run dev:web          # Apenas o Web App (porta 3001)
+npm run worker           # Worker de filas (necessário para sincronizar)
 ```
 
-#### Listar Playlists Sincronizadas
+### Build
 
 ```bash
-GET /sync/playlists
-Authorization: Bearer eyJhbGc...
-
-# Response 200
-{
-  "playlists": [
-    {
-      "id": "uuid",
-      "youtubeTitle": "Minha Playlist",
-      "spotifyTitle": "Minha Playlist",
-      "youtubeUrl": "https://youtube.com/playlist?list=...",
-      "spotifyUrl": "https://open.spotify.com/playlist/...",
-      "status": "completed",
-      "lastSyncedAt": "2025-11-02T12:00:00Z",
-      "createdAt": "2025-11-01T10:00:00Z"
-    }
-  ]
-}
-```
-
-#### Re-sincronizar Playlist Existente
-
-```bash
-POST /sync/:playlistId/resync
-Authorization: Bearer eyJhbGc...
-
-# Response 202 Accepted
-{
-  "jobId": "sync-uuid-timestamp",
-  "status": "queued"
-}
-```
-
-### Monitoramento de Filas (Bull Board)
-
-```bash
-GET /queues
-# Acesse no navegador: http://localhost:3000/queues
-```
-
-Interface visual para:
-
-- Ver jobs em processamento
-- Jobs concluídos/falhados
-- Métricas de performance
-- Retry manual de jobs
-
-## 🧪 Testes
-
-### Teste com cURL
-
-**Registro:**
-
-```bash
-curl -X POST http://localhost:3000/api/auth/register \
-  -H "Content-Type: application/json" \
-  -d '{
-    "email": "test@example.com",
-    "password": "senha123",
-    "name": "Teste User"
-  }'
-```
-
-**Login:**
-
-```bash
-curl -X POST http://localhost:3000/api/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{
-    "email": "test@example.com",
-    "password": "senha123"
-  }'
-```
-
-**Rota protegida:**
-
-```bash
-TOKEN="seu_token_jwt_aqui"
-curl -H "Authorization: Bearer $TOKEN" \
-  http://localhost:3000/api/auth/me
-```
-
-**Sincronizar playlist:**
-
-```bash
-TOKEN="seu_token_jwt_aqui"
-curl -X POST http://localhost:3000/api/sync \
-  -H "Authorization: Bearer $TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "youtubePlaylistId": "PLxxxxxxxxxxxxx"
-  }'
-```
-
-### OAuth (Navegador)
-
-- **Spotify Login**: http://localhost:3000/api/auth/spotify/login
-- **Google Login**: http://localhost:3000/api/auth/google/login
-
-## 🛠️ Scripts Disponíveis
-
-```bash
-# Desenvolvimento
-npm run dev              # Rodar todos os apps em paralelo
-npm run dev:api          # Rodar apenas a API
-npm run dev:web          # Rodar apenas o web app
-npm run worker           # Rodar o worker de filas
-
-# Build
 npm run build            # Build de todo o monorepo
 npm run build:api        # Build apenas da API
-npm run build:web        # Build apenas do web
-
-# Database
-npm run db:generate      # Gerar Prisma Client
-npm run db:push          # Aplicar schema no banco (dev)
-npm run db:migrate       # Criar migration
-
-# Utilitários
-npm run lint             # Lint em todos os packages
-npm run format           # Formatar código com Prettier
-npm run clean            # Limpar node_modules e builds
-npm run check:env        # Verificar carregamento de envs
+npm run build:web        # Build apenas do Web
 ```
 
-## 🏛️ Design Patterns Utilizados
-
-- **Clean Architecture**: Separação de camadas (domain, application, infrastructure)
-- **Dependency Injection**: Container de dependências no `main/container.ts`
-- **Repository Pattern**: Abstração de acesso a dados
-- **Use Case Pattern**: Lógica de negócio isolada
-- **Factory Pattern**: Criação de clientes OAuth
-- **Strategy Pattern**: Diferentes estratégias de autenticação
-- **Observer Pattern**: Sistema de filas com Bull
-
-## 🔍 Debugging
-
-### Verificar variáveis de ambiente
+### Database
 
 ```bash
-npm run check:env
+npm run db:generate      # Gera Prisma Client
+npm run db:push          # Aplica schema no banco (dev)
+npm run db:migrate       # Cria migration (produção)
 ```
 
-### Ver logs do PostgreSQL
+### Utilitários
 
 ```bash
-docker logs harmonia-postgres
+npm run lint             # Lint todo o projeto
+npm run format           # Formata com Prettier
+npm run clean            # Limpa builds
 ```
 
-### Ver logs do Redis
+---
+
+## 🐳 Deploy com Docker
+
+### Desenvolvimento
 
 ```bash
-docker logs harmonia-redis
+cd apps/api
+docker-compose up -d
 ```
 
-### Conectar diretamente ao Redis
+### Produção
 
 ```bash
-docker exec -it harmonia-redis redis-cli
-> KEYS *
-> GET "bull:playlist-sync:*"
+# Build da imagem
+docker build -t harmonia-api -f apps/api/Dockerfile .
+
+# Rodar em produção
+docker-compose -f docker-compose.prod.yml up -d
 ```
 
-### Acessar PostgreSQL
+### Variáveis de Ambiente (Produção)
 
-```bash
-docker exec -it harmonia-postgres psql -U postgres -d harmonia
-\dt    # Listar tabelas
-\d+    # Ver schema
+```env
+NODE_ENV=production
+BASE_URL=https://harmonia.io
+DATABASE_URL="postgresql://user:pass@host:5432/harmonia"
+REDIS_HOST=redis-production-host
+REDIS_PORT=6379
+JWT_SECRET=<sua-chave-secreta-256-bits>
+JWT_REFRESH_SECRET=<sua-chave-secreta-256-bits>
 ```
 
-## 📝 Troubleshooting
+---
 
-### `redirect_uri_mismatch` (OAuth)
+## 🤝 Contribuindo
 
-- ✅ Verifique que o URI no `.env` é **exatamente** igual ao registrado no provider
-- ✅ Use sempre `http://localhost:3000` OU `http://127.0.0.1:3000` (não misture)
-- ✅ Sem barra `/` no final
+Contribuições são **muito bem-vindas**! Siga os passos:
 
-### `Unique constraint failed` (Prisma)
+1. Fork o projeto
+2. Crie uma branch para sua feature (`git checkout -b feature/MinhaFeature`)
+3. Commit suas mudanças (`git commit -m 'feat: adiciona nova feature'`)
+4. Push para a branch (`git push origin feature/MinhaFeature`)
+5. Abra um Pull Request
 
-- ✅ Email já cadastrado - use outro email ou faça login
-- ✅ Playlist já sincronizada - use o endpoint de re-sync
+### Padrões de Commit
+
+Utilizamos [Conventional Commits](https://www.conventionalcommits.org/):
+
+```
+feat: adiciona nova funcionalidade
+fix: corrige bug
+docs: atualiza documentação
+refactor: refatora código
+test: adiciona testes
+```
+
+---
+
+## 📝 Roadmap
+
+- [x] Autenticação OAuth (Google + Spotify)
+- [x] Sincronização YouTube → Spotify
+- [x] Interface Web (Dashboard)
+- [x] Sistema de Filas (BullMQ)
+- [ ] Sincronização Spotify → YouTube
+- [ ] Sincronização automática (cron jobs)
+- [ ] Planos de assinatura
+- [ ] Suporte a Apple Music
+- [ ] Aplicativo Mobile (React Native)
+- [ ] Notificações em tempo real (WebSockets)
+
+---
+
+## 🐛 Troubleshooting
+
+### `redirect_uri_mismatch`
+
+- Verifique se o URI no `.env` é **exatamente** igual ao configurado no OAuth provider
+- Use `http://localhost:3000` (não use `127.0.0.1`)
+- Sem `/` no final da URL
 
 ### `Module not found: @harmonia/shared`
 
@@ -537,7 +373,7 @@ npm install
 npm run db:generate
 ```
 
-### Erros de conexão com Redis/PostgreSQL
+### Erros de conexão com Docker
 
 ```bash
 cd apps/api
@@ -545,46 +381,41 @@ docker-compose down
 docker-compose up -d
 ```
 
-## 🚢 Deploy
+### Jobs não processando
 
-### Docker (produção)
-
-```bash
-# Build da imagem
-docker build -t harmonia-api -f apps/api/Dockerfile .
-
-# Rodar com docker-compose
-docker-compose -f docker-compose.prod.yml up -d
-```
-
-### Variáveis de ambiente (produção)
-
-```env
-NODE_ENV=production
-BASE_URL=https://harmonia.io
-DATABASE_URL="postgresql://user:pass@host:5432/harmonia"
-REDIS_HOST=redis-production-host
-JWT_SECRET=<256-bit-random-key>
-# ... outras variáveis
-```
-
-## 📄 Licença
-
-MIT License - Veja [LICENSE](LICENSE) para mais detalhes.
-
-## 🤝 Contribuindo
-
-1. Fork o projeto
-2. Crie uma branch para sua feature (`git checkout -b feature/AmazingFeature`)
-3. Commit suas mudanças (`git commit -m 'Add some AmazingFeature'`)
-4. Push para a branch (`git push origin feature/AmazingFeature`)
-5. Abra um Pull Request
-
-## 📧 Contato
-
-- **Email**: contato@harmonia.io
-- **GitHub**: [@thiagoDOTjpeg](https://github.com/thiagotDOTjpeg)
+- Certifique-se de que o worker está rodando: `npm run worker`
+- Verifique os logs do Redis: `docker logs harmonia-redis`
+- Acesse o Bull Board: [http://localhost:3000/queues](http://localhost:3000/queues)
 
 ---
 
-Feito com ❤️ usando Clean Architecture + TypeScript
+## 📄 Licença
+
+Este projeto está sob a licença **MIT**. Veja o arquivo [LICENSE](LICENSE) para mais detalhes.
+
+---
+
+## 📧 Contato
+
+**Thiago Gritti**
+
+- 🌐 Website: [thiagogritti.dev](https://thiagogritti.dev)
+- 📧 Email: [contato@harmonia.io](mailto:contato@harmonia.io)
+- 💼 LinkedIn: [@thiagogritti](https://linkedin.com/in/thiagogritti)
+- 🐙 GitHub: [@thiagoDOTjpeg](https://github.com/thiagoDOTjpeg)
+
+---
+
+## ⭐ Star o projeto!
+
+Se você achou este projeto útil, considere dar uma ⭐ no GitHub! Isso ajuda mais pessoas a descobrirem o Harmonia.io.
+
+---
+
+<div align="center">
+
+**Feito com ❤️ usando Clean Architecture + TypeScript**
+
+[Website](https://harmonia.io) • [Documentação](#-api-documentation) • [API Docs](#-api-documentation) • [Contribuir](#-contribuindo)
+
+</div>
