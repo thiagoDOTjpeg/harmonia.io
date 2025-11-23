@@ -6,7 +6,7 @@ import { useUser } from "@/hooks/use-user";
 import { cn } from "@/lib/utils";
 import { Coffee, Home, LogOut, Music2, Plus, Settings } from "lucide-react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 
 const navigation = [
   { name: "Visão Geral", href: "/dashboard", icon: Home },
@@ -17,14 +17,12 @@ const navigation = [
 
 export function DashboardSidebar() {
   const pathname = usePathname();
-  const router = useRouter();
   const { logout } = useAuthContext();
   const { clearUser } = useUser();
 
   const handelLogout = () => {
     logout();
     clearUser();
-    router.push("/");
   };
 
   return (
@@ -73,7 +71,7 @@ export function DashboardSidebar() {
           </a>
         </Button>
         <Button variant="ghost" className="w-full justify-start" asChild>
-          <Link href="/">
+          <Link href="/" onClick={handelLogout}>
             <LogOut className="mr-2 h-4 w-4" />
             Sair
           </Link>
