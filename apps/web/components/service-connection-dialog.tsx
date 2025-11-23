@@ -173,7 +173,7 @@ export function ServiceConnectionDialog({
               {isConnected ? "Ativo" : "Inativo"}
             </Badge>
           </div>
-          {/* Connected Account Info */}selectedService
+          {/* Connected Account Info */}
           {isConnected && (
             <div className="space-y-3">
               <h4 className="text-sm font-medium uppercase tracking-wider text-muted-foreground">
