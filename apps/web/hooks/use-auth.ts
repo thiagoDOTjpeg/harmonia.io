@@ -2,7 +2,7 @@ import { ApiError } from "@/lib/services/api";
 import { authService } from "@/lib/services/auth-service";
 import { useAuthStore } from "@/lib/store/auth-store";
 import { useUserStore } from "@/lib/store/user-store";
-import { LoginInput, RegisterInput, RequestResetPasswordInput, ResetPasswordInput } from "@harmonia/shared";
+import { LoginDTO, RegisterDTO, RequestResetPasswordDTO, ResetPasswordDTO, SetPasswordDTO } from "@harmonia/shared";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useOAuthPopup } from "./use-oauth-popup";
@@ -10,12 +10,32 @@ import { toast } from "./use-toast";
 
 export function useAuth() {
   const router = useRouter();
-  const { setToken, clearAuth } = useAuthStore();
+  const { setToken, clearAuth, token } = useAuthStore();
   const { setUser, clearUser } = useUserStore();
   const { openOAuthPopup, isLoading: oauthLoading } = useOAuthPopup();
   const [isLoading, setIsLoading] = useState(false);
 
-  const requestResetPassword = async (data: RequestResetPasswordInput) => {
+  const setPassword = async (data: SetPasswordDTO) => {
+    setIsLoading(true);
+
+    try {
+      await authService.setPassword(data, token!);
+
+      router.push("/dashboard");
+    } catch (error) {
+      toast({
+        variant: 'destructive',
+        title: "Erro ao fazer login",
+        description: "Ocorreu um erro fazer o pedido de reset de senha",
+        duration: 5000
+      })
+      return { error: true }
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  const requestResetPassword = async (data: RequestResetPasswordDTO) => {
     setIsLoading(true);
 
     try {
@@ -33,7 +53,7 @@ export function useAuth() {
     }
   }
 
-  const resetPassword = async (data: ResetPasswordInput) => {
+  const resetPassword = async (data: ResetPasswordDTO) => {
     setIsLoading(true);
 
     try {
@@ -51,7 +71,7 @@ export function useAuth() {
     }
   }
 
-  const login = async (data: LoginInput) => {
+  const login = async (data: LoginDTO) => {
     setIsLoading(true);
 
     try {
@@ -100,7 +120,7 @@ export function useAuth() {
     router.push("/login");
   };
 
-  const register = async (data: RegisterInput) => {
+  const register = async (data: RegisterDTO) => {
     setIsLoading(true);
 
     try {
@@ -149,6 +169,7 @@ export function useAuth() {
     login,
     logout,
     openOAuthPopup,
+    setPassword,
     requestResetPassword,
     resetPassword,
     isLoading: isLoading || oauthLoading

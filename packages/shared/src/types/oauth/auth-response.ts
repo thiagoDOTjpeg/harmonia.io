@@ -9,4 +9,5 @@ export interface AuthResponse {
   };
   method?: OAuthMethod;
   returnTo?: string;
+  isPasswordSetupRequired: boolean;
 }

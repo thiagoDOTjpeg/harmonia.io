@@ -8,8 +8,8 @@ import { useUser } from "./use-user";
 export function useOAuthPopup() {
   const router = useRouter();
   const { setToken } = useAuthStore();
-  const { setServiceConnections, getServiceConnections, setSummary, setUser } = useUser();
-  const [isLoading, setIsLoading] = useState(false)
+  const { setServiceConnections, setSummary, setUser } = useUser();
+  const [isLoading, setIsLoading] = useState(false);
   const popupRef = useRef<Window | null>(null);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -37,26 +37,53 @@ export function useOAuthPopup() {
 
       if (event.data.type === 'oauth-success') {
         const authData: AuthResponse = event.data.data;
-        const method = event.data.method as OAuthMethod;
+        const method = event.data.data.method as OAuthMethod;
 
-        if (method === OAuthMethod.connect) {
-          toast({
-            title: "Serviço conectado!",
-            description: "A conexão foi estabelecida com sucesso.",
-          });
+        switch (method) {
+          case OAuthMethod.connect:
+            toast({
+              title: "Serviço conectado!",
+              description: "A conexão foi estabelecida com sucesso.",
+            });
 
-          setServiceConnections(null);
-          setSummary(null);
-        } else {
-          setUser(authData.user);
-          setToken(authData.token);
+            setServiceConnections(null);
+            setSummary(null);
+            break;
 
-          toast({
-            title: "Autenticação bem-sucedida!",
-            description: `Bem-vindo, ${authData.user.name}!`,
-          });
+          case OAuthMethod.register:
+            console.log('📝 Registrando usuário:', authData);
+            console.log('🔑 isPasswordSetupRequired:', authData.isPasswordSetupRequired);
 
-          router.push('/dashboard');
+            setToken(authData.token);
+            setUser(authData.user);
+
+            toast({
+              title: "Autenticação bem-sucedida!",
+              description: `Bem-vindo, ${authData.user.name}!`,
+            });
+
+            setTimeout(() => {
+              if (authData.isPasswordSetupRequired) {
+                console.log("🔐 Redirecionando para definir senha...");
+                router.push("/definir-senha");
+              } else {
+                console.log("📊 Redirecionando para dashboard...");
+                router.push("/dashboard");
+              }
+            }, 100);
+            break;
+
+          case OAuthMethod.login:
+            setToken(authData.token);
+            setUser(authData.user);
+
+            toast({
+              title: "Autenticação bem-sucedida!",
+              description: `Bem-vindo, ${authData.user.name}!`,
+            });
+
+            router.push('/dashboard');
+            break;
         }
       } else {
         toast({
@@ -73,6 +100,7 @@ export function useOAuthPopup() {
 
     return () => {
       window.removeEventListener('message', handleMessage);
+      cleanup();
     };
   }, []);
 
@@ -138,7 +166,7 @@ export function useOAuthPopup() {
         cleanup();
       }
     }, 1000);
-
   };
-  return { openOAuthPopup, isLoading }
+
+  return { openOAuthPopup, isLoading };
 }

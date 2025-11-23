@@ -2,6 +2,7 @@ import { OAuthMethod } from "@harmonia/shared";
 
 interface OAuthCallbackData {
   success: boolean;
+  isPasswordSetupRequired?: boolean,
   token?: string;
   user?: {
     id: string;
@@ -14,7 +15,7 @@ interface OAuthCallbackData {
 
 export function getOAuthCallbackHTML(data: OAuthCallbackData, returnTo?: string): string {
   const messagePayload = data.success
-    ? { type: 'oauth-success', data: { token: data.token, user: data.user }, method: data.method }
+    ? { type: 'oauth-success', data: { token: data.token, user: data.user, method: data.method, isPasswordSetupRequired: data.isPasswordSetupRequired } }
     : { type: 'oauth-error', error: data.error || 'Unknown error' };
 
   const messageJson = JSON.stringify(messagePayload);
