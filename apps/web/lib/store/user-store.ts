@@ -1,17 +1,17 @@
-import { AuthSuccess, ServiceConnectionDTO, UserPlaylist, UserSummary } from '@harmonia/shared';
+import { AuthResponse, ServiceConnectionDTO, UserPlaylistDTO, UserSummaryDTO } from '@harmonia/shared';
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
 interface UserState {
-  user: AuthSuccess["user"] | null;
+  user: AuthResponse["user"] | null;
   serviceConnections: ServiceConnectionDTO[] | null,
-  summary: UserSummary | null;
-  playlists: UserPlaylist[] | null;
+  summary: UserSummaryDTO | null;
+  playlists: UserPlaylistDTO[] | null;
   _hasHydrated: boolean;
-  setUser: (user: AuthSuccess["user"]) => void;
+  setUser: (user: AuthResponse["user"]) => void;
   setServiceConnections: (serviceConnections: ServiceConnectionDTO[] | null) => void;
-  setSummary: (summary: UserSummary | null) => void;
-  setPlaylists: (playlists: UserPlaylist[] | null) => void;
+  setSummary: (summary: UserSummaryDTO | null) => void;
+  setPlaylists: (playlists: UserPlaylistDTO[] | null) => void;
   clearUser: () => void;
   setHasHydrated: (state: boolean) => void;
 }
@@ -25,7 +25,7 @@ export const useUserStore = create<UserState>()(
       playlists: null,
       _hasHydrated: false,
 
-      setUser: (user: AuthSuccess["user"]) => {
+      setUser: (user: AuthResponse["user"]) => {
         set({ user });
       },
 
@@ -33,11 +33,11 @@ export const useUserStore = create<UserState>()(
         set({ serviceConnections })
       },
 
-      setSummary: (summary: UserSummary | null) => {
+      setSummary: (summary: UserSummaryDTO | null) => {
         set({ summary });
       },
 
-      setPlaylists: (playlists: UserPlaylist[] | null) => {
+      setPlaylists: (playlists: UserPlaylistDTO[] | null) => {
         set({ playlists })
       },
 

@@ -1,4 +1,5 @@
 import { User } from "@/domain/entities/User";
+import { UserPlaylistsMapper } from "@/infrastructure/db/prisma/mapper/UserPlaylistsMapper";
 import { Container } from "@/main/container";
 import { Request, Response } from 'express';
 import { AuthMiddleware } from "../middlewares/AuthMiddleware";
@@ -12,7 +13,9 @@ export class PlaylistController {
       const playlistRepository = Container.getPlaylistRepository();
       const playlists = await playlistRepository.findByUserIdView(user.id);
 
-      return res.json(playlists);
+      const playlistsDTO = playlists.map((playlist) => UserPlaylistsMapper.toDTO(playlist))
+
+      return res.json(playlistsDTO);
     } catch (error) {
       console.error('Get playlists error:', error);
       throw error

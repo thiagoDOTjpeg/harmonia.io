@@ -1,16 +1,16 @@
 export class UserPlaylist {
   constructor(
-    private id: string,
-    private user_id: string,
-    private youtube_playlist_id: string,
-    private youtube_title: string | null,
-    private spotify_playlist_id: string,
-    private spotify_title: string | null,
-    private sync_status: string,
-    private last_synced_at: string | null,
-    private songs: number,
-    private created_at: string,
-    private updated_at: string
+    public id: string,
+    public user_id: string,
+    public youtube_playlist_id: string,
+    public youtube_title: string | null,
+    public spotify_playlist_id: string,
+    public spotify_title: string | null,
+    public sync_status: string,
+    public last_synced_at: string | null,
+    public songs: number,
+    public created_at: string,
+    public updated_at: string
   ) {
   }
 }
