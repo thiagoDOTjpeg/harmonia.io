@@ -17,13 +17,7 @@ import {
   ServiceConnectionDTO,
   ServiceProvider,
 } from "@harmonia/shared";
-import {
-  CheckCircle2,
-  ExternalLink,
-  RefreshCw,
-  Unplug,
-  XCircle,
-} from "lucide-react";
+import { CheckCircle2, ExternalLink, Unplug, XCircle } from "lucide-react";
 import { useEffect, useState } from "react";
 
 interface ServiceConnectionDialogProps {
@@ -54,7 +48,12 @@ export function ServiceConnectionDialog({
   onOpenChange,
   service,
 }: ServiceConnectionDialogProps) {
-  const { getServiceConnections, _hasHydrated, serviceConnections } = useUser();
+  const {
+    getServiceConnections,
+    _hasHydrated,
+    serviceConnections,
+    revokeConnection,
+  } = useUser();
   const { openOAuthPopup } = useAuthContext();
   const [selectedService, setSelectedService] =
     useState<ServiceConnectionDTO>();
@@ -116,19 +115,18 @@ export function ServiceConnectionDialog({
   const config = serviceConfig[service];
 
   const handleDisconnect = async () => {
-    setIsLoading(true);
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1500));
+    if (selectedService) {
+      await revokeConnection(selectedService?.id);
+    }
     setIsConnected(false);
-    setIsLoading(false);
   };
 
-  const handleReauthorize = async () => {
-    setIsLoading(true);
-    // Simulate reauthorization
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-    setIsLoading(false);
-  };
+  // const handleReauthorize = async () => {
+  //   setIsLoading(true);
+  //   // Simulate reauthorization
+  //   await new Promise((resolve) => setTimeout(resolve, 1500));
+  //   setIsLoading(false);
+  // };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -175,8 +173,7 @@ export function ServiceConnectionDialog({
               {isConnected ? "Ativo" : "Inativo"}
             </Badge>
           </div>
-
-          {/* Connected Account Info */}
+          {/* Connected Account Info */}selectedService
           {isConnected && (
             <div className="space-y-3">
               <h4 className="text-sm font-medium uppercase tracking-wider text-muted-foreground">
@@ -200,7 +197,6 @@ export function ServiceConnectionDialog({
               </div>
             </div>
           )}
-
           <div className="space-y-3">
             <h4 className="text-sm font-medium uppercase tracking-wider text-muted-foreground">
               Permissões Necessárias
@@ -228,11 +224,10 @@ export function ServiceConnectionDialog({
               })}
             </div>
           </div>
-
           <div className="space-y-2 pt-2">
             {isConnected ? (
               <>
-                <Button
+                {/* <Button
                   variant="outline"
                   className="w-full justify-start bg-transparent"
                   onClick={handleReauthorize}
@@ -242,7 +237,7 @@ export function ServiceConnectionDialog({
                     className={`mr-2 h-4 w-4 ${isLoading ? "animate-spin" : ""}`}
                   />
                   Reautorizar Conexão
-                </Button>
+                </Button> */}
                 <Button
                   variant="outline"
                   className="w-full justify-start bg-transparent text-destructive hover:text-destructive"
@@ -264,7 +259,6 @@ export function ServiceConnectionDialog({
               </Button>
             )}
           </div>
-
           <p className="text-xs text-muted-foreground text-center pt-2">
             Suas credenciais são armazenadas de forma segura e criptografada.
             Você pode revogar o acesso a qualquer momento.

@@ -9,5 +9,5 @@ export interface ServiceConnectionDTO {
   expiresAt?: string | null,
   scopes: string,
   metadata?: string | null,
-  createdAt: Date
+  createdAt: string
 }
