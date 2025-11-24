@@ -21,8 +21,8 @@ import { RequestPasswordResetUseCase } from '@/application/use_cases/auth/Reques
 import { ResetPasswordUseCase } from '@/application/use_cases/auth/ResetPasswordUseCase';
 import { SetPasswordUseCase } from '@/application/use_cases/auth/SetPasswordUseCase';
 import { StartOAuthUseCase } from '@/application/use_cases/auth/StartOAuthUseCase';
+import { EnsureValidConnectionsUseCase } from '@/application/use_cases/service-connection/EnsureValidConnectionsUseCase';
 import { RevokeServiceConnectionUseCase } from '@/application/use_cases/service-connection/RevokeServiceConnectionUseCase';
-import { EnsureValidConnectionsUseCase } from '@/application/use_cases/sync_playlist/EnsureValidConnectionsUseCase';
 import { GoogleOAuthCallbackStrategy } from '@/infrastructure/adapter/oauth/GoogleOAuthCallbackStrategy';
 import { OAuthCallbackStrategyFactory } from '@/infrastructure/adapter/oauth/OAuthCallbackStrategyFactory';
 import { SpotifyOAuthCallbackStrategy } from '@/infrastructure/adapter/oauth/SpotifyOAuthCallbackStrategy';
@@ -145,7 +145,8 @@ export class Container {
       this.playlistRepository,
       this.AESEncrypter,
       this.tokenSerializer,
-      this.getEnsureValidConnectionsUseCase()
+      this.getEnsureValidConnectionsUseCase(),
+      this.googleMusicClient
     );
   }
 

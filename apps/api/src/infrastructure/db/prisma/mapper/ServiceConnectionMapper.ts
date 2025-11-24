@@ -13,6 +13,7 @@ export class ServiceConnectionMapper {
       providerAccountId: serviceConnection.providerAccountId,
       scopes: serviceConnection.scopes,
       userId: serviceConnection.userId,
+      createdAt: serviceConnection.createdAt.toISOString()
     }
   }
 

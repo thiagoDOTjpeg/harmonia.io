@@ -53,7 +53,6 @@ export class PlaylistSyncWorker {
         data.youtubePlaylistId,
         data.googleAccessToken
       );
-
       const youtubeVideos = await googleMusicClient.getPlaylistItems(
         data.youtubePlaylistId,
         data.googleAccessToken

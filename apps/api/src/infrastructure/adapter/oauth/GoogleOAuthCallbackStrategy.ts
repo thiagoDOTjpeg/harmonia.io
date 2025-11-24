@@ -85,6 +85,7 @@ export class GoogleOAuthCallbackStrategy implements IOAuthCallbackStrategy {
     const jwt = this.tokens.sign({ sub: user.id });
     return {
       token: jwt,
+      isPasswordSetupRequired: true,
       user: {
         id: createdServiceConnection.userId,
         email: createdServiceConnection.email,
@@ -120,6 +121,7 @@ export class GoogleOAuthCallbackStrategy implements IOAuthCallbackStrategy {
     const jwt = this.tokens.sign({ sub: user.id });
     return {
       token: jwt,
+      isPasswordSetupRequired: false,
       user: {
         id: serviceConnection.userId,
         email: serviceConnection.email,
@@ -160,6 +162,7 @@ export class GoogleOAuthCallbackStrategy implements IOAuthCallbackStrategy {
     const jwt = this.tokens.sign({ sub: user.id });
     return {
       token: jwt,
+      isPasswordSetupRequired: false,
       user: {
         id: serviceConnection.userId,
         email: serviceConnection.email,

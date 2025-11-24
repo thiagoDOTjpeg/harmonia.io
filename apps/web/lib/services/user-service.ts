@@ -1,10 +1,20 @@
-import { ServiceConnectionDTO, UserPlaylist, UserSummary } from "@harmonia/shared";
+import { ServiceConnectionDTO, UserPlaylistDTO, UserSummaryDTO } from "@harmonia/shared";
 import { fetchApi } from "./api";
 
 
 export const userService = {
-  getPlaylists: async (token: string): Promise<UserPlaylist[]> => {
-    return fetchApi<UserPlaylist[]>("/playlists", {
+  revokeConnection: async (serviceConnectionId: string, token: string): Promise<void> => {
+    return fetchApi<void>(`/user/connection/${serviceConnectionId}`, {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`
+      }
+    })
+  },
+
+  getPlaylists: async (token: string): Promise<UserPlaylistDTO[]> => {
+    return fetchApi<UserPlaylistDTO[]>("/playlists", {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -12,8 +22,8 @@ export const userService = {
       }
     })
   },
-  getSummary: async (token: string): Promise<UserSummary> => {
-    return fetchApi<UserSummary>('/user/dashboard', {
+  getSummary: async (token: string): Promise<UserSummaryDTO> => {
+    return fetchApi<UserSummaryDTO>('/user/dashboard', {
       method: "GET",
       headers: {
         "Content-Type": "application/json",

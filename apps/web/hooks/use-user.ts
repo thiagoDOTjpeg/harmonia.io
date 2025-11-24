@@ -11,6 +11,28 @@ export function useUser() {
   const { setServiceConnections, setPlaylists, setSummary, summary, setHasHydrated, _hasHydrated, playlists, serviceConnections, clearUser, setUser, user } = useUserStore();
   const [isLoading, setIsLoading] = useState(false);
 
+  const revokeConnection = async (serviceConnectionId: string) => {
+    if (!token) {
+      toast({ variant: "destructive", title: "Não autenticado" });
+      router.push("/")
+      return null;
+    }
+
+    setIsLoading(true);
+    try {
+      await userService.revokeConnection(serviceConnectionId, token);
+      setServiceConnections(null);
+      setSummary(null)
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Erro desconhecido"
+      toast({ variant: "destructive", title: "Erro", description: message })
+      return null
+    } finally {
+      setIsLoading(false);
+    }
+
+  }
+
   const getPlaylists = async () => {
     if (!token) {
       toast({ variant: "destructive", title: "Não autenticado" });
@@ -74,5 +96,5 @@ export function useUser() {
     }
   }
 
-  return { getSummary, getPlaylists, getServiceConnections, isLoading, _hasHydrated, summary, user, playlists, serviceConnections, setHasHydrated, setServiceConnections, setPlaylists, setUser, setSummary, clearUser };
+  return { getSummary, getPlaylists, getServiceConnections, isLoading, _hasHydrated, summary, user, playlists, serviceConnections, setHasHydrated, setServiceConnections, setPlaylists, setUser, setSummary, revokeConnection, clearUser };
 }

@@ -20,7 +20,7 @@ export class SyncController {
     } catch (error) {
       console.error('Sync playlist error:', error);
       next(error)
-    }
+    } 9
   }
 
   static async getSyncStatus(req: Request, res: Response, next: NextFunction) {

@@ -20,6 +20,10 @@
     "./enum": {
       "types": "./dist/enum/index.d.ts",
       "default": "./dist/enum/index.js"
+    },
+    "./errors": {
+      "types": "./dist/errors/index.d.ts",
+      "default": "./dist/errors/index.js"
     }
   },
   "scripts": {
@@ -27,6 +31,7 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
+    "date-fns": "4.1.0",
     "zod": "^3.22.4"
   },
   "devDependencies": {
