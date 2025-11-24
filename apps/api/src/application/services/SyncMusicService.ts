@@ -1,12 +1,13 @@
 import { IEncryptor } from "@/application/ports/crypto/IEncryptor";
 import { ITokenSerializer } from "@/application/ports/serializer/ITokenSerializer";
-import { EnsureValidConnectionsUseCase } from "@/application/use_cases/sync_playlist/EnsureValidConnectionsUseCase";
+import { EnsureValidConnectionsUseCase } from "@/application/use_cases/service-connection/EnsureValidConnectionsUseCase";
 import { PrismaPlaylistRepository } from "@/infrastructure/db/prisma/repositories/PrismaPlaylistRepository";
 import { PlaylistSyncQueue } from "@/infrastructure/queue/PlaylistSyncQueue";
 import { TokenEncrypted } from "@/types/encrypter";
-import { cancelSyncPlaylistDTO, createSyncPlaylistDTO, getSyncPlaylistStatusDTO, retrySyncPlaylistDTO, ServiceProvider } from "@harmonia/shared";
+import { cancelSyncPlaylistDTO, createSyncPlaylistDTO, getSyncPlaylistStatusDTO, PlaylistLimitExceededError, retrySyncPlaylistDTO, ServiceProvider } from "@harmonia/shared";
 import { ServiceConnection } from "../../domain/entities/ServiceConnection";
 import { User } from "../../domain/entities/User";
+import { IGoogleMusicClient } from "../ports/google/IGoogleMusicClient";
 
 export class SyncMusicService {
   constructor(
@@ -14,7 +15,8 @@ export class SyncMusicService {
     private readonly playlistRepository: PrismaPlaylistRepository,
     private readonly AESEncrypter: IEncryptor,
     private readonly tokenSerializer: ITokenSerializer<TokenEncrypted>,
-    private readonly ensureValidConnectionsUseCase: EnsureValidConnectionsUseCase
+    private readonly ensureValidConnectionsUseCase: EnsureValidConnectionsUseCase,
+    private readonly googleMusicClient: IGoogleMusicClient
   ) { }
 
   public async syncPlaylist(user: User, bodyParsed: createSyncPlaylistDTO) {
@@ -32,6 +34,17 @@ export class SyncMusicService {
 
     if (spotifyConnection === undefined || googleConnection === undefined) {
       throw new Error("Conexão com serviços necessário não estão ativas")
+    }
+
+    const youtubePlaylistInfo = await this.googleMusicClient.getPlaylistInfo(
+      youtubePlaylistId,
+      this.getServiceConnectionAccessToken(googleConnection)
+    );
+
+    const MAX_ALLOWED_TRACKS = Number(process.env.PLAYLIST_MAX_SONGS);
+
+    if (MAX_ALLOWED_TRACKS && youtubePlaylistInfo.itemCount > MAX_ALLOWED_TRACKS) {
+      throw new PlaylistLimitExceededError(`O limite para o MVP é de ${MAX_ALLOWED_TRACKS} músicas. Essa playlist tem ${youtubePlaylistInfo.itemCount}.`);
     }
 
     const playlist = await this.playlistRepository.findByYoutubePlaylistId(
