@@ -26,6 +26,7 @@ export class StartLocalLogin {
 
     return {
       token,
+      isPasswordSetupRequired: false,
       user: {
         id: user.id,
         email: user.email,

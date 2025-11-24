@@ -46,7 +46,7 @@ export class AuthController {
 
       return res.send(getOAuthCallbackHTML({
         success: true,
-        ...(result.method === OAuthMethod.register ? { isPasswordSetupRequired: true } : {}),
+        ...(result.method === OAuthMethod.register ? { isPasswordSetupRequired: result.isPasswordSetupRequired } : {}),
         token: result.token,
         user: { email: result.user.email || '', id: result.user.id, name: result.user.name || '' },
         method: result.method

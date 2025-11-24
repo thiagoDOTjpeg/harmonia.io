@@ -31,6 +31,7 @@ export class StartLocalRegister {
 
       return {
         token,
+        isPasswordSetupRequired: false,
         user: {
           id: user.id,
           email: user.email,

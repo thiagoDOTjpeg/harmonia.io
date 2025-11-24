@@ -11,7 +11,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { useUser } from "@/hooks/use-user";
-import { formatTimeAgo, UserPlaylist } from "@harmonia/shared";
+import { formatTimeAgo, UserPlaylistDTO } from "@harmonia/shared";
 import {
   ExternalLink,
   Music2,
@@ -25,12 +25,11 @@ import { useEffect, useState } from "react";
 
 export default function PlaylistsPage() {
   const { getPlaylists, playlists, isLoading, _hasHydrated } = useUser();
-  const [selectedPlaylist, setSelectedPlaylist] = useState<UserPlaylist | null>(
-    null
-  );
+  const [selectedPlaylist, setSelectedPlaylist] =
+    useState<UserPlaylistDTO | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
 
-  const handleManage = (playlist: UserPlaylist) => {
+  const handleManage = (playlist: UserPlaylistDTO) => {
     setSelectedPlaylist(playlist);
     setDialogOpen(true);
   };
