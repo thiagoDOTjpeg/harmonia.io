@@ -74,7 +74,6 @@ npm run dev
 
 - **Web App**: [http://localhost:3001](http://localhost:3001)
 - **API**: [http://localhost:3000](http://localhost:3000)
-- **Queue Monitor**: [http://localhost:3000/queues](http://localhost:3000/queues)
 
 ---
 
@@ -193,7 +192,7 @@ O projeto segue os princípios de **Clean Architecture** e **Domain-Driven Desig
 ### Base URL
 
 ```
-http://localhost:3000/api
+http://localhost:3000/
 ```
 
 ### Endpoints Principais
@@ -219,11 +218,10 @@ http://localhost:3000/api
 }
 ```
 
-**GET** `/auth/google/login` - OAuth Google (redireciona)
+**GET** `/auth/google?intent=login` - OAuth Google (redireciona)
 
-**GET** `/auth/spotify/login` - OAuth Spotify (redireciona)
+**GET** `/auth/spotify?intent=login` - OAuth Spotify (redireciona)
 
-**GET** `/auth/me` - Obter usuário autenticado
 
 ```bash
 Authorization: Bearer {token}
@@ -231,7 +229,7 @@ Authorization: Bearer {token}
 
 #### Sincronização
 
-**POST** `/sync` - Sincronizar playlist
+**POST** `/sync/playlist` - Sincronizar playlist
 
 ```json
 {
@@ -266,6 +264,7 @@ npm run worker           # Worker de filas (necessário para sincronizar)
 npm run build            # Build de todo o monorepo
 npm run build:api        # Build apenas da API
 npm run build:web        # Build apenas do Web
+npm run build:shared     # Build apenas do Shared
 ```
 
 ### Database
@@ -291,30 +290,7 @@ npm run clean            # Limpa builds
 ### Desenvolvimento
 
 ```bash
-cd apps/api
-docker-compose up -d
-```
-
-### Produção
-
-```bash
-# Build da imagem
-docker build -t harmonia-api -f apps/api/Dockerfile .
-
-# Rodar em produção
-docker-compose -f docker-compose.prod.yml up -d
-```
-
-### Variáveis de Ambiente (Produção)
-
-```env
-NODE_ENV=production
-BASE_URL=https://harmonia.io
-DATABASE_URL="postgresql://user:pass@host:5432/harmonia"
-REDIS_HOST=redis-production-host
-REDIS_PORT=6379
-JWT_SECRET=<sua-chave-secreta-256-bits>
-JWT_REFRESH_SECRET=<sua-chave-secreta-256-bits>
+docker compose up --build -d
 ```
 
 ---
@@ -351,7 +327,6 @@ test: adiciona testes
 - [x] Sistema de Filas (BullMQ)
 - [ ] Sincronização Spotify → YouTube
 - [ ] Sincronização automática (cron jobs)
-- [ ] Planos de assinatura
 - [ ] Suporte a Apple Music
 - [ ] Aplicativo Mobile (React Native)
 - [ ] Notificações em tempo real (WebSockets)
@@ -363,7 +338,7 @@ test: adiciona testes
 ### `redirect_uri_mismatch`
 
 - Verifique se o URI no `.env` é **exatamente** igual ao configurado no OAuth provider
-- Use `http://localhost:3000` (não use `127.0.0.1`)
+- Use `http://127.0.0.1:3000` (não use `localhost`)
 - Sem `/` no final da URL
 
 ### `Module not found: @harmonia/shared`
@@ -376,9 +351,8 @@ npm run db:generate
 ### Erros de conexão com Docker
 
 ```bash
-cd apps/api
-docker-compose down
-docker-compose up -d
+docker compose down
+docker compose up --build -d
 ```
 
 ### Jobs não processando
@@ -399,10 +373,11 @@ Este projeto está sob a licença **MIT**. Veja o arquivo [LICENSE](LICENSE) par
 
 **Thiago Gritti**
 
-- 🌐 Website: [thiagogritti.dev](https://thiagogritti.dev)
-- 📧 Email: [contato@harmonia.io](mailto:contato@harmonia.io)
-- 💼 LinkedIn: [@thiagogritti](https://linkedin.com/in/thiagogritti)
+- 🌐 Website: [gritti.dev](https://gritti.dev.br)
+- 📧 Email: [thiago@gritti.dev.br](mailto:thiago@gritti.dev.br)
+- 💼 LinkedIn: [@thiagogritti](https://linkedin.com/in/thiago-gritti)
 - 🐙 GitHub: [@thiagoDOTjpeg](https://github.com/thiagoDOTjpeg)
+- 📞 Discord: [@harmonia.io](https://discord.gg/3gYajwJuXA)
 
 ---
 
