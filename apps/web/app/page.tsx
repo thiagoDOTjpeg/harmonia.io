@@ -4,18 +4,18 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
-  Check,
+  CheckCircle2,
+  CircleDashed,
   Code2,
   Coffee,
   Container,
   FileCode,
   Github,
-  GitPullRequest,
-  Play,
-  Repeat,
+  KanbanSquare,
+  ListMusic,
   Shield,
-  Star,
   Terminal,
+  Timer,
   Unlock,
   Users,
   Zap,
@@ -23,6 +23,75 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import StackIcon from "tech-stack-icons";
+
+const kanbanData = {
+  done: [
+    {
+      id: "MVP-01",
+      title: "Clean Architecture Core",
+      tag: "Backend",
+      desc: "Implementação de Ports & Adapters e isolamento de domínio.",
+    },
+    {
+      id: "MVP-02",
+      title: "Sistema de Filas (BullMQ)",
+      tag: "Infra",
+      desc: "Processamento assíncrono para evitar timeouts em playlists grandes.",
+    },
+    {
+      id: "MVP-03",
+      title: "Sync YouTube -> Spotify",
+      tag: "Feature",
+      desc: "Motor de conversão unilateral funcional e testado.",
+    },
+    {
+      id: "MVP-04",
+      title: "Dockerização Completa",
+      tag: "DevOps",
+      desc: "Setup com um comando (Compose) para API, Banco e Redis.",
+    },
+  ],
+  inProgress: [
+    {
+      id: "WIP-01",
+      title: "Notificações Real-time",
+      tag: "WebSocket",
+      desc: "Avisar o frontend instantaneamente quando o worker finalizar.",
+    },
+    {
+      id: "WIP-02",
+      title: "Refinamento de UX",
+      tag: "Frontend",
+      desc: "Melhorias visuais e feedback de erro para o usuário.",
+    },
+    {
+      id: "WIP-03",
+      title: "Testes Unitários/Integração",
+      tag: "Backend",
+      desc: "Criação de teste para cobertura de casos de uso.",
+    },
+  ],
+  todo: [
+    {
+      id: "FUTURE-01",
+      title: "Sync Bilateral",
+      tag: "Feature",
+      desc: "Permitir sincronização do Spotify de volta para o YouTube.",
+    },
+    {
+      id: "FUTURE-02",
+      title: "Sync Recorrente (Cron)",
+      tag: "Backend",
+      desc: "Verificação automática diária de novas músicas.",
+    },
+    {
+      id: "FUTURE-03",
+      title: "Cache Inteligente",
+      tag: "Database",
+      desc: "Banco de 'de-para' de músicas para economizar requests de API.",
+    },
+  ],
+};
 
 export default function HomePage() {
   return (
@@ -47,19 +116,20 @@ export default function HomePage() {
                 variant="outline"
                 className="border-secondary/30 bg-secondary/5 px-4 py-1.5"
               >
-                <Star className="h-3 w-3 mr-2" />
-                100% Open Source
+                <Code2 className="h-3 w-3 mr-2" />
+                MVP Release v0.1
               </Badge>
             </div>
 
             <h1 className="text-4xl md:text-7xl font-bold font-display tracking-tight text-balance leading-tight">
-              <span className="text-gradient">Harmonia</span> - Sincronização de
+              <span className="text-gradient">Harmonia</span> - Transferência de
               Playlists Open Source
             </h1>
 
             <p className="text-xl text-muted-foreground text-balance max-w-2xl mx-auto leading-relaxed">
-              Sincronize suas playlists entre Spotify, YouTube Music e mais.
-              Auto-hospedável, privado, gratuito.
+              Transfira suas playlists do YouTube para o Spotify com uma
+              arquitetura robusta. Auto-hospedável, privado e construído para
+              escalar.
             </p>
 
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
@@ -73,7 +143,7 @@ export default function HomePage() {
                   target="_blank"
                 >
                   <Github className="mr-2 h-4 w-4" />
-                  View on GitHub
+                  View Source Code
                 </Link>
               </Button>
               <Button
@@ -84,18 +154,7 @@ export default function HomePage() {
               >
                 <Link href="/docs">
                   <FileCode className="mr-2 h-4 w-4" />
-                  Get Started
-                </Link>
-              </Button>
-              <Button
-                size="lg"
-                variant="outline"
-                asChild
-                className="text-base bg-transparent border-secondary/30 hover:bg-secondary/10 hover:border-secondary font-display uppercase tracking-wider"
-              >
-                <Link href="/demo">
-                  <Play className="mr-2 h-4 w-4" />
-                  Try Live Demo
+                  Docs & Architecture
                 </Link>
               </Button>
             </div>
@@ -110,13 +169,13 @@ export default function HomePage() {
                 </div>
                 <pre className="text-sm bg-background/50 p-4 rounded-lg overflow-x-auto">
                   <code className="text-primary font-mono">
-                    {`git clone https://github.com/thiagogritti/harmonia.git
+                    {`git clone https://github.com/thiagoDOTjpeg/harmonia.io.git
 cd harmonia
-docker-compose up -d`}
+docker compose up --build -d`}
                   </code>
                 </pre>
                 <p className="text-xs text-muted-foreground mt-3">
-                  Up and running in 5 minutes with Docker
+                  Rode o MVP localmente em 5 minutos com Docker
                 </p>
               </CardContent>
             </Card>
@@ -127,25 +186,22 @@ docker-compose up -d`}
           <div className="container mx-auto px-4 max-w-5xl space-y-12">
             <div className="text-center space-y-4">
               <h2 className="text-3xl md:text-5xl font-bold font-display tracking-tight">
-                Features
+                Principais Recursos
               </h2>
-              <p className="text-lg text-muted-foreground">
-                Built by developers, for developers
-              </p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               <Card className="card-neo hover:border-primary/20 transition-all duration-300 hover:-translate-y-2">
                 <CardContent className="pt-6 space-y-4">
                   <div className="h-12 w-12 rounded-xl bg-linear-to-br from-primary/20 to-primary/5 flex items-center justify-center border border-primary/20">
-                    <Repeat className="h-6 w-6 text-primary" />
+                    <ListMusic className="h-6 w-6 text-primary" />
                   </div>
                   <h3 className="text-xl font-semibold font-display">
-                    Sync Bidirecional
+                    Transferência Unilateral
                   </h3>
                   <p className="text-muted-foreground leading-relaxed">
-                    Sincronize playlists em tempo real entre plataformas com
-                    suporte completo bidirecional.
+                    Converta suas playlists do YouTube Music diretamente para o
+                    Spotify preservando a curadoria das faixas.
                   </p>
                 </CardContent>
               </Card>
@@ -156,11 +212,11 @@ docker-compose up -d`}
                     <Shield className="h-6 w-6 text-secondary" />
                   </div>
                   <h3 className="text-xl font-semibold font-display">
-                    Privacidade Primeiro
+                    Segurança de Dados
                   </h3>
                   <p className="text-muted-foreground leading-relaxed">
-                    Seus dados permanecem sob seu controle. Auto-hospede e
-                    mantenha privacidade total.
+                    Integração oficial via OAuth 2.0. Seus tokens são
+                    criptografados e você tem controle total no deploy local.
                   </p>
                 </CardContent>
               </Card>
@@ -171,11 +227,11 @@ docker-compose up -d`}
                     <Zap className="h-6 w-6 text-accent" />
                   </div>
                   <h3 className="text-xl font-semibold font-display">
-                    Processamento Rápido
+                    Arquitetura Assíncrona
                   </h3>
                   <p className="text-muted-foreground leading-relaxed">
-                    Sistema de filas assíncrono com BullMQ para performance
-                    máxima em larga escala.
+                    Uso de Workers e Filas (BullMQ) para processamento em
+                    background, evitando timeouts na API principal.
                   </p>
                 </CardContent>
               </Card>
@@ -186,11 +242,11 @@ docker-compose up -d`}
                     <Code2 className="h-6 w-6 text-primary" />
                   </div>
                   <h3 className="text-xl font-semibold font-display">
-                    Arquitetura Limpa
+                    Clean Architecture
                   </h3>
                   <p className="text-muted-foreground leading-relaxed">
-                    Código bem estruturado seguindo princípios SOLID e padrões
-                    de Clean Architecture.
+                    Projeto desenvolvido como estudo de caso de arquitetura
+                    limpa, SOLID e padrão Ports & Adapters.
                   </p>
                 </CardContent>
               </Card>
@@ -201,11 +257,11 @@ docker-compose up -d`}
                     <Container className="h-6 w-6 text-secondary" />
                   </div>
                   <h3 className="text-xl font-semibold font-display">
-                    Deploy Fácil
+                    Container First
                   </h3>
                   <p className="text-muted-foreground leading-relaxed">
-                    Docker Compose para instalação completa em minutos. Sem
-                    complicações.
+                    Ambiente totalmente dockerizado (App, Banco, Redis),
+                    facilitando o setup e a escalabilidade horizontal.
                   </p>
                 </CardContent>
               </Card>
@@ -216,11 +272,11 @@ docker-compose up -d`}
                     <Unlock className="h-6 w-6 text-accent" />
                   </div>
                   <h3 className="text-xl font-semibold font-display">
-                    100% Open Source
+                    Open Source
                   </h3>
                   <p className="text-muted-foreground leading-relaxed">
-                    Código MIT. Use, modifique e distribua livremente.
-                    Contribuições são bem-vindas.
+                    Código aberto para estudo e contribuição. Ideal para quem
+                    quer aprender sobre monólitos modulares.
                   </p>
                 </CardContent>
               </Card>
@@ -312,19 +368,6 @@ docker-compose up -d`}
 
               <Card className="card-neo hover:border-primary/20 transition-all duration-300">
                 <CardContent className="p-6 text-center">
-                  <div className="h-16 w-16 mx-auto mb-3 rounded-xl bg-linear-to-br from-cyan-500/20 to-transparent flex items-center justify-center border border-cyan-500/20">
-                    <StackIcon
-                      name="react"
-                      variant="light"
-                      style={{ height: "40px", width: "40px" }}
-                    />
-                  </div>
-                  <p className="text-sm font-semibold font-display">React</p>
-                </CardContent>
-              </Card>
-
-              <Card className="card-neo hover:border-primary/20 transition-all duration-300">
-                <CardContent className="p-6 text-center">
                   <div className="h-16 w-16 mx-auto mb-3 rounded-xl bg-linear-to-br from-white/20 to-transparent flex items-center justify-center border border-white/20">
                     <StackIcon
                       name="nextjs"
@@ -333,30 +376,6 @@ docker-compose up -d`}
                     />
                   </div>
                   <p className="text-sm font-semibold font-display">Next.js</p>
-                </CardContent>
-              </Card>
-
-              <Card className="card-neo hover:border-primary/20 transition-all duration-300">
-                <CardContent className="p-6 text-center">
-                  <div className="h-16 w-16 mx-auto mb-3 rounded-xl bg-linear-to-br from-blue-400/20 to-transparent flex items-center justify-center border border-blue-400/20">
-                    <StackIcon
-                      name="docker"
-                      variant="light"
-                      style={{ height: "40px", width: "40px" }}
-                    />
-                  </div>
-                  <p className="text-sm font-semibold font-display">Docker</p>
-                </CardContent>
-              </Card>
-
-              <Card className="card-neo hover:border-primary/20 transition-all duration-300">
-                <CardContent className="p-6 text-center">
-                  <div className="h-16 w-16 mx-auto mb-3 rounded-xl bg-linear-to-br from-primary/20 to-transparent flex items-center justify-center border border-primary/10">
-                    <Code2 className="h-10 w-10 text-primary" />
-                  </div>
-                  <p className="text-sm font-semibold font-display">
-                    Clean Arch
-                  </p>
                 </CardContent>
               </Card>
             </div>
@@ -368,10 +387,10 @@ docker-compose up -d`}
           <div className="container mx-auto px-4 max-w-3xl text-center space-y-12">
             <div className="space-y-4">
               <h2 className="text-3xl md:text-5xl font-bold font-display tracking-tight">
-                Como Funciona
+                Fluxo de Uso
               </h2>
               <p className="text-lg text-muted-foreground leading-relaxed">
-                Três passos simples para começar a sincronizar suas playlists
+                Simples e eficiente, como deve ser.
               </p>
             </div>
 
@@ -380,11 +399,10 @@ docker-compose up -d`}
                 <div className="h-12 w-12 rounded-full bg-linear-to-br from-primary to-secondary text-primary-foreground flex items-center justify-center font-bold text-xl font-display shadow-lg shadow-primary/30">
                   1
                 </div>
-                <h3 className="text-xl font-semibold font-display">
-                  Conecte suas Contas
-                </h3>
+                <h3 className="text-xl font-semibold font-display">Conecte</h3>
                 <p className="text-muted-foreground leading-relaxed">
-                  Autenticação segura via OAuth 2.0 com Spotify e YouTube Music.
+                  Faça login e conecte suas contas do Spotify e Google com
+                  segurança.
                 </p>
               </div>
 
@@ -393,10 +411,11 @@ docker-compose up -d`}
                   2
                 </div>
                 <h3 className="text-xl font-semibold font-display">
-                  Configure o Sync
+                  Selecione
                 </h3>
                 <p className="text-muted-foreground leading-relaxed">
-                  Escolha quais playlists sincronizar e configure preferências.
+                  Escolha a playlist de origem (YouTube) que você deseja levar
+                  para o Spotify.
                 </p>
               </div>
 
@@ -404,145 +423,174 @@ docker-compose up -d`}
                 <div className="h-12 w-12 rounded-full bg-linear-to-br from-accent to-primary text-accent-foreground flex items-center justify-center font-bold text-xl font-display shadow-lg shadow-accent/30">
                   3
                 </div>
-                <h3 className="text-xl font-semibold font-display">
-                  Mantenha Atualizado
-                </h3>
+                <h3 className="text-xl font-semibold font-display">Execute</h3>
                 <p className="text-muted-foreground leading-relaxed">
-                  Sync automático ou manual quando quiser. Você tem o controle.
+                  O sistema enfileira o trabalho e processa as músicas em
+                  segundo plano.
                 </p>
               </div>
             </div>
           </div>
         </section>
 
-        <section className="w-full py-16 md:py-24">
-          <div className="container mx-auto px-4 max-w-5xl space-y-12">
+        {/* NOVA SECTION KANBAN ROADMAP */}
+        <section className="w-full py-16 md:py-24 bg-linear-to-b from-primary/5 to-transparent">
+          <div className="container mx-auto px-4 max-w-7xl space-y-12">
             <div className="text-center space-y-4">
+              <div className="flex items-center justify-center gap-2 mb-2">
+                <KanbanSquare className="h-6 w-6 text-primary" />
+                <span className="text-sm font-semibold tracking-wider text-primary uppercase">
+                  Desenvolvimento Aberto
+                </span>
+              </div>
               <h2 className="text-3xl md:text-5xl font-bold font-display tracking-tight">
-                Self-Hosted vs Hosted
+                Roadmap do Projeto
               </h2>
-              <p className="text-lg text-muted-foreground">
-                Escolha a opção que funciona melhor para você
+              <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+                Acompanhe o que já foi entregue e o que está sendo construído
+                agora.
               </p>
             </div>
 
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b border-border">
-                    <th className="text-left py-4 px-6 font-display uppercase tracking-wider text-sm">
-                      Feature
-                    </th>
-                    <th className="text-center py-4 px-6 font-display uppercase tracking-wider text-sm">
-                      Self-Hosted
-                    </th>
-                    <th className="text-center py-4 px-6 font-display uppercase tracking-wider text-sm">
-                      Hosted by Us
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr className="border-b border-border/50">
-                    <td className="py-4 px-6 text-muted-foreground">Preço</td>
-                    <td className="py-4 px-6 text-center font-semibold text-primary">
-                      Grátis
-                    </td>
-                    <td className="py-4 px-6 text-center font-semibold text-primary">
-                      Grátis (doações opcionais)
-                    </td>
-                  </tr>
-                  <tr className="border-b border-border/50">
-                    <td className="py-4 px-6 text-muted-foreground">
-                      Controle dos dados
-                    </td>
-                    <td className="py-4 px-6 text-center">
-                      <Check className="h-5 w-5 text-primary mx-auto" />
-                    </td>
-                    <td className="py-4 px-6 text-center text-muted-foreground text-sm">
-                      Hospedado com segurança
-                    </td>
-                  </tr>
-                  <tr className="border-b border-border/50">
-                    <td className="py-4 px-6 text-muted-foreground">
-                      Manutenção
-                    </td>
-                    <td className="py-4 px-6 text-center text-sm">
-                      Você gerencia
-                    </td>
-                    <td className="py-4 px-6 text-center">
-                      <Check className="h-5 w-5 text-primary mx-auto" />
-                    </td>
-                  </tr>
-                  <tr className="border-b border-border/50">
-                    <td className="py-4 px-6 text-muted-foreground">Uptime</td>
-                    <td className="py-4 px-6 text-center text-sm">
-                      Depende de você
-                    </td>
-                    <td className="py-4 px-6 text-center font-semibold">
-                      99.9% SLA
-                    </td>
-                  </tr>
-                  <tr>
-                    <td className="py-4 px-6 text-muted-foreground">Setup</td>
-                    <td className="py-4 px-6 text-center font-semibold">
-                      5 minutos com Docker
-                    </td>
-                    <td className="py-4 px-6 text-center font-semibold text-secondary">
-                      Instantâneo
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
-              <Card className="card-neo border-primary/30">
-                <CardContent className="p-8 text-center space-y-4">
-                  <Container className="h-12 w-12 text-primary mx-auto" />
-                  <h3 className="text-xl font-semibold font-display">
-                    Self-host Now
-                  </h3>
-                  <p className="text-muted-foreground text-sm">
-                    Controle total sobre seus dados e infraestrutura
-                  </p>
-                  <Button
-                    asChild
-                    className="bg-linear-to-r from-primary to-secondary text-primary-foreground hover:opacity-90 glow-primary"
+            {/* Grid do Kanban */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {/* Coluna DONE */}
+              <div className="space-y-4">
+                <div className="flex items-center justify-between p-2 rounded-lg bg-green-500/10 border border-green-500/20">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 className="h-4 w-4 text-green-500" />
+                    <span className="font-bold text-green-500">Concluído</span>
+                  </div>
+                  <Badge
+                    variant="secondary"
+                    className="bg-green-500/20 text-green-600 hover:bg-green-500/30"
                   >
-                    <Link href="/docs">
-                      <FileCode className="mr-2 h-4 w-4" />
-                      Ver Documentação
-                    </Link>
-                  </Button>
-                </CardContent>
-              </Card>
+                    {kanbanData.done.length}
+                  </Badge>
+                </div>
+                <div className="space-y-3">
+                  {kanbanData.done.map((item) => (
+                    <Card
+                      key={item.id}
+                      className="card-neo border-l-4 border-l-green-500/50 hover:translate-y-0 transition-colors"
+                    >
+                      <CardContent className="p-4 space-y-3">
+                        <div className="flex justify-between items-start">
+                          <span className="text-xs font-mono text-muted-foreground bg-muted px-1.5 py-0.5 rounded">
+                            {item.id}
+                          </span>
+                          <Badge
+                            variant="outline"
+                            className="text-[10px] h-5 px-2"
+                          >
+                            {item.tag}
+                          </Badge>
+                        </div>
+                        <h4 className="font-semibold leading-tight">
+                          {item.title}
+                        </h4>
+                        <p className="text-xs text-muted-foreground leading-relaxed">
+                          {item.desc}
+                        </p>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </div>
 
-              <Card className="card-neo border-secondary/30">
-                <CardContent className="p-8 text-center space-y-4">
-                  <Zap className="h-12 w-12 text-secondary mx-auto" />
-                  <h3 className="text-xl font-semibold font-display">
-                    Use Hosted Version
-                  </h3>
-                  <p className="text-muted-foreground text-sm">
-                    Comece imediatamente sem configuração
-                  </p>
-                  <Button
-                    asChild
-                    variant="outline"
-                    className="border-secondary/30 hover:bg-secondary/10"
-                  >
-                    <Link href="/cadastro">
-                      <Play className="mr-2 h-4 w-4" />
-                      Criar Conta
-                    </Link>
-                  </Button>
-                </CardContent>
-              </Card>
+              {/* Coluna IN PROGRESS */}
+              <div className="space-y-4">
+                <div className="flex items-center justify-between p-2 rounded-lg bg-primary/10 border border-primary/20 relative overflow-hidden">
+                  <div className="absolute inset-0 bg-linear-to-r from-primary/5 via-primary/10 to-primary/5 animate-pulse" />
+                  <div className="flex items-center gap-2 relative z-10">
+                    <Timer className="h-4 w-4 text-primary animate-spin-slow" />
+                    <span className="font-bold text-primary">Em Progresso</span>
+                  </div>
+                  <Badge className="bg-primary text-primary-foreground relative z-10">
+                    {kanbanData.inProgress.length}
+                  </Badge>
+                </div>
+                <div className="space-y-3">
+                  {kanbanData.inProgress.map((item) => (
+                    <Card
+                      key={item.id}
+                      className="card-neo border-l-4 border-l-primary hover:shadow-lg hover:shadow-primary/5 hover:-translate-y-1 transition-all duration-300"
+                    >
+                      <CardContent className="p-4 space-y-3">
+                        <div className="flex justify-between items-start">
+                          <span className="text-xs font-mono text-muted-foreground bg-muted px-1.5 py-0.5 rounded">
+                            {item.id}
+                          </span>
+                          <Badge
+                            variant="secondary"
+                            className="text-[10px] h-5 px-2 bg-primary/10 text-primary border-primary/20"
+                          >
+                            {item.tag}
+                          </Badge>
+                        </div>
+                        <h4 className="font-semibold leading-tight">
+                          {item.title}
+                        </h4>
+                        <p className="text-xs text-muted-foreground leading-relaxed">
+                          {item.desc}
+                        </p>
+                      </CardContent>
+                    </Card>
+                  ))}
+                  {/* Card vazio para preencher espaço visual se precisar */}
+                  <div className="border-2 border-dashed border-primary/10 rounded-lg p-4 flex items-center justify-center text-muted-foreground/50 text-sm italic h-24">
+                    Codando... ☕
+                  </div>
+                </div>
+              </div>
+
+              {/* Coluna TODO */}
+              <div className="space-y-4">
+                <div className="flex items-center justify-between p-2 rounded-lg bg-muted/50 border border-border">
+                  <div className="flex items-center gap-2">
+                    <CircleDashed className="h-4 w-4 text-muted-foreground" />
+                    <span className="font-bold text-muted-foreground">
+                      Backlog
+                    </span>
+                  </div>
+                  <Badge variant="outline" className="text-muted-foreground">
+                    {kanbanData.todo.length}
+                  </Badge>
+                </div>
+                <div className="space-y-3 opacity-70 hover:opacity-100 transition-opacity">
+                  {kanbanData.todo.map((item) => (
+                    <Card
+                      key={item.id}
+                      className="card-neo border-l-4 border-l-muted hover:border-l-foreground/50 transition-colors"
+                    >
+                      <CardContent className="p-4 space-y-3">
+                        <div className="flex justify-between items-start">
+                          <span className="text-xs font-mono text-muted-foreground bg-muted px-1.5 py-0.5 rounded">
+                            {item.id}
+                          </span>
+                          <Badge
+                            variant="outline"
+                            className="text-[10px] h-5 px-2 text-muted-foreground"
+                          >
+                            {item.tag}
+                          </Badge>
+                        </div>
+                        <h4 className="font-semibold leading-tight text-foreground/80">
+                          {item.title}
+                        </h4>
+                        <p className="text-xs text-muted-foreground leading-relaxed">
+                          {item.desc}
+                        </p>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
         </section>
 
-        <section className="w-full py-16 md:py-24 bg-linear-to-b from-primary/5 to-transparent">
+        <section className="w-full py-16 md:py-24">
           <div className="container mx-auto px-4 max-w-3xl text-center space-y-8">
             <div className="space-y-4">
               <Users className="h-12 w-12 text-primary mx-auto" />
@@ -550,8 +598,8 @@ docker-compose up -d`}
                 Join the Community
               </h2>
               <p className="text-lg text-muted-foreground">
-                Junte-se a desenvolvedores construindo o futuro da sincronização
-                de playlists
+                Junte-se ao desenvolvimento e ajude a construir as próximas
+                features.
               </p>
             </div>
 
@@ -566,51 +614,10 @@ docker-compose up -d`}
                   target="_blank"
                 >
                   <Github className="mr-2 h-4 w-4" />
-                  GitHub
-                </Link>
-              </Button>
-              <Button
-                asChild
-                variant="outline"
-                className="border-secondary/30 hover:bg-secondary/10"
-              >
-                <Link href="https://discord.gg/3gYajwJuXA" target="_blank">
-                  <Users className="mr-2 h-4 w-4" />
-                  Discord
+                  Star on GitHub
                 </Link>
               </Button>
             </div>
-
-            <Card className="card-neo">
-              <CardContent className="p-8">
-                <div className="flex items-center justify-center gap-8 flex-wrap">
-                  <div className="text-center">
-                    <div className="text-4xl font-bold font-display text-gradient">
-                      1.2k+
-                    </div>
-                    <div className="text-sm text-muted-foreground mt-1">
-                      GitHub Stars
-                    </div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-4xl font-bold font-display text-gradient">
-                      200+
-                    </div>
-                    <div className="text-sm text-muted-foreground mt-1">
-                      Contributors
-                    </div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-4xl font-bold font-display text-gradient">
-                      50+
-                    </div>
-                    <div className="text-sm text-muted-foreground mt-1">
-                      Releases
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
           </div>
         </section>
 
@@ -624,8 +631,9 @@ docker-compose up -d`}
                   Support the Project
                 </h2>
                 <p className="text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-                  Harmonia é mantido por desenvolvedores apaixonados. Se o
-                  projeto te ajudou, considere apoiar:
+                  Harmonia é um projeto Open Source mantido com café e paixão
+                  por código. Se o projeto te ajudou ou você curtiu a
+                  arquitetura, considere apoiar:
                 </p>
                 <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
                   <Button
@@ -639,36 +647,6 @@ docker-compose up -d`}
                     >
                       <Coffee className="mr-2 h-4 w-4" />
                       Buy Me a Coffee
-                    </Link>
-                  </Button>
-                </div>
-                <div className="flex items-center justify-center gap-4 pt-4 flex-wrap">
-                  <Button
-                    asChild
-                    variant="ghost"
-                    size="sm"
-                    className="hover:text-primary"
-                  >
-                    <Link
-                      href="https://github.com/thiagoDOTjpeg/harmonia.io"
-                      target="_blank"
-                    >
-                      <Star className="mr-2 h-4 w-4" />
-                      Star on GitHub
-                    </Link>
-                  </Button>
-                  <Button
-                    asChild
-                    variant="ghost"
-                    size="sm"
-                    className="hover:text-primary"
-                  >
-                    <Link
-                      href="https://github.com/thiagoDOTjpeg/harmonia.io/contribute"
-                      target="_blank"
-                    >
-                      <GitPullRequest className="mr-2 h-4 w-4" />
-                      Contribute
                     </Link>
                   </Button>
                 </div>
