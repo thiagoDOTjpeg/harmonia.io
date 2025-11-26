@@ -3,51 +3,59 @@ import { Coffee, Heart, Star } from "lucide-react";
 
 # Apoie o Projeto
 
-O **Harmonia.io** é um projeto 100% Open Source, desenvolvido e mantido por paixão à engenharia de software.
+O <b>Harmonia.io</b> é um projeto 100% Open Source, mantido por paixão à engenharia de software. Se este projeto te ajudou a aprender Clean Architecture, estudar Monorepos ou simplesmente salvou suas playlists, considere apoiar!
 
-Manter a documentação, corrigir bugs e criar novas features consome muitas noites e fins de semana. Se este projeto te ajudou a aprender Clean Architecture, estudar Monorepos ou simplesmente salvou suas playlists, considere apoiar!
-
-## Como você pode ajudar?
-
-<Cards>
-  {/* Use Cards.Card em vez de Card */}
-  <Cards.Card
-    icon={<Coffee />}
-    title="Pague um Café"
+<div className="my-8 grid grid-cols-1 md:grid-cols-3 gap-6">
+  <a
     href="https://buymeacoffee.com/harmoniaio"
-    arrow
+    target="_blank"
+    rel="noopener noreferrer"
+    className="flex flex-col items-center justify-center p-6 rounded-xl border border-yellow-600 bg-zinc-900 hover:bg-zinc-800 transition-all shadow-md gap-3"
   >
-    Uma doação única ajuda a manter os servidores de demonstração online e
-    motiva a continuar codando.
-  </Cards.Card>
+    <Coffee className="h-10 w-10 text-yellow-500 mb-2" />
+    <span className="font-bold text-lg text-yellow-300">Pague um Café</span>
+    <span className="text-sm text-yellow-300 text-center">Ajuda a manter os servidores online e motiva a continuar codando.</span>
+    <span className="text-xs text-yellow-300 mt-2">Abrir em nova aba</span>
+  </a>
 
-  <Cards.Card
-    icon={<Star />}
-    title="Dê uma Estrela no GitHub"
-    href="https://github.com/thiagoDOTjpeg/harmonia.io"
-    arrow
-  >
-    É de graça e ajuda muito! Aumenta a visibilidade do projeto para que mais
-    devs possam contribuir.
-  </Cards.Card>
+<a
+  href="https://github.com/thiagoDOTjpeg/harmonia.io"
+  target="_blank"
+  rel="noopener noreferrer"
+  className="flex flex-col items-center justify-center p-6 rounded-xl border border-blue-600 bg-zinc-900 hover:bg-zinc-800 transition-all shadow-md gap-3"
+>
+  <Star className="h-10 w-10 text-blue-300 mb-2" />
+  <span className="font-bold text-lg text-blue-300">
+    Dê uma Estrela no GitHub
+  </span>
+  <span className="text-sm text-blue-300 text-center">
+    É de graça e aumenta a visibilidade do projeto para que mais devs possam
+    contribuir.
+  </span>
+  <span className="text-xs text-blue-300 mt-2">Abrir em nova aba</span>
+</a>
 
-  <Cards.Card
-    icon={<Heart />}
-    title="Seja um Sponsor"
+  <a
     href="https://github.com/sponsors/thiagoDOTjpeg"
-    arrow
+    target="_blank"
+    rel="noopener noreferrer"
+    className="flex flex-col items-center justify-center p-6 rounded-xl border border-pink-600 bg-zinc-900 hover:bg-zinc-800 transition-all shadow-md gap-3"
   >
-    Para empresas ou usuários frequentes que querem garantir a sustentabilidade
-    do projeto a longo prazo.
-  </Cards.Card>
-</Cards>
+    <Heart className="h-10 w-10 text-pink-300 mb-2" />
+    <span className="font-bold text-lg text-pink-300">Seja um Sponsor</span>
+    <span className="text-sm text-pink-300 text-center">Para empresas ou usuários frequentes que querem garantir a sustentabilidade do projeto a longo prazo.</span>
+    <span className="text-xs text-pink-300 mt-2">Abrir em nova aba</span>
+  </a>
+</div>
 
-## Para onde vai o dinheiro?
+## Para onde vai o apoio?
 
-1. **Infraestrutura:** Custos de domínio e hospedagem da documentação/demo.
-2. **Café:** Combustível essencial para transformar requisitos em código.
-3. **Ferramentas:** Assinaturas de serviços que aceleram o desenvolvimento.
+- <b>Infraestrutura:</b> Domínio e hospedagem da documentação/demo.
+- <b>Café:</b> Combustível essencial para transformar requisitos em código.
+- <b>Ferramentas:</b> Assinaturas de serviços que aceleram o desenvolvimento.
 
 ---
 
-**Obrigado por fazer parte dessa comunidade!** ❤️
+<div className="text-center text-lg font-semibold mt-8">
+  Obrigado por fazer parte dessa comunidade!{" "}
+</div>
