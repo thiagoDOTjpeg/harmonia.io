@@ -1,0 +1,53 @@
+import { Cards } from "nextra/components"; // <--- Importe apenas Cards
+import { Coffee, Heart, Star } from "lucide-react";
+
+# Apoie o Projeto
+
+O **Harmonia.io** é um projeto 100% Open Source, desenvolvido e mantido por paixão à engenharia de software.
+
+Manter a documentação, corrigir bugs e criar novas features consome muitas noites e fins de semana. Se este projeto te ajudou a aprender Clean Architecture, estudar Monorepos ou simplesmente salvou suas playlists, considere apoiar!
+
+## Como você pode ajudar?
+
+<Cards>
+  {/* Use Cards.Card em vez de Card */}
+  <Cards.Card
+    icon={<Coffee />}
+    title="Pague um Café"
+    href="https://buymeacoffee.com/harmoniaio"
+    arrow
+  >
+    Uma doação única ajuda a manter os servidores de demonstração online e
+    motiva a continuar codando.
+  </Cards.Card>
+
+  <Cards.Card
+    icon={<Star />}
+    title="Dê uma Estrela no GitHub"
+    href="https://github.com/thiagoDOTjpeg/harmonia.io"
+    arrow
+  >
+    É de graça e ajuda muito! Aumenta a visibilidade do projeto para que mais
+    devs possam contribuir.
+  </Cards.Card>
+
+  <Cards.Card
+    icon={<Heart />}
+    title="Seja um Sponsor"
+    href="https://github.com/sponsors/thiagoDOTjpeg"
+    arrow
+  >
+    Para empresas ou usuários frequentes que querem garantir a sustentabilidade
+    do projeto a longo prazo.
+  </Cards.Card>
+</Cards>
+
+## Para onde vai o dinheiro?
+
+1. **Infraestrutura:** Custos de domínio e hospedagem da documentação/demo.
+2. **Café:** Combustível essencial para transformar requisitos em código.
+3. **Ferramentas:** Assinaturas de serviços que aceleram o desenvolvimento.
+
+---
+
+**Obrigado por fazer parte dessa comunidade!** ❤️
