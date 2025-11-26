@@ -1,0 +1,174 @@
+import { Callout } from "nextra/components";
+import { CheckCircle2, Timer, CircleDashed } from "lucide-react";
+
+# Roadmap de Desenvolvimento
+
+Acompanhe o progresso do Harmonia.io. Nosso desenvolvimento é público e transparente.
+
+<div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
+  
+  {/* --- Coluna: Concluído --- */}
+  <div className="flex flex-col gap-4">
+    <div className="flex items-center justify-between p-3 rounded-lg bg-green-500/10 border border-green-500/20">
+      <div className="flex items-center gap-2">
+        <CheckCircle2 className="w-4 h-4 text-green-500" />
+        <span className="font-bold text-sm text-green-500">Concluído</span>
+      </div>
+      <span className="text-xs font-medium bg-green-500/20 text-green-600 px-2 py-0.5 rounded-full">4</span>
+    </div>
+
+    {/* Card MVP-01 */}
+    <div className="rounded-xl border bg-card text-card-foreground shadow-sm border-l-4 border-l-green-500/50 hover:translate-y-0 transition-colors">
+      <div className="p-4 space-y-3">
+        <div className="flex justify-between items-start">
+          <span className="text-[10px] font-mono text-muted-foreground bg-muted px-1.5 py-0.5 rounded uppercase">MVP-01</span>
+          <span className="text-[10px] border px-1.5 py-0.5 rounded-full font-medium">Backend</span>
+        </div>
+        <h4 className="font-semibold leading-tight text-sm">Clean Architecture Core</h4>
+        <p className="text-xs text-muted-foreground leading-relaxed">Implementação de Ports & Adapters e isolamento de domínio.</p>
+      </div>
+    </div>
+
+    {/* Card MVP-02 */}
+    <div className="rounded-xl border bg-card text-card-foreground shadow-sm border-l-4 border-l-green-500/50 hover:translate-y-0 transition-colors">
+      <div className="p-4 space-y-3">
+        <div className="flex justify-between items-start">
+          <span className="text-[10px] font-mono text-muted-foreground bg-muted px-1.5 py-0.5 rounded uppercase">MVP-02</span>
+          <span className="text-[10px] border px-1.5 py-0.5 rounded-full font-medium">Infra</span>
+        </div>
+        <h4 className="font-semibold leading-tight text-sm">Sistema de Filas (BullMQ)</h4>
+        <p className="text-xs text-muted-foreground leading-relaxed">Processamento assíncrono para evitar timeouts em playlists grandes.</p>
+      </div>
+    </div>
+
+    {/* Card MVP-03 */}
+    <div className="rounded-xl border bg-card text-card-foreground shadow-sm border-l-4 border-l-green-500/50 hover:translate-y-0 transition-colors">
+      <div className="p-4 space-y-3">
+        <div className="flex justify-between items-start">
+          <span className="text-[10px] font-mono text-muted-foreground bg-muted px-1.5 py-0.5 rounded uppercase">MVP-03</span>
+          <span className="text-[10px] border px-1.5 py-0.5 rounded-full font-medium">Feature</span>
+        </div>
+        <h4 className="font-semibold leading-tight text-sm">Sync YouTube -> Spotify</h4>
+        <p className="text-xs text-muted-foreground leading-relaxed">Motor de conversão unilateral funcional e testado.</p>
+      </div>
+    </div>
+
+    {/* Card MVP-04 */}
+    <div className="rounded-xl border bg-card text-card-foreground shadow-sm border-l-4 border-l-green-500/50 hover:translate-y-0 transition-colors">
+      <div className="p-4 space-y-3">
+        <div className="flex justify-between items-start">
+          <span className="text-[10px] font-mono text-muted-foreground bg-muted px-1.5 py-0.5 rounded uppercase">MVP-04</span>
+          <span className="text-[10px] border px-1.5 py-0.5 rounded-full font-medium">DevOps</span>
+        </div>
+        <h4 className="font-semibold leading-tight text-sm">Dockerização Completa</h4>
+        <p className="text-xs text-muted-foreground leading-relaxed">Setup com um comando (Compose) para API, Banco e Redis.</p>
+      </div>
+    </div>
+
+  </div>
+
+{/* --- Coluna: Em Progresso --- */}
+
+  <div className="flex flex-col gap-4">
+    <div className="flex items-center justify-between p-3 rounded-lg bg-primary/10 border border-primary/20 relative overflow-hidden">
+      <div className="absolute inset-0 bg-primary/5 animate-pulse pointer-events-none" />
+      <div className="flex items-center gap-2 relative z-10">
+        <Timer className="w-4 h-4 text-primary animate-spin-slow" />
+        <span className="font-bold text-sm text-primary">Em Progresso</span>
+      </div>
+      <span className="text-xs font-medium bg-primary text-primary-foreground px-2 py-0.5 rounded-full relative z-10">3</span>
+    </div>
+
+    {/* Card WIP-01 */}
+    <div className="rounded-xl border bg-card text-card-foreground shadow-sm border-l-4 border-l-primary hover:shadow-lg hover:shadow-primary/5 hover:-translate-y-1 transition-all duration-300">
+      <div className="p-4 space-y-3">
+        <div className="flex justify-between items-start">
+          <span className="text-[10px] font-mono text-muted-foreground bg-muted px-1.5 py-0.5 rounded uppercase">WIP-01</span>
+          <span className="text-[10px] border border-primary/20 bg-primary/10 text-primary px-1.5 py-0.5 rounded-full font-medium">WebSocket</span>
+        </div>
+        <h4 className="font-semibold leading-tight text-sm">Notificações Real-time</h4>
+        <p className="text-xs text-muted-foreground leading-relaxed">Avisar o frontend instantaneamente quando o worker finalizar.</p>
+      </div>
+    </div>
+
+    {/* Card WIP-02 */}
+    <div className="rounded-xl border bg-card text-card-foreground shadow-sm border-l-4 border-l-primary hover:shadow-lg hover:shadow-primary/5 hover:-translate-y-1 transition-all duration-300">
+      <div className="p-4 space-y-3">
+        <div className="flex justify-between items-start">
+          <span className="text-[10px] font-mono text-muted-foreground bg-muted px-1.5 py-0.5 rounded uppercase">WIP-02</span>
+          <span className="text-[10px] border border-primary/20 bg-primary/10 text-primary px-1.5 py-0.5 rounded-full font-medium">Frontend</span>
+        </div>
+        <h4 className="font-semibold leading-tight text-sm">Refinamento de UX</h4>
+        <p className="text-xs text-muted-foreground leading-relaxed">Melhorias visuais e feedback de erro para o usuário.</p>
+      </div>
+    </div>
+
+    {/* Card WIP-03 */}
+    <div className="rounded-xl border bg-card text-card-foreground shadow-sm border-l-4 border-l-primary hover:shadow-lg hover:shadow-primary/5 hover:-translate-y-1 transition-all duration-300">
+      <div className="p-4 space-y-3">
+        <div className="flex justify-between items-start">
+          <span className="text-[10px] font-mono text-muted-foreground bg-muted px-1.5 py-0.5 rounded uppercase">WIP-03</span>
+          <span className="text-[10px] border border-primary/20 bg-primary/10 text-primary px-1.5 py-0.5 rounded-full font-medium">Backend</span>
+        </div>
+        <h4 className="font-semibold leading-tight text-sm">Testes Unitários/Integração</h4>
+        <p className="text-xs text-muted-foreground leading-relaxed">Criação de teste para cobertura de casos de uso.</p>
+      </div>
+    </div>
+
+  </div>
+
+{/* --- Coluna: Backlog --- */}
+
+  <div className="flex flex-col gap-4">
+    <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50 border border-border">
+      <div className="flex items-center gap-2">
+        <CircleDashed className="w-4 h-4 text-muted-foreground" />
+        <span className="font-bold text-sm text-muted-foreground">Backlog</span>
+      </div>
+      <span className="text-xs font-medium border px-2 py-0.5 rounded-full text-muted-foreground">3</span>
+    </div>
+
+    {/* Card FUTURE-01 */}
+    <div className="rounded-xl border bg-card text-card-foreground shadow-sm border-l-4 border-l-muted hover:border-l-foreground/50 transition-colors opacity-70 hover:opacity-100">
+      <div className="p-4 space-y-3">
+        <div className="flex justify-between items-start">
+          <span className="text-[10px] font-mono text-muted-foreground bg-muted px-1.5 py-0.5 rounded uppercase">FUTURE-01</span>
+          <span className="text-[10px] border px-1.5 py-0.5 rounded-full font-medium text-muted-foreground">Feature</span>
+        </div>
+        <h4 className="font-semibold leading-tight text-sm">Sync Bilateral</h4>
+        <p className="text-xs text-muted-foreground leading-relaxed">Permitir sincronização do Spotify de volta para o YouTube.</p>
+      </div>
+    </div>
+
+    {/* Card FUTURE-02 */}
+    <div className="rounded-xl border bg-card text-card-foreground shadow-sm border-l-4 border-l-muted hover:border-l-foreground/50 transition-colors opacity-70 hover:opacity-100">
+      <div className="p-4 space-y-3">
+        <div className="flex justify-between items-start">
+          <span className="text-[10px] font-mono text-muted-foreground bg-muted px-1.5 py-0.5 rounded uppercase">FUTURE-02</span>
+          <span className="text-[10px] border px-1.5 py-0.5 rounded-full font-medium text-muted-foreground">Backend</span>
+        </div>
+        <h4 className="font-semibold leading-tight text-sm">Sync Recorrente (Cron)</h4>
+        <p className="text-xs text-muted-foreground leading-relaxed">Verificação automática diária de novas músicas.</p>
+      </div>
+    </div>
+
+    {/* Card FUTURE-03 */}
+    <div className="rounded-xl border bg-card text-card-foreground shadow-sm border-l-4 border-l-muted hover:border-l-foreground/50 transition-colors opacity-70 hover:opacity-100">
+      <div className="p-4 space-y-3">
+        <div className="flex justify-between items-start">
+          <span className="text-[10px] font-mono text-muted-foreground bg-muted px-1.5 py-0.5 rounded uppercase">FUTURE-03</span>
+          <span className="text-[10px] border px-1.5 py-0.5 rounded-full font-medium text-muted-foreground">Database</span>
+        </div>
+        <h4 className="font-semibold leading-tight text-sm">Cache Inteligente</h4>
+        <p className="text-xs text-muted-foreground leading-relaxed">Banco de 'de-para' de músicas para economizar requests de API.</p>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+<Callout type="info">
+  Tem uma ideia de feature? [Abra uma Issue no
+  GitHub](https://github.com/thiagoDOTjpeg/harmonia.io/issues) para discutirmos!
+</Callout>
