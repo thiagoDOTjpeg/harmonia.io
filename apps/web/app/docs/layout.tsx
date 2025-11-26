@@ -14,13 +14,13 @@ export default async function DocsLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const pageMap = await getPageMap();
+  const pageMap = await getPageMap("/docs");
 
   return (
     <Layout
       navbar={navbar}
       pageMap={pageMap}
-      docsRepositoryBase="https://github.com/thiagoDOTjpeg/harmonio.io/tree/main/docs"
+      docsRepositoryBase="https://github.com/seu-user/seu-repo/tree/main/docs"
       footer={footer}
       sidebar={{
         defaultMenuCollapseLevel: 1,

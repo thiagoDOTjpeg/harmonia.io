@@ -28,7 +28,8 @@
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts",
-    "tailwind.config.js"
+    "app/docs/_meta.ts",
+    "app/docs/page.mdx"
   ],
-  "exclude": ["node_modules"]
+  "exclude": ["node_modules", "app/docs/**/*.mdx"]
 }

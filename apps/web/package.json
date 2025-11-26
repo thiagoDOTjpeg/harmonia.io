@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "build": "next build",
-    "dev": "dotenv -e ../../.env -- next dev -p 3001 ",
+    "dev": "dotenv -e ../../.env -- next dev -p 3001 --turbopack",
     "lint": "next lint",
     "start": "next start"
   },

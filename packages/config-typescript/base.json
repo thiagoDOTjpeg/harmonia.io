@@ -20,5 +20,5 @@
     "isolatedModules": true,
     "allowSyntheticDefaultImports": true
   },
-  "exclude": ["node_modules", "dist", "build"]
+  "exclude": ["node_modules", "dist", "build", "app/docs/**/*.mdx"]
 }

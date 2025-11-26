@@ -1,3 +1,43 @@
-# Welcome to Nextra
+---
+title: Visão Geral do Projeto Harmonia.io
+---
 
-Hello, world!
+# Visão Geral do Projeto Harmonia.io
+
+O Harmonia.io é uma plataforma moderna desenvolvida para facilitar a integração, sincronização e gestão de serviços de música e dados relacionados. O projeto é estruturado em múltiplos pacotes e aplicações, utilizando tecnologias como TypeScript, Node.js, Next.js, Prisma e Docker para garantir escalabilidade, modularidade e facilidade de manutenção.
+
+## Estrutura do Projeto
+
+O monorepo é organizado em três principais diretórios:
+
+- **apps/**: Contém as aplicações principais do projeto.
+  - **api/**: Backend responsável por lógica de negócio, integrações, autenticação, e comunicação com bancos de dados e serviços externos.
+  - **web/**: Frontend construído com Next.js, focado em experiência do usuário, dashboards, autenticação e gerenciamento de playlists.
+- **packages/**: Pacotes compartilhados e utilitários, como configurações de ESLint, TypeScript, banco de dados (Prisma), e módulos utilitários.
+  - **/shared/**: Código compartilhado entre aplicações, incluindo tipos, utilitários, schemas e enums.
+
+## Principais Tecnologias
+
+- **TypeScript**: Tipagem estática e segurança para todo o projeto.
+- **Next.js**: Framework React para o frontend, com suporte a SSR e rotas dinâmicas.
+- **Node.js**: Plataforma para o backend e scripts utilitários.
+- **Prisma**: ORM para gerenciamento do banco de dados relacional.
+- **Docker**: Contêinerização para facilitar o desenvolvimento, testes e deploy.
+- **TurboRepo**: Gerenciamento eficiente de monorepo e pipelines de build.
+
+## Funcionalidades
+
+- Autenticação OAuth e integração com serviços de terceiros (Google, Spotify, etc).
+- Sincronização e gerenciamento de playlists.
+- Painel administrativo e interface amigável para usuários.
+- Arquitetura modular, facilitando a extensão e manutenção.
+
+## Como Contribuir
+
+1. Instale as dependências com `npm install` na raiz do projeto.
+2. Utilize os scripts definidos no `package.json` para rodar, testar e construir os apps.
+3. Siga as convenções de código e utilize os pacotes compartilhados para garantir consistência.
+
+---
+
+[Voltar ao topo](#visão-geral-do-projeto-harmoniaio)

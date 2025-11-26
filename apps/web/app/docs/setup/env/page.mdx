@@ -1,0 +1,76 @@
+---
+title: Configuração das Variáveis de Ambiente
+---
+
+# Configuração das Variáveis de Ambiente
+
+Para rodar o Harmonia.io, é necessário configurar corretamente o arquivo `.env` na raiz do projeto. Use o `.env.example` como referência.
+
+## Recomendações Gerais
+
+- Renomeie `.env.example` para `.env` e preencha os valores conforme seu ambiente.
+- Nunca compartilhe segredos em repositórios públicos.
+- Para callbacks de OAuth, **use sempre `127.0.0.1` ao invés de `localhost`** nas URLs de redirecionamento. Alguns provedores (como Google e Spotify) não aceitam `localhost` por questões de segurança.
+
+## Principais Variáveis
+
+```env
+NODE_ENV="dev"
+DATABASE_URL="postgresql://usuario:senha@localhost:5432/harmonia"
+NEXT_PUBLIC_API_URL="http://localhost:3000"
+REDIS_HOST="localhost"
+REDIS_PORT="6379"
+BULL_CONCURRENCY="5"
+PLAYLIST_MAX_SONGS=20
+
+PORT="3000"
+
+# Spotify OAuth
+SPOTIFY_CLIENT_ID="your-spotify-client-id"
+SPOTIFY_CLIENT_SECRET="your-spotify-client-secret"
+SPOTIFY_REDIRECT_URI="http://127.0.0.1:3000/auth/spotify/callback"
+
+# Google OAuth
+GOOGLE_CLIENT_ID="your-google-client-id.apps.googleusercontent.com"
+GOOGLE_CLIENT_SECRET="your-google-client-secret"
+GOOGLE_REDIRECT_URI="http://127.0.0.1:3000/auth/google/callback"
+
+# YouTube Data API
+GOOGLE_YOUTUBE_API_KEY="your-youtube-api-key"
+```
+
+## Configurando OAuth: Callback `127.0.0.1` vs `localhost`
+
+Ao registrar sua aplicação nos provedores, sempre utilize `http://127.0.0.1:3000/...` como URI de redirecionamento. Isso evita erros de validação e problemas de autenticação.
+
+---
+
+## Spotify
+
+1. Acesse o [Spotify Developer Dashboard](https://developer.spotify.com/dashboard).
+2. Crie um novo app.
+3. Em "Redirect URIs", adicione:
+   ```
+   http://127.0.0.1:3000/auth/spotify/callback
+   ```
+4. Copie o `Client ID` e `Client Secret` para o `.env`.
+
+## Google OAuth
+
+1. Acesse o [Google Cloud Console](https://console.cloud.google.com/apis/credentials).
+2. Crie um novo OAuth Client ID (tipo Web Application).
+3. Em "Authorized redirect URIs", adicione:
+   ```
+   http://127.0.0.1:3000/auth/google/callback
+   ```
+4. Copie o `Client ID` e `Client Secret` para o `.env`.
+
+## YouTube Data API
+
+1. No Google Cloud Console, habilite a API "YouTube Data API v3".
+2. Gere uma chave de API.
+3. Adicione o valor em `GOOGLE_YOUTUBE_API_KEY` no `.env`.
+
+---
+
+> Se estiver em produção, ajuste as URLs de callback para o domínio real do seu app.
