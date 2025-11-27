@@ -1,42 +1,56 @@
 # 🎵 Harmonia.io
 
-> Sincronize suas playlists entre YouTube e Spotify de forma automática, privada e gratuita.
+Sincronize playlists entre YouTube e Spotify de forma automática, privada e gratuita.
 
 [![MIT License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue.svg)](https://www.typescriptlang.org/)
-[![Next.js](https://img.shields.io/badge/Next.js-15-black.svg)](https://nextjs.org/)
+[![Next.js](https://img.shields.io/badge/Next.js-16-black.svg)](https://nextjs.org/)
 [![Node.js](https://img.shields.io/badge/Node.js-22+-green.svg)](https://nodejs.org/)
 
-**Harmonia.io** é uma solução **open-source** para sincronizar suas playlists do YouTube para o Spotify. Auto-hospedável, com processamento em background via filas, autenticação OAuth segura e interface web moderna.
+---
+
+## Visão Geral
+
+**Harmonia.io** é uma plataforma open-source para sincronização de playlists entre YouTube e Spotify. O projeto é auto-hospedável, prioriza privacidade, possui arquitetura limpa e escalável, processamento assíncrono via filas, autenticação OAuth segura e uma interface web moderna.
+
+### Principais Funcionalidades
+
+- Sincronização unidirecional (YouTube -> Spotify)
+- Login seguro via OAuth 2.0 (Google/Spotify)
+- Processamento assíncrono com BullMQ + Redis
+- Interface web Next.js 15 + shadcn/ui
+- Arquitetura Clean Architecture + DDD
+- Deploy rápido via Docker
+- Monitoramento de jobs (Bull Board)
 
 ---
 
-## ✨ Features
+## Estrutura do Projeto
 
-- 🔄 **Sincronização Bidirecional** - YouTube ↔ Spotify (em desenvolvimento)
-- 🔐 **OAuth 2.0** - Login seguro com Google e Spotify
-- ⚡ **Processamento Assíncrono** - Sistema de filas com BullMQ + Redis
-- 🎨 **Interface Moderna** - Dashboard Next.js 15 com shadcn/ui
-- 🏗️ **Clean Architecture** - Código organizado e escalável
-- 🐳 **Docker Ready** - Deploy em 5 minutos
-- 🔒 **Privacidade Total** - Seus dados, sua infraestrutura
-- 📊 **Monitoramento** - Bull Board para acompanhar sincronizações
+Monorepo organizado com Turborepo:
+
+```
+harmonia.io/
+├── apps/
+│   ├── api/        # Backend (Express + TypeScript)
+│   └── web/        # Frontend (Next.js 15)
+├── packages/
+│   ├── shared/     # Tipos e schemas compartilhados
+│   ├── database/   # Prisma schema
+│   └── config-*    # Configurações
+└── turbo.json      # Pipeline de tasks
+```
+
+Arquitetura baseada em Clean Architecture:
+
+- **Domain Layer**: Entidades e value objects puros
+- **Application Layer**: Use cases e interfaces
+- **Infrastructure Layer**: Adapters concretos (DB, OAuth, Queue)
+- **Dependency Injection**: Container central
 
 ---
 
-## 🖼️ Screenshots
-
-### Dashboard
-
-<!-- TODO: Adicionar screenshot do dashboard -->
-
-### Gerenciamento de Playlists
-
-<!-- TODO: Adicionar screenshot de playlists -->
-
----
-
-## 🚀 Quick Start
+## Como rodar
 
 ### Pré-requisitos
 
@@ -46,7 +60,7 @@ npm -v    # >= 7.0.0
 docker -v # >= 20.0.0
 ```
 
-### Instalação Rápida
+### Instalação rápida
 
 ```bash
 # 1. Clone o repositório
@@ -70,14 +84,14 @@ npm run db:generate && npm run db:push
 npm run dev
 ```
 
-🎉 Acesse:
+Acesse:
 
 - **Web App**: [http://localhost:3001](http://localhost:3001)
 - **API**: [http://localhost:3000](http://localhost:3000)
 
 ---
 
-## 📦 Stack Tecnológica
+## Stack Tecnológica
 
 ### Backend
 
@@ -112,7 +126,7 @@ npm run dev
 
 ---
 
-## 🏗️ Arquitetura
+## Arquitetura
 
 ```
 harmonia.io/
@@ -149,7 +163,7 @@ O projeto segue os princípios de **Clean Architecture** e **Domain-Driven Desig
 
 ---
 
-## 🔐 Configuração OAuth
+## Configuração OAuth
 
 ### Spotify
 
@@ -221,7 +235,6 @@ http://localhost:3000/
 **GET** `/auth/google?intent=login` - OAuth Google (redireciona)
 
 **GET** `/auth/spotify?intent=login` - OAuth Spotify (redireciona)
-
 
 ```bash
 Authorization: Bearer {token}
@@ -316,20 +329,6 @@ docs: atualiza documentação
 refactor: refatora código
 test: adiciona testes
 ```
-
----
-
-## 📝 Roadmap
-
-- [x] Autenticação OAuth (Google + Spotify)
-- [x] Sincronização YouTube → Spotify
-- [x] Interface Web (Dashboard)
-- [x] Sistema de Filas (BullMQ)
-- [ ] Sincronização Spotify → YouTube
-- [ ] Sincronização automática (cron jobs)
-- [ ] Suporte a Apple Music
-- [ ] Aplicativo Mobile (React Native)
-- [ ] Notificações em tempo real (WebSockets)
 
 ---
 

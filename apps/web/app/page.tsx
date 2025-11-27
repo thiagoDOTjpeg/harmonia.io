@@ -1,9 +1,26 @@
+"use client";
+
 import { Footer } from "@/components/footer";
 import { Header } from "@/components/header";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { useAuthContext } from "@/context/AuthContext";
+import { RequestAccessDTO, RequestAccessSchema } from "@harmonia/shared";
+import { zodResolver } from "@hookform/resolvers/zod";
+import {
+  AlertCircle,
   CheckCircle2,
   CircleDashed,
   Code2,
@@ -13,6 +30,7 @@ import {
   Github,
   KanbanSquare,
   ListMusic,
+  Loader2,
   Shield,
   Terminal,
   Timer,
@@ -22,6 +40,8 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import React from "react";
+import { useForm } from "react-hook-form";
 import StackIcon from "tech-stack-icons";
 
 const kanbanData = {
@@ -94,12 +114,120 @@ const kanbanData = {
 };
 
 export default function HomePage() {
+  const [open, setOpen] = React.useState(false);
+  const { requestAccess } = useAuthContext();
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+    reset,
+  } = useForm<RequestAccessDTO>({
+    resolver: zodResolver(RequestAccessSchema),
+    defaultValues: {
+      name: "",
+      email: "",
+      reason: "",
+    },
+  });
+
+  async function onSubmit(
+    data: RequestAccessDTO,
+    e?: React.BaseSyntheticEvent
+  ) {
+    e?.preventDefault();
+    setOpen(false);
+    reset();
+    requestAccess(data);
+  }
+
   return (
     <div className="flex flex-col min-h-screen">
-      <Header />
+      <Header setOpen={setOpen} />
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Pedir acesso ao Harmonia</DialogTitle>
+            <DialogDescription>
+              Preencha o formulário para solicitar acesso ao deploy self-hosted.
+            </DialogDescription>
+          </DialogHeader>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleSubmit(onSubmit)(e);
+            }}
+            className="space-y-4"
+          >
+            <div className="space-y-2">
+              <Label htmlFor="nome">Nome completo</Label>
+              <Input
+                id="nome"
+                type="text"
+                placeholder="João Silva"
+                autoComplete="name"
+                {...register("name")}
+                disabled={isSubmitting}
+              />
+              {errors.name && (
+                <p className="text-sm text-destructive">
+                  {errors.name.message}
+                </p>
+              )}
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="seu@email.com"
+                autoComplete="email"
+                {...register("email")}
+                disabled={isSubmitting}
+              />
+              {errors.email && (
+                <p className="text-sm text-destructive">
+                  {errors.email.message}
+                </p>
+              )}
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="motivo">Motivo do pedido</Label>
+              <Input
+                id="motivo"
+                type="text"
+                placeholder="Descreva o motivo"
+                {...register("reason")}
+                disabled={isSubmitting}
+              />
+              {errors.reason && (
+                <p className="text-sm text-destructive">
+                  {errors.reason.message}
+                </p>
+              )}
+            </div>
+            {errors.root && (
+              <Alert variant="destructive">
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>{errors.root.message}</AlertDescription>
+              </Alert>
+            )}
+            <DialogFooter>
+              <Button type="submit" className="w-full" disabled={isSubmitting}>
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Enviando pedido...
+                  </>
+                ) : (
+                  "Enviar pedido"
+                )}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
 
       <main className="flex-1 w-full">
-        {/* Hero Section */}
         <section className="w-full py-24 md:py-32 relative overflow-hidden">
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-primary/10 rounded-full blur-[120px] animate-pulse pointer-events-none" />
 
@@ -135,16 +263,10 @@ export default function HomePage() {
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <Button
                 size="lg"
-                asChild
-                className="text-base bg-linear-to-r from-primary to-secondary text-primary-foreground hover:opacity-90 transition-all glow-primary font-display uppercase tracking-wider"
+                className="text-base bg-primary text-primary-foreground hover:opacity-90 transition-all glow-primary font-display uppercase tracking-wider"
+                onClick={() => setOpen(true)}
               >
-                <Link
-                  href="https://github.com/thiagoDOTjpeg/harmonia.io"
-                  target="_blank"
-                >
-                  <Github className="mr-2 h-4 w-4" />
-                  View Source Code
-                </Link>
+                Pedir acesso
               </Button>
               <Button
                 size="lg"
@@ -382,7 +504,6 @@ docker compose up --build -d`}
           </div>
         </section>
 
-        {/* How It Works Section */}
         <section id="como-funciona" className="w-full py-16 md:py-24">
           <div className="container mx-auto px-4 max-w-3xl text-center space-y-12">
             <div className="space-y-4">
@@ -433,7 +554,6 @@ docker compose up --build -d`}
           </div>
         </section>
 
-        {/* NOVA SECTION KANBAN ROADMAP */}
         <section className="w-full py-16 md:py-24 bg-linear-to-b from-primary/5 to-transparent">
           <div className="container mx-auto px-4 max-w-7xl space-y-12">
             <div className="text-center space-y-4">
@@ -452,9 +572,7 @@ docker compose up --build -d`}
               </p>
             </div>
 
-            {/* Grid do Kanban */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {/* Coluna DONE */}
               <div className="space-y-4">
                 <div className="flex items-center justify-between p-2 rounded-lg bg-green-500/10 border border-green-500/20">
                   <div className="flex items-center gap-2">
@@ -498,7 +616,6 @@ docker compose up --build -d`}
                 </div>
               </div>
 
-              {/* Coluna IN PROGRESS */}
               <div className="space-y-4">
                 <div className="flex items-center justify-between p-2 rounded-lg bg-primary/10 border border-primary/20 relative overflow-hidden">
                   <div className="absolute inset-0 bg-linear-to-r from-primary/5 via-primary/10 to-primary/5 animate-pulse" />
@@ -537,14 +654,12 @@ docker compose up --build -d`}
                       </CardContent>
                     </Card>
                   ))}
-                  {/* Card vazio para preencher espaço visual se precisar */}
                   <div className="border-2 border-dashed border-primary/10 rounded-lg p-4 flex items-center justify-center text-muted-foreground/50 text-sm italic h-24">
                     Codando... ☕
                   </div>
                 </div>
               </div>
 
-              {/* Coluna TODO */}
               <div className="space-y-4">
                 <div className="flex items-center justify-between p-2 rounded-lg bg-muted/50 border border-border">
                   <div className="flex items-center gap-2">

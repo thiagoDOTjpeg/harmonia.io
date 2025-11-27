@@ -2,7 +2,7 @@ import { ApiError } from "@/lib/services/api";
 import { authService } from "@/lib/services/auth-service";
 import { useAuthStore } from "@/lib/store/auth-store";
 import { useUserStore } from "@/lib/store/user-store";
-import { LoginDTO, RegisterDTO, RequestResetPasswordDTO, ResetPasswordDTO, SetPasswordDTO } from "@harmonia/shared";
+import { LoginDTO, RegisterDTO, RequestAccessDTO, RequestResetPasswordDTO, ResetPasswordDTO, SetPasswordDTO } from "@harmonia/shared";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useOAuthPopup } from "./use-oauth-popup";
@@ -14,6 +14,24 @@ export function useAuth() {
   const { setUser, clearUser } = useUserStore();
   const { openOAuthPopup, isLoading: oauthLoading } = useOAuthPopup();
   const [isLoading, setIsLoading] = useState(false);
+
+  const requestAccess = async (data: RequestAccessDTO) => {
+    setIsLoading(true);
+
+    try {
+      await authService.requestAccess(data);
+    } catch (error) {
+      toast({
+        variant: 'destructive',
+        title: "Erro ao fazer o pedido de acesso",
+        description: "Ocorreu um erro fazer o pedido de acesso ao sistema",
+        duration: 5000
+      })
+      return { error: true }
+    } finally {
+      setIsLoading(false);
+    }
+  }
 
   const setPassword = async (data: SetPasswordDTO) => {
     setIsLoading(true);
@@ -168,6 +186,7 @@ export function useAuth() {
     register,
     login,
     logout,
+    requestAccess,
     openOAuthPopup,
     setPassword,
     requestResetPassword,

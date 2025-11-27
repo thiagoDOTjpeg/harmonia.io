@@ -1,7 +1,14 @@
-import type { AuthResponse, LoginDTO, RegisterDTO, RequestResetPasswordDTO, ResetPasswordDTO, SetPasswordDTO } from '@harmonia/shared';
+import type { AuthResponse, LoginDTO, RegisterDTO, RequestAccessDTO, RequestResetPasswordDTO, ResetPasswordDTO, SetPasswordDTO } from '@harmonia/shared';
 import { fetchApi } from './api';
 
 export const authService = {
+  requestAccess: async (data: RequestAccessDTO) => {
+    return fetchApi<void>("/auth/request-access", {
+      method: "POST",
+      body: JSON.stringify(data),
+    })
+  },
+
   setPassword: async (data: SetPasswordDTO, token: string) => {
     return fetchApi<void>("/auth/set-password", {
       method: "POST",
