@@ -34,10 +34,4 @@ router.get(
   SyncController.getQueueStats
 );
 
-router.get(
-  '/sync/my-jobs',
-  AuthMiddleware.authenticate,
-  SyncController.getMyJobs
-);
-
 export default router;
