@@ -6,7 +6,7 @@ export class UserMapper {
     return new User(
       prismaUser.id,
       prismaUser.email ?? "",
-      prismaUser.name,
+      prismaUser.name ?? "",
       prismaUser.passwordHash,
       prismaUser.emailVerifiedAt
     );

@@ -15,12 +15,12 @@ export class StartLocalLogin {
 
     const user = await this.userRepository.findByEmail(normalizedEmail);
     if (!user || !user.passwordHash) {
-      throw new InvalidCredentialsError("Email ou senha inválidos.s")
+      throw new InvalidCredentialsError("Email ou senha inválidos")
     }
 
     const isValid = await this.passwordHasher.verify(input.password, user.passwordHash);
     if (!isValid) {
-      throw new InvalidCredentialsError("Email ou senha inválidos.s")
+      throw new InvalidCredentialsError("Email ou senha inválidos")
     }
     const token = this.tokenManager.sign({ sub: user.id });
 

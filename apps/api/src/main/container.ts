@@ -48,7 +48,7 @@ export class Container {
   private static googleClient = new GoogleOAuthClient();
   private static spotifyClient = new SpotifyOAuthClient();
   private static googleMusicClient = new GoogleMusicClient();
-  private static syncQueue = new PlaylistSyncQueue();
+  private static syncQueue: PlaylistSyncQueue;
 
   // Repositories
   private static userRepository = new PrismaUserRepository(prisma);
@@ -141,7 +141,7 @@ export class Container {
 
   static getSyncMusicService() {
     return new SyncMusicService(
-      this.syncQueue,
+      this.getSyncQueue(),
       this.playlistRepository,
       this.AESEncrypter,
       this.tokenSerializer,
@@ -190,6 +190,9 @@ export class Container {
   }
 
   static getSyncQueue() {
+    if (!this.syncQueue) {
+      this.syncQueue = new PlaylistSyncQueue();
+    }
     return this.syncQueue;
   }
 
