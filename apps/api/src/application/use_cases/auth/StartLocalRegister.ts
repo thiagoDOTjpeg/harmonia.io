@@ -23,7 +23,7 @@ export class StartLocalRegister {
 
       const user = await this.userRepository.createFromLocal({
         email: normalizedEmail,
-        name: input.name ?? null,
+        name: input.name ?? "",
         passwordHash,
       });
 
