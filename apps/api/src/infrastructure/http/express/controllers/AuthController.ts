@@ -1,5 +1,5 @@
 import { OAuthParamCallbackSchema, OAuthParamSchema } from '@/schemas/oauth';
-import { AppError, BadRequestError, LoginSchema, OAuthMethod, OAuthQuerySchema, RegisterSchema, RequestResetPasswordDTO, ResetPasswordDTO, SetPasswordDTO, UnathorizedError } from '@harmonia/shared';
+import { AppError, BadRequestError, LoginSchema, OAuthMethod, OAuthQuerySchema, RegisterSchema, RequestAccessSchema, RequestResetPasswordDTO, ResetPasswordDTO, SetPasswordDTO, UnathorizedError } from '@harmonia/shared';
 import { NextFunction, Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 import { Container } from '../../../../main/container';
@@ -8,6 +8,18 @@ import { getOAuthCallbackHTML } from '../views/oauth-callback';
 
 
 export class AuthController {
+  static async requestAccess(req: Request, res: Response, next: NextFunction) {
+    try {
+      const data = RequestAccessSchema.parse(req.body);
+      const provider = Container.getEmailProvider();
+      await provider.sendRequestAccessEmail(data);
+      res.status(200).send();
+    } catch (error) {
+      console.error("Ocorreu um erro ao pedir o email de acesso");
+      next(error);
+    }
+  }
+
   static async startOAuthFlow(req: Request, res: Response, next: NextFunction) {
     try {
       const { provider } = OAuthParamSchema.parse(req.params)

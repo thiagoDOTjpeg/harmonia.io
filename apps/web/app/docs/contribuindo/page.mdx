@@ -1,0 +1,38 @@
+# Guia de Contribuição
+
+Ficamos felizes com seu interesse em contribuir para o Harmonia.io! Siga este guia para configurar seu ambiente e abrir Pull Requests.
+
+## Fluxo de Trabalho: Gitflow
+
+Este projeto utiliza o modelo **Gitflow** para organização dos branches:
+
+- `main`: branch principal, sempre estável.
+- `develop`: branch de desenvolvimento, onde novas features e correções são integradas antes de irem para `main`.
+- `feature/*`: para novas funcionalidades.
+- `fix/*`: para correções de bugs.
+- `hotfix/*`: para correções urgentes diretamente no `main`.
+- `release/*`: para preparação de novas versões.
+
+**Exemplo de criação de branch feature:**
+
+```bash
+git checkout develop
+git checkout -b feature/nome-da-feature
+```
+
+Ao finalizar, abra um Pull Request do branch de feature para `develop`.
+
+## Padrões de Commit
+
+Utilizamos o padrão **Conventional Commits**.
+
+- `feat`: Nova funcionalidade
+- `fix`: Correção de bug
+- `docs`: Alteração apenas na documentação
+- `chore`: Configurações de build, dependências, etc.
+
+Exemplo:
+
+```bash
+git commit -m "feat(sync): adiciona suporte a playlists privadas"
+```

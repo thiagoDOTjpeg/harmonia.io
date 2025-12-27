@@ -1,4 +1,4 @@
-import { AppError } from "@harmonia/shared";
+import { AppError, RequestAccessDTO } from "@harmonia/shared";
 import { createTransport, Transporter } from "nodemailer";
 import { IEmailProvider } from "../ports/email/IEmailProvider";
 
@@ -28,6 +28,22 @@ export class EmailProvider implements IEmailProvider {
     }
     try {
       await this.transporter.sendMail(mailOptions)
+    } catch (error) {
+      console.error("Ocorreu um erro ao enviar o email", error);
+      throw new AppError("Ocorreu um erro ao enviar o email")
+    }
+  }
+
+  async sendRequestAccessEmail(data: RequestAccessDTO): Promise<void> {
+    const mailOptions = {
+      from: process.env.NODEMAILER_EMAIL,
+      to: 'thiago.gritti12@gmail.com',
+      subject: `NOREPLY - Request Access - ${data.name}`,
+      text: `Email: ${data.email}, Razão: ${data.reason}`
+    }
+
+    try {
+      await this.transporter.sendMail(mailOptions);
     } catch (error) {
       console.error("Ocorreu um erro ao enviar o email", error);
       throw new AppError("Ocorreu um erro ao enviar o email")

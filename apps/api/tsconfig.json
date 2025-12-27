@@ -1,8 +1,6 @@
 {
   "extends": "@harmonia/config-typescript/node",
   "compilerOptions": {
-    "module": "CommonJS",
-    "moduleResolution": "node",
     "rootDir": "./src",
     "outDir": "./dist",
     "baseUrl": "./src",

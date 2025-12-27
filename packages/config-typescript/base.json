@@ -2,9 +2,9 @@
   "$schema": "https://json.schemastore.org/tsconfig",
   "compilerOptions": {
     "target": "ES2022",
-    "module": "ESNext",
+    "module": "CommonJS",
     "lib": ["ES2022"],
-    "moduleResolution": "bundler",
+    "moduleResolution": "node",
     "resolveJsonModule": true,
     "allowJs": true,
     "checkJs": false,
@@ -20,5 +20,5 @@
     "isolatedModules": true,
     "allowSyntheticDefaultImports": true
   },
-  "exclude": ["node_modules", "dist", "build"]
+  "exclude": ["node_modules", "dist", "build", "app/docs/**/*.mdx"]
 }

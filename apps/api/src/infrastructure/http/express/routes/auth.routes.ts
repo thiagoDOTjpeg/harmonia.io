@@ -24,4 +24,6 @@ router.post(
   AuthController.localLogin
 );
 
+router.post("/auth/request-access", AuthController.requestAccess);
+
 export default router;

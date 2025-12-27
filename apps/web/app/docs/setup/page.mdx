@@ -1,0 +1,75 @@
+---
+title: Como Rodar o Projeto Harmonia.io
+---
+
+# Como Rodar o Projeto Harmonia.io
+
+Esta seção explica as principais formas de executar o projeto Harmonia.io: via Docker Compose, build manual e ambiente de desenvolvimento.
+
+## 1. Usando Docker Compose
+
+Esta é a forma mais simples e recomendada para rodar todos os serviços integrados (Postgres, Redis, API e Web) com um único comando.
+
+```bash
+docker compose up --build
+```
+
+Isso irá:
+
+- Subir containers do banco de dados Postgres e Redis
+- Construir e iniciar os serviços de API e Web
+- Mapear as portas:
+  - API: http://localhost:3000
+  - Web: http://localhost:3001
+
+Para parar os serviços:
+
+```bash
+docker compose down
+```
+
+## 2. Build Manual
+
+Se preferir rodar localmente sem Docker, siga os passos abaixo:
+
+1. Instale as dependências:
+   ```bash
+   npm install
+   ```
+2. Gere o banco de dados e construa os pacotes compartilhados:
+   ```bash
+   npm run db:generate
+   npm run build:shared
+   ```
+3. Construa a API e o Web:
+   ```bash
+   npm run build:api
+   npm run build:web
+   ```
+4. Inicie a API:
+   ```bash
+   npm run start:api
+   ```
+5. Inicie o Web (em outro terminal):
+   ```bash
+   npm run dev:web
+   ```
+
+## 3. Ambiente de Desenvolvimento
+
+Para desenvolvimento, utilize os comandos Turbo para rodar os serviços em modo watch:
+
+```bash
+npm run dev
+```
+
+Ou para rodar apenas um dos apps:
+
+```bash
+npm run dev:api
+npm run dev:web
+```
+
+---
+
+> Consulte a documentação de cada pacote para detalhes específicos de configuração e scripts.

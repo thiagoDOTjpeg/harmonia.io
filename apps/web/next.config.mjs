@@ -1,3 +1,9 @@
+import nextra from "nextra";
+
+const withNextra = nextra({
+  defaultShowCopyCode: true,
+});
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: false,
@@ -8,6 +14,11 @@ const nextConfig = {
     unoptimized: true,
   },
   output: "standalone",
+  turbopack: {
+    resolveAlias: {
+      "next-mdx-import-source-file": "./mdx-components.tsx",
+    },
+  },
 };
 
-export default nextConfig;
+export default withNextra(nextConfig);

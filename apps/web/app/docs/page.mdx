@@ -1,0 +1,44 @@
+---
+title: Visão Geral do Projeto Harmonia.io
+---
+
+# Visão Geral do Projeto Harmonia.io
+
+O Harmonia.io é uma plataforma inovadora para integração, sincronização e gestão de serviços de música. Projetado com foco em escalabilidade e modularidade, utiliza tecnologias modernas como TypeScript, Node.js, Next.js, Prisma e Docker.
+
+## Estrutura do Projeto
+
+O monorepo é organizado em diretórios principais:
+
+- **apps/**
+  - **api/**: Backend que centraliza regras de negócio, autenticação, integrações externas e persistência de dados.
+  - **web/**: Frontend em Next.js, oferecendo dashboards, autenticação e gerenciamento de playlists com experiência fluida.
+- **packages/**
+  - **shared/**: Tipos, utilitários, schemas e enums compartilhados entre aplicações.
+  - Configurações e utilitários para ESLint, TypeScript e banco de dados (Prisma).
+
+## Principais Tecnologias
+
+- **TypeScript**: Segurança e padronização em todo o código.
+- **Next.js**: SSR, rotas dinâmicas e performance para o frontend.
+- **Node.js**: Backend robusto e scripts utilitários.
+- **Prisma**: ORM para banco de dados relacional.
+- **Docker**: Contêineres para desenvolvimento e deploy simplificados.
+- **TurboRepo**: Gerenciamento eficiente do monorepo.
+
+## Funcionalidades
+
+- Autenticação OAuth e integração com Google, Spotify e outros serviços.
+- Sincronização automática e gestão avançada de playlists.
+- Painel administrativo intuitivo para usuários e administradores.
+- Arquitetura modular, facilitando evolução e manutenção.
+
+## Como Contribuir
+
+1. Instale as dependências com `npm install` na raiz.
+2. Utilize os scripts do `package.json` para rodar, testar e buildar os apps.
+3. Siga as convenções de código e aproveite os pacotes compartilhados para manter a consistência.
+
+---
+
+[Voltar ao topo](#visão-geral-do-projeto-harmoniaio)
