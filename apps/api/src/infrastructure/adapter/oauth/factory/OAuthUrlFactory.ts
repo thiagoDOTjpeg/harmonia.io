@@ -1,6 +1,6 @@
-import { IAuthUrlProviderFactory } from "@/application/ports/factory/IAuthUIrlProviderFactory";
+import { IAuthUrlProviderFactory } from "@/application/ports/factory/IAuthUrlProviderFactory";
 import { IAuthUrlProvider } from "@/application/ports/oauth/IAuthUrlProvider";
-import { ServiceProvider } from "@harmonia/shared";
+import { BadRequestError, ServiceProvider } from "@harmonia/shared";
 
 export class OAuthUrlFactory implements IAuthUrlProviderFactory {
   private readonly authProviders: Record<ServiceProvider, IAuthUrlProvider>;
@@ -10,7 +10,9 @@ export class OAuthUrlFactory implements IAuthUrlProviderFactory {
   }
 
   getStrategy(serviceProvider: ServiceProvider): IAuthUrlProvider {
-    return this.authProviders[serviceProvider];
+    const authProvider = this.authProviders[serviceProvider];
+    if (!authProvider) throw new BadRequestError("Serviço não suportado")
+    return authProvider;
   }
 
 }
