@@ -2,6 +2,7 @@ import { IAuthUrlProviderFactory } from "@/application/ports/factory/IAuthUrlPro
 import { IStateStore } from "@/application/ports/oauth/IStateStore";
 import { OAuthState } from "@/types/oauth/state";
 import { OAuthMethod, ServiceProvider } from "@harmonia/shared";
+import { randomBytes } from "crypto";
 
 export class StartOAuthUseCase {
   constructor(
@@ -11,7 +12,7 @@ export class StartOAuthUseCase {
   async execute(method: OAuthMethod, serviceProvider: ServiceProvider, returnTo?: string, userId?: string) {
     const authProvider = this.authFactory.getStrategy(serviceProvider);
 
-    const state = this.randomState().toString(36).slice(2);
+    const state = this.randomState();
     await this.stateStore.set(state, { method, returnTo, userId }, 600);
 
     const redirectTo = authProvider.buildAuthUrl(state);
@@ -19,9 +20,7 @@ export class StartOAuthUseCase {
   }
 
   private randomState() {
-    const [randomInt] = crypto.getRandomValues(new Uint32Array(1));
-    const maxInt: number = 4294967295;
-
-    return (randomInt / (maxInt - 1));
+    const randomBuffer = randomBytes(32);
+    return randomBuffer.toString("base64url");
   }
 }
