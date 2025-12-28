@@ -37,10 +37,8 @@ export class AuthController {
         const decoded = jwt.verify(stateData.token, process.env.JWT_SECRET || "") as jwt.JwtPayload
         userId = decoded.sub;
       }
-      const client = Container.getOAuthClient(provider)
-      if (!client) throw new AppError("Serviço não suportado")
       const useCase = Container.getStartOAuthUseCase();
-      const { redirectTo } = await useCase.execute(intent, client, returnTo, userId)
+      const { redirectTo } = await useCase.execute(intent, provider, returnTo, userId)
       res.redirect(redirectTo)
     } catch (error) {
       console.error("Ocorreu um erro ao fazer o login OAuth", error);

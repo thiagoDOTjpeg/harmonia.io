@@ -11,6 +11,7 @@ import { SystemClock } from '../infrastructure/time/SystemClock';
 
 // Use cases Auth
 import { IAuthProvider } from '@/application/ports/auth/IAuthProvider';
+import { IAuthUrlProvider } from '@/application/ports/oauth/IAuthUrlProvider';
 import { IOAuthCallbackStrategy } from '@/application/ports/strategy/IOAuthCallbackStrategy';
 import { EmailProvider } from '@/application/providers/EmailProvider';
 import { GoogleAuthProvider } from '@/application/providers/GoogleAuthProvider';
@@ -23,9 +24,10 @@ import { SetPasswordUseCase } from '@/application/use_cases/auth/SetPasswordUseC
 import { StartOAuthUseCase } from '@/application/use_cases/auth/StartOAuthUseCase';
 import { EnsureValidConnectionsUseCase } from '@/application/use_cases/service-connection/EnsureValidConnectionsUseCase';
 import { RevokeServiceConnectionUseCase } from '@/application/use_cases/service-connection/RevokeServiceConnectionUseCase';
-import { GoogleOAuthCallbackStrategy } from '@/infrastructure/adapter/oauth/GoogleOAuthCallbackStrategy';
-import { OAuthCallbackStrategyFactory } from '@/infrastructure/adapter/oauth/OAuthCallbackStrategyFactory';
-import { SpotifyOAuthCallbackStrategy } from '@/infrastructure/adapter/oauth/SpotifyOAuthCallbackStrategy';
+import { OAuthCallbackStrategyFactory } from '@/infrastructure/adapter/oauth/factory/OAuthCallbackStrategyFactory';
+import { OAuthUrlFactory } from '@/infrastructure/adapter/oauth/factory/OAuthUrlFactory';
+import { GoogleOAuthCallbackStrategy } from '@/infrastructure/adapter/oauth/strategy/GoogleOAuthCallbackStrategy';
+import { SpotifyOAuthCallbackStrategy } from '@/infrastructure/adapter/oauth/strategy/SpotifyOAuthCallbackStrategy';
 import { AESSerializer } from '@/infrastructure/adapter/serializer/AESSerializer';
 import { GoogleMusicClient } from '@/infrastructure/client/GoogleMusicClient';
 import { AESTokenEncrypter } from '@/infrastructure/crypto/AESTokenEncrypter';
@@ -95,6 +97,14 @@ export class Container {
       [ServiceProvider.SPOTIFY]: this.getSpotifyStrategy(),
     }
     return new OAuthCallbackStrategyFactory(strategies);
+  }
+
+  static getAuthUrlFactory() {
+    const authUrlProviders: Record<ServiceProvider, IAuthUrlProvider> = {
+      [ServiceProvider.GOOGLE]: this.getGoogleClient(),
+      [ServiceProvider.SPOTIFY]: this.getSpotifyClient()
+    }
+    return new OAuthUrlFactory(authUrlProviders);
   }
 
   // ===== GETTERS - STRATEGIES =====
@@ -245,7 +255,7 @@ export class Container {
   }
 
   static getStartOAuthUseCase() {
-    return new StartOAuthUseCase(this.getOAuthStateStore());
+    return new StartOAuthUseCase(this.getOAuthStateStore(), this.getAuthUrlFactory());
   }
 
   static getHandleOAuthCallback() {
