@@ -1,3 +1,6 @@
+import { IHasher } from "@/application/ports/crypto/IHasher";
+import { ITokenManager } from "@/application/ports/crypto/ITokenManager";
+import { IUserRepository } from "@/application/repositories/IUserRepository";
 import { StartLocalRegister } from "@/application/use_cases/auth/StartLocalRegister";
 import { UserBuilder } from "../builders/UserBuilder";
 import { createMockPasswordHasher } from "../factories/MockPasswordHasherFactory";
@@ -6,12 +9,16 @@ import { createMockUserRepository } from "../factories/MockUserRepositoryFactory
 
 describe("Start Local Register Use Case", () => {
   let useCase: StartLocalRegister;
-  const mockUserRepository = createMockUserRepository;
-  const mockPasswordHasher = createMockPasswordHasher;
-  const mockTokenManager = createMockTokenManager;
+  let mockUserRepository: jest.Mocked<IUserRepository>
+  let mockPasswordHasher: jest.Mocked<IHasher>
+  let mockTokenManager: jest.Mocked<ITokenManager>
 
   beforeEach(() => {
     jest.clearAllMocks();
+
+    mockUserRepository = createMockUserRepository();
+    mockPasswordHasher = createMockPasswordHasher();
+    mockTokenManager = createMockTokenManager();
 
     useCase = new StartLocalRegister(mockUserRepository, mockPasswordHasher, mockTokenManager);
   })
