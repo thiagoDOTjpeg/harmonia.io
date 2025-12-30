@@ -1,7 +1,6 @@
 import { IStateStore } from "@/application/ports/oauth/IStateStore";
-import { OAuthState } from "@/types/oauth/state";
 
-export const createMockOAuthStateStore = (): jest.Mocked<IStateStore<OAuthState>> => ({
+export const createMockStateStore = <T>(): jest.Mocked<IStateStore<T>> => ({
   get: jest.fn(),
   set: jest.fn(),
   delete: jest.fn()
