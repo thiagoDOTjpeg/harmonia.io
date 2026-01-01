@@ -2,9 +2,9 @@ import { IHasher } from "@/application/ports/crypto/IHasher";
 import { IUserRepository } from "@/application/repositories/IUserRepository";
 import { SetPasswordUseCase } from "@/application/use_cases/auth/SetPasswordUseCase";
 import { AppError } from "@harmonia/shared";
-import { UserBuilder } from "../builders/UserBuilder";
-import { createMockPasswordHasher } from "../factories/MockPasswordHasherFactory";
-import { createMockUserRepository } from "../factories/MockUserRepositoryFactory";
+import { UserBuilder } from "../../builders/UserBuilder";
+import { createMockHasher } from "../../factories/MockPasswordHasherFactory";
+import { createMockUserRepository } from "../../factories/MockUserRepositoryFactory";
 
 describe("SetPasswordUseCase", () => {
   let useCase: SetPasswordUseCase;
@@ -15,7 +15,7 @@ describe("SetPasswordUseCase", () => {
     jest.clearAllMocks();
 
     mockUserRepository = createMockUserRepository()
-    mockPasswordHasher = createMockPasswordHasher()
+    mockPasswordHasher = createMockHasher()
 
     useCase = new SetPasswordUseCase(mockUserRepository, mockPasswordHasher);
   })
@@ -23,7 +23,7 @@ describe("SetPasswordUseCase", () => {
   it("should persist new password on the database", async () => {
     const passwordHash = "senha-haseheada"
     const newPassword = "senha-nova"
-    mockPasswordHasher.hash.mockReturnValue(Promise.resolve(passwordHash));
+    mockPasswordHasher.hash.mockResolvedValue(passwordHash);
     const mockUser = new UserBuilder().withoutPassword().build();
 
     await useCase.execute(mockUser, { newPassword });

@@ -4,8 +4,8 @@ import { IStateStore } from "@/application/ports/oauth/IStateStore";
 import { StartOAuthUseCase } from "@/application/use_cases/auth/StartOAuthUseCase";
 import { OAuthState } from "@/types/oauth/state";
 import { BadRequestError, OAuthMethod, ServiceProvider } from "@harmonia/shared";
-import { createMockAuthUrlFactory, createMockAuthUrlProvider } from "../factories/MockAuthUrlProviderFactory";
-import { createMockOAuthStateStore } from "../factories/MockStateStoreFactory";
+import { createMockAuthUrlFactory, createMockAuthUrlProvider } from "../../factories/MockAuthUrlProviderFactory";
+import { createMockStateStore } from "../../factories/MockStateStoreFactory";
 
 jest.mock("crypto", () => ({
   randomBytes: jest.fn().mockReturnValue(Buffer.from("mocked-entropy-for-test-32b")),
@@ -21,7 +21,7 @@ describe("Start OAuth Use Case", () => {
   beforeEach(() => {
     jest.clearAllMocks();
 
-    mockOAuthStateStore = createMockOAuthStateStore();
+    mockOAuthStateStore = createMockStateStore<OAuthState>();
     MockAuthUrlProviderFactory = createMockAuthUrlFactory();
     mockAuthUrlProvider = createMockAuthUrlProvider();
 
