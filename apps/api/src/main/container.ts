@@ -17,7 +17,7 @@ import { EmailProvider } from '@/application/providers/EmailProvider';
 import { GoogleAuthProvider } from '@/application/providers/GoogleAuthProvider';
 import { SpotifyAuthProvider } from '@/application/providers/SpotifyAuthProvider';
 import { SyncMusicService } from '@/application/services/SyncMusicService';
-import { HandleOAuthCallback } from '@/application/use_cases/auth/HandleOAuthCallback';
+import { HandleOAuthCallbackUseCase } from '@/application/use_cases/auth/HandleOAuthCallbackUseCase';
 import { RequestPasswordResetUseCase } from '@/application/use_cases/auth/RequestPasswordResetUseCase';
 import { ResetPasswordUseCase } from '@/application/use_cases/auth/ResetPasswordUseCase';
 import { SetPasswordUseCase } from '@/application/use_cases/auth/SetPasswordUseCase';
@@ -259,7 +259,7 @@ export class Container {
   }
 
   static getHandleOAuthCallback() {
-    return new HandleOAuthCallback(this.getOAuthStateStore(), this.getStrategyFactory())
+    return new HandleOAuthCallbackUseCase(this.getOAuthStateStore(), this.getStrategyFactory())
   }
 
   static getStartLocalLogin() {
