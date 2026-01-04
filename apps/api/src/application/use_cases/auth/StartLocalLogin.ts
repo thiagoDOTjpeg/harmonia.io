@@ -14,11 +14,11 @@ export class StartLocalLogin {
     const normalizedEmail = input.email.trim().toLowerCase();
 
     const user = await this.userRepository.findByEmail(normalizedEmail);
-    if (!user || !user.passwordHash) {
+    if (!user || !user.hasPassword()) {
       throw new InvalidCredentialsError("Email ou senha inválidos")
     }
 
-    const isValid = await this.passwordHasher.verify(input.password, user.passwordHash);
+    const isValid = await user.verifyPassword(input.password, this.passwordHasher);
     if (!isValid) {
       throw new InvalidCredentialsError("Email ou senha inválidos")
     }
