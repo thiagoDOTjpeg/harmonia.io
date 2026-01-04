@@ -1,5 +1,7 @@
 import { IHasher } from "@/application/ports/crypto/IHasher";
+import { UserProps } from "@/types/entity/user";
 import { AppError } from "@harmonia/shared";
+import { v4 } from "uuid";
 import { Email } from "../value-objects/Email";
 
 export class User {
@@ -10,6 +12,36 @@ export class User {
     private _passwordHash: string | null = null,
     private _emailVerifiedAt: Date | null,
   ) { }
+
+  get id(): string { return this._id; }
+  get email(): string { return this._email.getValue(); }
+  get name(): string { return this._name; }
+  get isVerified(): boolean { return this._emailVerifiedAt !== null; }
+
+  static create(props: { name: string, email: string, passwordHash: string }): User {
+    return new User(
+      v4(),
+      Email.create(props.email),
+      props.name,
+      props.passwordHash,
+      null
+    );
+  }
+
+
+  /**
+   * Método exclusivo para Camada de Persistência/Mappers.
+   * Quebra o encapsulamento de forma controlada apenas para I/O.
+   */
+  public toPersistence(): UserProps {
+    return {
+      id: this._id,
+      email: this._email.getValue(),
+      name: this._name,
+      passwordHash: this._passwordHash,
+      emailVerifiedAt: this._emailVerifiedAt,
+    };
+  }
 
   static reconstitute(props: {
     id: string;
@@ -27,10 +59,9 @@ export class User {
     );
   }
 
-  get id(): string { return this._id; }
-  get email(): string { return this._email.getValue(); }
-  get name(): string { return this._name; }
-  get isVerified(): boolean { return this._emailVerifiedAt !== null; }
+  hasPassword(): boolean {
+    return this._passwordHash !== null;
+  }
 
   verifyEmail(): void {
     if (this._emailVerifiedAt) {
@@ -50,8 +81,7 @@ export class User {
     this._emailVerifiedAt = null;
   }
 
-  hasPassword(): boolean {
-    return this._passwordHash !== null;
+  changePassword(passwordHash: string): void {
+    this._passwordHash = passwordHash;
   }
-
 }
