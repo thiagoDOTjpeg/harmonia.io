@@ -182,8 +182,6 @@ export class GoogleOAuthCallbackStrategy implements IOAuthCallbackStrategy {
       providerAccountId: exchangeData.profile.sub,
       accessToken: this.tokenSerializer.serialize(encryptedAccessToken),
       refreshToken: encryptedRefreshToken ? this.tokenSerializer.serialize(encryptedRefreshToken) : null,
-      accessTokenIv: encryptedAccessToken.iv,
-      refreshTokenIv: encryptedRefreshToken ? encryptedRefreshToken.iv : null,
       expiresAt,
       provider: ServiceProvider.GOOGLE as unknown as PrismaServiceProvider,
       scopes: SCOPES,
@@ -201,8 +199,6 @@ export class GoogleOAuthCallbackStrategy implements IOAuthCallbackStrategy {
     const updatedServiceConnection = await this.serviceConnection.updateServiceConnection({
       accessToken: this.tokenSerializer.serialize(encryptedAccessToken),
       refreshToken: encryptedRefreshToken ? this.tokenSerializer.serialize(encryptedRefreshToken) : Prisma.skip,
-      accessTokenIv: encryptedAccessToken.iv,
-      refreshTokenIv: encryptedRefreshToken ? encryptedRefreshToken.iv : Prisma.skip,
       expiresAt,
       updatedAt: new Date(),
       metadata: {
