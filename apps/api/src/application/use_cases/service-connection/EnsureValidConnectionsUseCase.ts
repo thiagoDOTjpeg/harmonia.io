@@ -42,8 +42,6 @@ export class EnsureValidConnectionsUseCase {
           const savedServiceConnection = await this.serviceConnectionRepository.updateServiceConnection({
             accessToken: this.tokenSerializer.serialize(encryptedAccessToken),
             refreshToken: encryptedRefreshToken ? this.tokenSerializer.serialize(encryptedRefreshToken) : Prisma.skip,
-            accessTokenIv: encryptedAccessToken.iv,
-            refreshTokenIv: encryptedRefreshToken ? encryptedRefreshToken.iv : Prisma.skip,
             expiresAt,
             updatedAt: new Date(),
           }, service.providerAccountId)
