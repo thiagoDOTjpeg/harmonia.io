@@ -24,8 +24,9 @@ describe("Start Local Register Use Case", () => {
   })
   it("should successfully register a user and return token and user info", async () => {
     const validUser = new UserBuilder().build();
+    const passwordHash = "senha-hasheada"
     mockUserRepository.createFromLocal.mockResolvedValue(validUser);
-    mockPasswordHasher.hash.mockResolvedValue(validUser.passwordHash!);
+    mockPasswordHasher.hash.mockResolvedValue(passwordHash);
     mockTokenManager.sign.mockReturnValue("tokencriptografado");
 
     const payload = { email: validUser.email, password: "teste123", name: validUser.name };
@@ -39,7 +40,7 @@ describe("Start Local Register Use Case", () => {
     expect(mockUserRepository.createFromLocal).toHaveBeenCalledWith({
       email: payload.email,
       name: payload.name,
-      passwordHash: validUser.passwordHash,
+      passwordHash,
     });
   });
 
