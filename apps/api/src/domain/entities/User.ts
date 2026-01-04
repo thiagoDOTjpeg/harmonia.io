@@ -28,7 +28,6 @@ export class User {
     );
   }
 
-
   /**
    * Método exclusivo para Camada de Persistência/Mappers.
    * Quebra o encapsulamento de forma controlada apenas para I/O.
