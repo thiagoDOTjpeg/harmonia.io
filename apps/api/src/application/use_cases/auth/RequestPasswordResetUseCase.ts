@@ -15,7 +15,7 @@ export class RequestPasswordResetUseCase {
     const user = await this.userRepository.findByEmail(data.email);
     if (!user) return null;
     const randomCode = Math.floor(Math.random() * (999999 - 100000 + 1)) + 100000;
-    await this.redisStore.set(user?.id, { randomCode }, 600);
+    await this.redisStore.set(user.id, { randomCode }, 600);
     await this.emailProvider.sendResetPasswordEmail(user.email, randomCode);
   }
 }

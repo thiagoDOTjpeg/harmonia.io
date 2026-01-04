@@ -10,7 +10,7 @@ export class SetPasswordUseCase {
   ) { }
 
   async execute(user: User, data: SetPasswordDTO) {
-    if (user.passwordHash) throw new AppError("Caso tenha esquecido a senha, vá para o formulário de esqueci minha senha");
+    if (user.hasPassword()) throw new AppError("Caso tenha esquecido a senha, vá para o formulário de esqueci minha senha");
     const passwordHash = await this.hasher.hash(data.newPassword);
     await this.userRepository.update(user.id, { passwordHash });
   }

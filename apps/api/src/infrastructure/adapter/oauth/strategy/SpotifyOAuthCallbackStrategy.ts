@@ -9,19 +9,20 @@ import { IUserRepository } from "@/application/repositories/IUserRepository";
 import { ServiceConnection } from "@/domain/entities/ServiceConnection";
 import { User } from "@/domain/entities/User";
 import { TokenEncrypted } from "@/types/encrypter";
-import { GoogleOAuthResult } from "@/types/oauth/results";
+import { SpotifyOAuthResult } from "@/types/oauth/results";
 import { OAuthState } from "@/types/oauth/state";
 import { AppError, AuthResponse, InvalidCredentialsError, NotFoundError, OAuthMethod, ServiceProvider, UnathorizedError } from "@harmonia/shared";
 import { Prisma, ServiceProvider as PrismaServiceProvider } from "@prisma/client";
 
 const SCOPES = [
-  'openid',
-  'email',
-  'profile',
-  'https://www.googleapis.com/auth/youtube.readonly',
+  'playlist-read-private',
+  'playlist-read-collaborative',
+  'playlist-modify-private',
+  'playlist-modify-public',
+  'user-read-email',
 ].join(' ');
 
-export class GoogleOAuthCallbackStrategy implements IOAuthCallbackStrategy {
+export class SpotifyOAuthCallbackStrategy implements IOAuthCallbackStrategy {
   constructor(
     private readonly users: IUserRepository,
     private readonly serviceConnection: IServiceConnectionRepository,
@@ -29,59 +30,58 @@ export class GoogleOAuthCallbackStrategy implements IOAuthCallbackStrategy {
     private readonly clock: IClock,
     private readonly aesEncrypter: IEncryptor,
     private readonly tokenSerializer: ITokenSerializer<TokenEncrypted>,
-    private readonly google: ICodeExchanger<GoogleOAuthResult>,
+    private readonly spotify: ICodeExchanger<SpotifyOAuthResult>,
 
-  ) { }
-
+  ) {
+  }
   async processCallback(
     code: string,
     OAuthState: OAuthState,
     loggedUserId?: string
   ): Promise<AuthResponse> {
-    const exchangeData = await this.google.exchangeCode(code);;
+    const exchangeData = await this.spotify.exchangeCode(code);
     const { method, returnTo } = OAuthState;
 
     const expiresAt = new Date(
       this.clock.now().getTime() + Math.max(exchangeData.tokens.expires_in - 60, 0) * 1000
     );
-    if (!exchangeData.profile.email || !exchangeData.profile.name) {
+
+    if (!exchangeData.profile.email || !exchangeData.profile.display_name) {
       throw new InvalidCredentialsError("Não foi possível obter/verificar o email/nome.")
     }
-    const normalizedEmail = exchangeData.profile.email?.trim().toLowerCase();
 
+    const normalizedEmail = exchangeData.profile.email?.trim().toLowerCase();
 
     switch (method) {
       case OAuthMethod.register:
-        return this.handleRegister(exchangeData, expiresAt, normalizedEmail, returnTo);
-
+        return this.handleRegister(exchangeData, expiresAt, normalizedEmail, returnTo)
       case OAuthMethod.login:
-        return this.handleLogin(exchangeData, expiresAt, normalizedEmail, returnTo);
-
+        return this.handleLogin(exchangeData, expiresAt, normalizedEmail, returnTo)
       case OAuthMethod.connect:
-        return this.handleConnect(exchangeData, expiresAt, normalizedEmail, returnTo, loggedUserId);
+        return this.handleConnect(exchangeData, expiresAt, normalizedEmail, returnTo, loggedUserId)
       default:
         throw new AppError("Metodo não suportado")
     }
   }
 
   private async handleRegister(
-    exchangeData: GoogleOAuthResult,
+    exchangeData: SpotifyOAuthResult,
     expiresAt: Date,
     email: string,
     returnTo?: string
   ): Promise<AuthResponse> {
 
-
     const existingUser = await this.users.findByEmail(email);
     if (existingUser) {
       throw new InvalidCredentialsError("Já existe um usuário cadastrado com esses dados. Faça login e conecte o serviço")
     }
+
     const user = await this.users.createFromLocal({
       email: email,
-      name: exchangeData?.profile?.name || "NoNameService",
+      name: exchangeData?.profile?.display_name || "NoNameService",
     })
 
-    const createdServiceConnection = await this.createServiceConnection(user, exchangeData, expiresAt)
+    const createdServiceConnection = await this.createServiceConnection(user, exchangeData, expiresAt);
     const jwt = this.tokens.sign({ sub: user.id });
     return {
       token: jwt,
@@ -97,7 +97,7 @@ export class GoogleOAuthCallbackStrategy implements IOAuthCallbackStrategy {
   }
 
   private async handleLogin(
-    exchangeData: GoogleOAuthResult,
+    exchangeData: SpotifyOAuthResult,
     expiresAt: Date,
     email: string,
     returnTo?: string
@@ -105,13 +105,14 @@ export class GoogleOAuthCallbackStrategy implements IOAuthCallbackStrategy {
     const user = await this.users.findByEmail(email);
     if (!user) {
       throw new NotFoundError("Nenhum usuário encontrado, faça o registro")
+
     }
 
     let serviceConnection: ServiceConnection;
-    const existingServiceConnection = await this.serviceConnection.findByServiceId(exchangeData.profile.sub)
+    const existingServiceConnection = await this.serviceConnection.findByServiceId(exchangeData.profile.id)
     if (existingServiceConnection) {
       if (existingServiceConnection.userId !== user.id) {
-        throw new InvalidCredentialsError("Esta conta Google já está vinculada.")
+        throw new InvalidCredentialsError("Esta conta Spotify já está vinculada.")
       }
       serviceConnection = await this.updateServiceConnection(user, exchangeData, expiresAt);
     } else {
@@ -133,7 +134,7 @@ export class GoogleOAuthCallbackStrategy implements IOAuthCallbackStrategy {
   }
 
   private async handleConnect(
-    exchangeData: GoogleOAuthResult,
+    exchangeData: SpotifyOAuthResult,
     expiresAt: Date,
     email: string,
     returnTo?: string,
@@ -148,17 +149,16 @@ export class GoogleOAuthCallbackStrategy implements IOAuthCallbackStrategy {
     }
 
     let serviceConnection: ServiceConnection;
-    const existingServiceConnection = await this.serviceConnection.findByServiceId(exchangeData.profile.sub)
+    const existingServiceConnection = await this.serviceConnection.findByServiceId(exchangeData.profile.id)
 
     if (existingServiceConnection) {
       if (existingServiceConnection.userId !== user.id) {
-        throw new InvalidCredentialsError("Esta conta Google já está vinculada.")
+        throw new InvalidCredentialsError("Esta conta Spotify já está vinculada.")
       }
       serviceConnection = await this.updateServiceConnection(user, exchangeData, expiresAt);
     } else {
       serviceConnection = await this.createServiceConnection(user, exchangeData, expiresAt);
     }
-
     const jwt = this.tokens.sign({ sub: user.id });
     return {
       token: jwt,
@@ -173,42 +173,32 @@ export class GoogleOAuthCallbackStrategy implements IOAuthCallbackStrategy {
     }
   }
 
-  private async createServiceConnection(user: User, exchangeData: GoogleOAuthResult, expiresAt: Date): Promise<ServiceConnection> {
+  private async createServiceConnection(user: User, exchangeData: SpotifyOAuthResult, expiresAt: Date): Promise<ServiceConnection> {
     const encryptedAccessToken = this.aesEncrypter.encrypt(exchangeData.tokens.access_token);
     const encryptedRefreshToken = exchangeData.tokens.refresh_token ? this.aesEncrypter.encrypt(exchangeData?.tokens?.refresh_token) : null
 
     const createdServiceConnection = await this.serviceConnection.createServiceConnection({
       userId: user?.id,
-      providerAccountId: exchangeData.profile.sub,
+      providerAccountId: exchangeData.profile.id,
       accessToken: this.tokenSerializer.serialize(encryptedAccessToken),
       refreshToken: encryptedRefreshToken ? this.tokenSerializer.serialize(encryptedRefreshToken) : null,
-      accessTokenIv: encryptedAccessToken.iv,
-      refreshTokenIv: encryptedRefreshToken ? encryptedRefreshToken.iv : null,
       expiresAt,
-      provider: ServiceProvider.GOOGLE as unknown as PrismaServiceProvider,
+      provider: ServiceProvider.SPOTIFY as unknown as PrismaServiceProvider,
       scopes: SCOPES,
       email: user.email,
-      metadata: {
-        youtubeChannelId: exchangeData?.youtubeChannelId || ""
-      }
     });
     return createdServiceConnection;
   }
-  private async updateServiceConnection(user: User, exchangeData: GoogleOAuthResult, expiresAt: Date): Promise<ServiceConnection> {
+  private async updateServiceConnection(user: User, exchangeData: SpotifyOAuthResult, expiresAt: Date): Promise<ServiceConnection> {
     const encryptedAccessToken = this.aesEncrypter.encrypt(exchangeData.tokens.access_token);
     const encryptedRefreshToken = exchangeData.tokens.refresh_token ? this.aesEncrypter.encrypt(exchangeData?.tokens?.refresh_token) : undefined
 
     const updatedServiceConnection = await this.serviceConnection.updateServiceConnection({
       accessToken: this.tokenSerializer.serialize(encryptedAccessToken),
       refreshToken: encryptedRefreshToken ? this.tokenSerializer.serialize(encryptedRefreshToken) : Prisma.skip,
-      accessTokenIv: encryptedAccessToken.iv,
-      refreshTokenIv: encryptedRefreshToken ? encryptedRefreshToken.iv : Prisma.skip,
       expiresAt,
       updatedAt: new Date(),
-      metadata: {
-        youtubeChannelId: exchangeData.youtubeChannelId
-      }
-    }, exchangeData.profile.sub)
+    }, exchangeData.profile.id)
     return updatedServiceConnection;
   }
 }

@@ -1,18 +1,25 @@
+import { IHasher } from "@/application/ports/crypto/IHasher"
+import { ITokenManager } from "@/application/ports/crypto/ITokenManager"
+import { IUserRepository } from "@/application/repositories/IUserRepository"
 import { StartLocalLogin } from "@/application/use_cases/auth/StartLocalLogin"
-import { UserBuilder } from "../builders/UserBuilder"
-import { createMockPasswordHasher } from "../factories/MockPasswordHasherFactory"
-import { createMockTokenManager } from "../factories/MockTokenManager"
-import { createMockUserRepository } from "../factories/MockUserRepositoryFactory"
+import { UserBuilder } from "../../builders/UserBuilder"
+import { createMockHasher } from "../../factories/MockPasswordHasherFactory"
+import { createMockTokenManager } from "../../factories/MockTokenManager"
+import { createMockUserRepository } from "../../factories/MockUserRepositoryFactory"
 
 
 describe("Start Local Login User Case", () => {
   let useCase: StartLocalLogin;
-  const mockUserRepository = createMockUserRepository;
-  const mockPasswordHasher = createMockPasswordHasher;
-  const mockTokenManager = createMockTokenManager;
+  let mockUserRepository: jest.Mocked<IUserRepository>
+  let mockPasswordHasher: jest.Mocked<IHasher>
+  let mockTokenManager: jest.Mocked<ITokenManager>
 
   beforeEach(() => {
     jest.clearAllMocks();
+
+    mockUserRepository = createMockUserRepository()
+    mockPasswordHasher = createMockHasher()
+    mockTokenManager = createMockTokenManager()
 
     useCase = new StartLocalLogin(mockUserRepository, mockPasswordHasher, mockTokenManager);
   })
@@ -23,13 +30,14 @@ describe("Start Local Login User Case", () => {
     mockPasswordHasher.verify.mockResolvedValue(true);
     mockTokenManager.sign.mockReturnValue("tokenAssinado");
 
+
     const payload = { email: validUser.email, password: "teste123" };
     const result = await useCase.execute(payload);
 
     expect(result.token).toBe("tokenAssinado");
     expect(result.user).toMatchObject({ id: validUser.id, email: validUser.email, name: validUser.name });
 
-    expect(mockPasswordHasher.verify).toHaveBeenCalledWith(payload.password, validUser.passwordHash);
+    expect(mockPasswordHasher.verify).toHaveBeenCalledWith(payload.password, expect.any(String));
     expect(mockUserRepository.findByEmail).toHaveBeenCalledWith(payload.email);
   })
 

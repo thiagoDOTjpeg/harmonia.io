@@ -48,8 +48,6 @@ export class ServiceConnectionMapper {
       scopes: serviceConnection.scopes,
       updatedAt: serviceConnection.updatedAt,
       userId: serviceConnection.userId,
-      accessTokenIv: "",
-      refreshTokenIv: ""
     }
   }
 }

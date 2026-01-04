@@ -4,8 +4,8 @@ CREATE TYPE "ServiceProvider" AS ENUM ('google', 'spotify');
 -- CreateTable
 CREATE TABLE "users" (
     "id" TEXT NOT NULL,
-    "email" TEXT,
-    "name" TEXT,
+    "email" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
     "password_hash" TEXT,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,

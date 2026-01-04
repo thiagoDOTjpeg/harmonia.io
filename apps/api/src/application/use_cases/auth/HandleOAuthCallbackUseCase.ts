@@ -1,10 +1,10 @@
 import { IStateStore } from "@/application/ports/oauth/IStateStore";
-import { OAuthCallbackStrategyFactory } from "@/infrastructure/adapter/oauth/OAuthCallbackStrategyFactory";
+import { OAuthCallbackStrategyFactory } from "@/infrastructure/adapter/oauth/factory/OAuthCallbackStrategyFactory";
 import { OAuthCallbackData } from "@/types/oauth/callback";
 import { OAuthState } from "@/types/oauth/state";
 import { NotFoundError, OAuthMethod, ServiceProvider } from "@harmonia/shared";
 
-export class HandleOAuthCallback {
+export class HandleOAuthCallbackUseCase {
   constructor(
     private readonly stateStore: IStateStore<OAuthState>,
     private readonly strategyFactory: OAuthCallbackStrategyFactory
@@ -16,7 +16,7 @@ export class HandleOAuthCallback {
     if (stateData.method === OAuthMethod.connect && !stateData.userId) {
       throw new NotFoundError("Nenhum usuário conectado")
     }
-    this.stateStore.delete(input.state);
+    await this.stateStore.delete(input.state);
 
     const strategy = this.strategyFactory.create(provider);
 

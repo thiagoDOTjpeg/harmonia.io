@@ -23,15 +23,13 @@ export class PrismaUserRepository implements IUserRepository {
   }
 
   async getUserSummary(userId: string): Promise<UserSummary | null> {
-    const summary = await this.prisma.userSummary.findUnique({
-      where: { userId: userId }
-    });
+    const summary = await this.prisma.userSummary.findFirst({ where: { userId } });
     return summary ? UserSummaryMapper.toDomain(summary) : null;
   }
 
   async createFromLocal(input: {
     email: string;
-    name: string | null;
+    name: string;
     passwordHash?: string;
   }): Promise<User> {
     const user = await this.prisma.user.create({
@@ -46,13 +44,11 @@ export class PrismaUserRepository implements IUserRepository {
 
   async update(userId: string, userData: Prisma.UserUpdateInput): Promise<User> {
     const updatedUser = await this.prisma.user.update({
-      where: {
-        id: userId
-      },
+      where: { id: userId },
       data: userData
-    }) as User
+    });
 
-    return updatedUser;
+    return UserMapper.toDomain(updatedUser);
   }
 
 }

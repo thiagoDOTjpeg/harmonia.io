@@ -1,24 +1,32 @@
+import { IHasher } from "@/application/ports/crypto/IHasher";
+import { ITokenManager } from "@/application/ports/crypto/ITokenManager";
+import { IUserRepository } from "@/application/repositories/IUserRepository";
 import { StartLocalRegister } from "@/application/use_cases/auth/StartLocalRegister";
-import { UserBuilder } from "../builders/UserBuilder";
-import { createMockPasswordHasher } from "../factories/MockPasswordHasherFactory";
-import { createMockTokenManager } from "../factories/MockTokenManager";
-import { createMockUserRepository } from "../factories/MockUserRepositoryFactory";
+import { UserBuilder } from "../../builders/UserBuilder";
+import { createMockHasher } from "../../factories/MockPasswordHasherFactory";
+import { createMockTokenManager } from "../../factories/MockTokenManager";
+import { createMockUserRepository } from "../../factories/MockUserRepositoryFactory";
 
 describe("Start Local Register Use Case", () => {
   let useCase: StartLocalRegister;
-  const mockUserRepository = createMockUserRepository;
-  const mockPasswordHasher = createMockPasswordHasher;
-  const mockTokenManager = createMockTokenManager;
+  let mockUserRepository: jest.Mocked<IUserRepository>
+  let mockPasswordHasher: jest.Mocked<IHasher>
+  let mockTokenManager: jest.Mocked<ITokenManager>
 
   beforeEach(() => {
     jest.clearAllMocks();
+
+    mockUserRepository = createMockUserRepository();
+    mockPasswordHasher = createMockHasher();
+    mockTokenManager = createMockTokenManager();
 
     useCase = new StartLocalRegister(mockUserRepository, mockPasswordHasher, mockTokenManager);
   })
   it("should successfully register a user and return token and user info", async () => {
     const validUser = new UserBuilder().build();
+    const passwordHash = "senha-hasheada"
     mockUserRepository.createFromLocal.mockResolvedValue(validUser);
-    mockPasswordHasher.hash.mockResolvedValue(validUser.passwordHash!);
+    mockPasswordHasher.hash.mockResolvedValue(passwordHash);
     mockTokenManager.sign.mockReturnValue("tokencriptografado");
 
     const payload = { email: validUser.email, password: "teste123", name: validUser.name };
@@ -32,7 +40,7 @@ describe("Start Local Register Use Case", () => {
     expect(mockUserRepository.createFromLocal).toHaveBeenCalledWith({
       email: payload.email,
       name: payload.name,
-      passwordHash: validUser.passwordHash,
+      passwordHash,
     });
   });
 
