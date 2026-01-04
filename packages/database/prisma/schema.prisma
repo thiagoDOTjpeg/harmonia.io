@@ -1,6 +1,6 @@
 generator client {
   provider = "prisma-client-js"
-  previewFeatures = ["strictUndefinedChecks"]
+  previewFeatures = ["strictUndefinedChecks", "views"]
 }
 
 datasource db {
@@ -10,8 +10,8 @@ datasource db {
 
 model User {
   id                  String              @id @default(uuid())
-  email               String?             @unique
-  name                String?
+  email               String              @unique
+  name                String
   passwordHash        String?             @map("password_hash")
   createdAt           DateTime            @default(now()) @map("created_at")
   updatedAt           DateTime            @updatedAt @map("updated_at")
@@ -84,8 +84,8 @@ model PlaylistTrack {
   @@map("playlist_tracks")
 }
 
-model UserSummary {
-  userId                      String             @id @map("user_id")
+view UserSummary {
+  userId                      String             @map("user_id")
   email                       String
   name                        String?
   userCreatedAt               DateTime           @map("user_created_at")
@@ -102,8 +102,8 @@ model UserSummary {
   @@map("user_summary")
 }
 
-model UserPlaylists {
-  id                String    @id
+view UserPlaylists {
+  id                String    
   userId            String    @map("user_id")
   youtubePlaylistId String    @map("youtube_playlist_id")
   youtubeTitle      String?   @map("youtube_title")
@@ -131,8 +131,6 @@ model ServiceConnection {
   email              String?
   accessToken        String          @map("access_token") @db.Text
   refreshToken       String?         @map("refresh_token") @db.Text
-  accessTokenIv      String          @map("access_token_iv") @db.Text
-  refreshTokenIv     String?         @map("refresh_token_iv") @db.Text
   expiresAt          DateTime?       @map("expires_at")
   scopes             String          @db.Text
   metadata           Json?
