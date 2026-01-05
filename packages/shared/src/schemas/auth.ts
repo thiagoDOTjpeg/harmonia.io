@@ -6,7 +6,7 @@ const base64Regex = /^[A-Za-z0-9+/]*={0,2}$/;
 export const RegisterSchema = z.object({
   email: z.string().email('Email inválido').toLowerCase(),
   password: z.string().min(8, 'Senha deve ter no mínimo 8 caracteres'),
-  name: z.string().min(2, 'Nome deve ter no mínimo 2 caracteres').optional(),
+  name: z.string().min(2, 'Nome deve ter no mínimo 2 caracteres'),
 });
 
 export const LoginSchema = z.object({

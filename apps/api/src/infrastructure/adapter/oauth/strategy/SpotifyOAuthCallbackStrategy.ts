@@ -182,8 +182,6 @@ export class SpotifyOAuthCallbackStrategy implements IOAuthCallbackStrategy {
       providerAccountId: exchangeData.profile.id,
       accessToken: this.tokenSerializer.serialize(encryptedAccessToken),
       refreshToken: encryptedRefreshToken ? this.tokenSerializer.serialize(encryptedRefreshToken) : null,
-      accessTokenIv: encryptedAccessToken.iv,
-      refreshTokenIv: encryptedRefreshToken ? encryptedRefreshToken.iv : null,
       expiresAt,
       provider: ServiceProvider.SPOTIFY as unknown as PrismaServiceProvider,
       scopes: SCOPES,
@@ -198,8 +196,6 @@ export class SpotifyOAuthCallbackStrategy implements IOAuthCallbackStrategy {
     const updatedServiceConnection = await this.serviceConnection.updateServiceConnection({
       accessToken: this.tokenSerializer.serialize(encryptedAccessToken),
       refreshToken: encryptedRefreshToken ? this.tokenSerializer.serialize(encryptedRefreshToken) : Prisma.skip,
-      accessTokenIv: encryptedAccessToken.iv,
-      refreshTokenIv: encryptedRefreshToken ? encryptedRefreshToken.iv : Prisma.skip,
       expiresAt,
       updatedAt: new Date(),
     }, exchangeData.profile.id)

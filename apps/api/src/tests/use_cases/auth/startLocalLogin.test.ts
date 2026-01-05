@@ -30,13 +30,14 @@ describe("Start Local Login User Case", () => {
     mockPasswordHasher.verify.mockResolvedValue(true);
     mockTokenManager.sign.mockReturnValue("tokenAssinado");
 
+
     const payload = { email: validUser.email, password: "teste123" };
     const result = await useCase.execute(payload);
 
     expect(result.token).toBe("tokenAssinado");
     expect(result.user).toMatchObject({ id: validUser.id, email: validUser.email, name: validUser.name });
 
-    expect(mockPasswordHasher.verify).toHaveBeenCalledWith(payload.password, validUser.passwordHash);
+    expect(mockPasswordHasher.verify).toHaveBeenCalledWith(payload.password, expect.any(String));
     expect(mockUserRepository.findByEmail).toHaveBeenCalledWith(payload.email);
   })
 

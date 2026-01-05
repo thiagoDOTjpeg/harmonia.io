@@ -1,4 +1,5 @@
 import { IHasher } from '@/application/ports/crypto/IHasher';
+import { User } from '@/domain/entities/User';
 import { AppError, AuthResponse, RegisterDTO } from '@harmonia/shared';
 import { ITokenManager } from '../../ports/crypto/ITokenManager';
 import { IUserRepository } from '../../repositories/IUserRepository';
@@ -12,30 +13,26 @@ export class StartLocalRegister {
 
   async execute(input: RegisterDTO): Promise<AuthResponse> {
     try {
-      const normalizedEmail = input.email.trim().toLowerCase();
-
-      const existing = await this.userRepository.findByEmail(normalizedEmail);
+      const existing = await this.userRepository.findByEmail(input.email);
       if (existing) {
         throw new AppError("Email já utilizado")
       }
 
       const passwordHash = await this.passwordHasher.hash(input.password);
 
-      const user = await this.userRepository.createFromLocal({
-        email: normalizedEmail,
-        name: input.name ?? "",
-        passwordHash,
-      });
+      const newUser = User.create({ email: input.email, name: input.name, passwordHash });
 
-      const token = this.tokenManager.sign({ sub: user.id });
+      await this.userRepository.save(newUser);
+
+      const token = this.tokenManager.sign({ sub: newUser.id });
 
       return {
         token,
         isPasswordSetupRequired: false,
         user: {
-          id: user.id,
-          email: user.email,
-          name: user.name,
+          id: newUser.id,
+          email: newUser.email,
+          name: newUser.name,
         },
       };
     } catch (error: any) {
