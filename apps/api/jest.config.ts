@@ -36,6 +36,15 @@ const config: Config = {
     "/dist/"
   ],
 
+  transformIgnorePatterns: [
+    "/node_modules/(?!(uuid)/)"
+  ],
+
+  transform: {
+    "^.+\\.(ts|tsx)$": "ts-jest",
+    "^.+\\.js$": "ts-jest"
+  },
+
   preset: "ts-jest",
 };
 

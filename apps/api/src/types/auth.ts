@@ -1,3 +1,3 @@
 export type ResetState = {
-  randomCode: number,
+  randomCode: string,
 }

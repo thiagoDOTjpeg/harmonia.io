@@ -1,5 +1,6 @@
 import { AppError, BadRequestError, InvalidCredentialsError, NotFoundError, PlaylistLimitExceededError, TokenExchangeError, UnathorizedError } from "@harmonia/shared";
 import { NextFunction, Request, Response } from "express";
+import { ZodError } from "zod";
 
 export class ErrorHandlerMiddleware {
   static globalErrorHandler(
@@ -20,8 +21,10 @@ export class ErrorHandlerMiddleware {
       return res.status(401).json({ error: "unathorized", message: err.message })
     } else if (err instanceof PlaylistLimitExceededError) {
       return res.status(400).json({ error: "bad_request", message: err.message })
-
-    } else if (err instanceof AppError) {
+    } else if (err instanceof ZodError) {
+      return res.status(400).json({ error: "bad_request", message: err.message })
+    }
+    else if (err instanceof AppError) {
       return res.status(500).json({ error: "internal_error", message: err.message })
     }
     return res.status(500).json({ message: "Erro Interno de Servidor" })

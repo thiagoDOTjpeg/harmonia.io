@@ -33,7 +33,7 @@ export const RequestResetPasswordInput = z.object({
 
 export const ResetPasswordInput = z.object({
   email: z.string().email("Por favor digite um email válido"),
-  code: z.number().min(6).max(6),
+  code: z.string().min(6).max(6),
   newPassword: z.string().min(8, "Por favor digite uma senha com no minímo 8 caracteres")
 })
 

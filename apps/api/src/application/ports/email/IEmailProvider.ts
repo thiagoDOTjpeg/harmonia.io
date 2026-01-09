@@ -1,3 +1,3 @@
 export interface IEmailProvider {
-  sendResetPasswordEmail(outputEmail: string, randomCode: number): Promise<void>
+  sendResetPasswordEmail(outputEmail: string, randomCode: string): Promise<void>
 }

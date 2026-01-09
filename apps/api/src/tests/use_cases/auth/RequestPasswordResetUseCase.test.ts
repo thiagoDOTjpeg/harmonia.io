@@ -1,9 +1,11 @@
+import { ICodeGenerator } from "@/application/ports/crypto/ICodeGenerator";
 import { IEmailProvider } from "@/application/ports/email/IEmailProvider";
 import { IStateStore } from "@/application/ports/oauth/IStateStore";
 import { IUserRepository } from "@/application/repositories/IUserRepository";
 import { RequestPasswordResetUseCase } from "@/application/use_cases/auth/RequestPasswordResetUseCase";
 import { User } from "@/domain/entities/User";
 import { UserBuilder } from "@/tests/builders/UserBuilder";
+import { createMockCodeGeneratorFactory } from "@/tests/factories/MockCodeGeneratorFactory";
 import { createMockEmailProvider } from "@/tests/factories/MockEmailProviderFactory";
 import { createMockStateStore } from "@/tests/factories/MockStateStoreFactory";
 import { createMockUserRepository } from "@/tests/factories/MockUserRepositoryFactory";
@@ -13,38 +15,31 @@ import { RequestResetPasswordDTO } from "@harmonia/shared";
 describe("RequestPasswordResetUseCase", () => {
   let useCase: RequestPasswordResetUseCase;
 
-  let spyOnMathRandom: jest.SpyInstance;
-  let spyOnMathFloor: jest.SpyInstance;
   let mockUserRepository: jest.Mocked<IUserRepository>;
   let mockStateStore: jest.Mocked<IStateStore<ResetState>>;
   let mockEmailProvider: jest.Mocked<IEmailProvider>;
-
+  let mockCodeGenerator: jest.Mocked<ICodeGenerator>;
   beforeEach(() => {
     jest.clearAllMocks();
 
     mockUserRepository = createMockUserRepository();
     mockStateStore = createMockStateStore<ResetState>()
     mockEmailProvider = createMockEmailProvider();
-    spyOnMathRandom = jest.spyOn(global.Math, "random");
-    spyOnMathFloor = jest.spyOn(global.Math, "floor");
+    mockCodeGenerator = createMockCodeGeneratorFactory();
 
-    useCase = new RequestPasswordResetUseCase(mockUserRepository, mockStateStore, mockEmailProvider);
+    useCase = new RequestPasswordResetUseCase(mockUserRepository, mockStateStore, mockEmailProvider, mockCodeGenerator);
   })
 
-  afterEach(() => {
-    spyOnMathFloor.mockRestore();
-    spyOnMathRandom.mockRestore();
-  })
 
   it("should successfully send email to the user and set the random code in the state", async () => {
-    const randomCode = 123456 + 100000
+    const randomCode = "123456"
     const foundUser: User = new UserBuilder().build();
     const dto: RequestResetPasswordDTO = {
       email: "test@gmail.com"
     }
 
-    spyOnMathFloor.mockReturnValue(123456)
-    spyOnMathRandom.mockReturnValue(123456)
+    mockCodeGenerator.generateResetPasswordCode.mockReturnValue(randomCode)
+    mockCodeGenerator.generateState.mockReturnValue(randomCode)
     mockUserRepository.findByEmail.mockResolvedValue(foundUser);
 
 
@@ -55,7 +50,7 @@ describe("RequestPasswordResetUseCase", () => {
     expect(mockEmailProvider.sendResetPasswordEmail).toHaveBeenCalledWith(foundUser.email, randomCode);
   })
 
-  it("should return null if user's isn't found", async () => {
+  it("should return void/undefined even if users not found", async () => {
     const dto: RequestResetPasswordDTO = {
       email: "test@gmail.com"
     }
@@ -63,9 +58,41 @@ describe("RequestPasswordResetUseCase", () => {
 
     const result = await useCase.execute(dto);
 
-    expect(result).toBe(null);
+    expect(result).toBe(undefined);
     expect(mockUserRepository.findByEmail).toHaveBeenCalledWith(dto.email);
     expect(mockStateStore.set).not.toHaveBeenCalled();
     expect(mockEmailProvider.sendResetPasswordEmail).not.toHaveBeenCalled();
+  })
+
+  it("should throw an error if redis is down", async () => {
+    const foundUser = new UserBuilder().build();
+    const dto: RequestResetPasswordDTO = {
+      email: "test@gmail.com"
+    }
+    const error = new Error("Redis State Store Error")
+    mockUserRepository.findByEmail.mockResolvedValue(foundUser);
+    mockStateStore.set.mockRejectedValue(error)
+
+    await expect(useCase.execute(dto)).rejects.toThrow(error);
+
+    expect(mockUserRepository.findByEmail).toHaveBeenCalledWith(dto.email);
+    expect(mockStateStore.set).toHaveBeenCalled();
+    expect(mockEmailProvider.sendResetPasswordEmail).not.toHaveBeenCalled();
+  })
+
+  it("should throw an error if email provider is down", async () => {
+    const foundUser = new UserBuilder().build();
+    const dto: RequestResetPasswordDTO = {
+      email: "test@gmail.com"
+    }
+    const error = new Error("Redis State Store Error")
+    mockUserRepository.findByEmail.mockResolvedValue(foundUser);
+    mockEmailProvider.sendResetPasswordEmail.mockRejectedValue(error)
+
+    await expect(useCase.execute(dto)).rejects.toThrow(error);
+
+    expect(mockUserRepository.findByEmail).toHaveBeenCalledWith(dto.email);
+    expect(mockStateStore.set).toHaveBeenCalled();
+    expect(mockEmailProvider.sendResetPasswordEmail).toHaveBeenCalled();
   })
 })

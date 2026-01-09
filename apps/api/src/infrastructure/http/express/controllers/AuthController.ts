@@ -134,7 +134,6 @@ export class AuthController {
       console.error("Ocorreu um erro ao fazer o request de reset de senha", error)
       next(error);
     }
-
   }
 
   static async resetPassword(req: Request, res: Response, next: NextFunction) {
