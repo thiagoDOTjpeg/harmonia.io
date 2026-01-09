@@ -50,7 +50,7 @@ describe("RequestPasswordResetUseCase", () => {
     expect(mockEmailProvider.sendResetPasswordEmail).toHaveBeenCalledWith(foundUser.email, randomCode);
   })
 
-  it("should return null if user's isn't found", async () => {
+  it("should return void/undefined even if users not found", async () => {
     const dto: RequestResetPasswordDTO = {
       email: "test@gmail.com"
     }
@@ -58,9 +58,41 @@ describe("RequestPasswordResetUseCase", () => {
 
     const result = await useCase.execute(dto);
 
-    expect(result).toBe(null);
+    expect(result).toBe(undefined);
     expect(mockUserRepository.findByEmail).toHaveBeenCalledWith(dto.email);
     expect(mockStateStore.set).not.toHaveBeenCalled();
     expect(mockEmailProvider.sendResetPasswordEmail).not.toHaveBeenCalled();
+  })
+
+  it("should throw an error if redis is down", async () => {
+    const foundUser = new UserBuilder().build();
+    const dto: RequestResetPasswordDTO = {
+      email: "test@gmail.com"
+    }
+    const error = new Error("Redis State Store Error")
+    mockUserRepository.findByEmail.mockResolvedValue(foundUser);
+    mockStateStore.set.mockRejectedValue(error)
+
+    await expect(useCase.execute(dto)).rejects.toThrow(error);
+
+    expect(mockUserRepository.findByEmail).toHaveBeenCalledWith(dto.email);
+    expect(mockStateStore.set).toHaveBeenCalled();
+    expect(mockEmailProvider.sendResetPasswordEmail).not.toHaveBeenCalled();
+  })
+
+  it("should throw an error if email provider is down", async () => {
+    const foundUser = new UserBuilder().build();
+    const dto: RequestResetPasswordDTO = {
+      email: "test@gmail.com"
+    }
+    const error = new Error("Redis State Store Error")
+    mockUserRepository.findByEmail.mockResolvedValue(foundUser);
+    mockEmailProvider.sendResetPasswordEmail.mockRejectedValue(error)
+
+    await expect(useCase.execute(dto)).rejects.toThrow(error);
+
+    expect(mockUserRepository.findByEmail).toHaveBeenCalledWith(dto.email);
+    expect(mockStateStore.set).toHaveBeenCalled();
+    expect(mockEmailProvider.sendResetPasswordEmail).toHaveBeenCalled();
   })
 })
