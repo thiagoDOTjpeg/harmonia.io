@@ -16,8 +16,10 @@ export class RequestPasswordResetUseCase {
   async execute(data: RequestResetPasswordDTO) {
     const user = await this.userRepository.findByEmail(data.email);
     if (!user) return null;
+
     const randomCode = this.codeGenerator.generateResetPasswordCode();
     await this.redisStore.set(user.id, { randomCode }, 600);
+
     await this.emailProvider.sendResetPasswordEmail(user.email, randomCode);
   }
 }

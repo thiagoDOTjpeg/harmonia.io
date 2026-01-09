@@ -30,10 +30,10 @@ describe("ResetPasswordUseCase", () => {
   it("should sucessfully change the users password", async () => {
     const foundUser: User = new UserBuilder().build();
     const foundState: ResetState = {
-      randomCode: 123456
+      randomCode: "123456"
     }
     const input: ResetPasswordDTO = {
-      code: 123456,
+      code: "123456",
       email: "test@gmail.com",
       newPassword: "newPassword-123"
     }
@@ -53,7 +53,7 @@ describe("ResetPasswordUseCase", () => {
 
   it("should throw an error if doesn't find the user", async () => {
     const input: ResetPasswordDTO = {
-      code: 123456,
+      code: "123456",
       email: "test@gmail.com",
       newPassword: "newPassword-123"
     }
@@ -72,7 +72,7 @@ describe("ResetPasswordUseCase", () => {
   it("should throw an error if the state store doesn't find the state code", async () => {
     const foundUser = new UserBuilder().build();
     const input: ResetPasswordDTO = {
-      code: 123456,
+      code: "123456",
       email: "test@gmail.com",
       newPassword: "newPassword-123"
     }
@@ -92,10 +92,10 @@ describe("ResetPasswordUseCase", () => {
   it("should throw an error if the code sent on the dto is different from the retrivied state", async () => {
     const foundUser = new UserBuilder().build();
     const foundState: ResetState = {
-      randomCode: 654312
+      randomCode: "654312"
     }
     const input: ResetPasswordDTO = {
-      code: 123456,
+      code: "123456",
       email: "test@gmail.com",
       newPassword: "newPassword-123"
     }

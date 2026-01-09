@@ -18,7 +18,7 @@ export class ResetPasswordUseCase {
     const state = await this.redisStore.get(user.id)
     if (!state) throw new AppError("O código, e-mail ou senha estão inválidos ou expirados.");
 
-    if (Number(data.code) !== state?.randomCode) throw new AppError("O código, e-mail ou senha estão inválidos ou expirados.");
+    if (data.code !== state?.randomCode) throw new AppError("O código, e-mail ou senha estão inválidos ou expirados.");
 
     const hashedPassword = await this.hasher.hash(data.newPassword);
     user.changePassword(hashedPassword);
