@@ -3,7 +3,7 @@ import { IEncryptor } from "@/application/ports/crypto/IEncryptor";
 import { ITokenManager } from "@/application/ports/crypto/ITokenManager";
 import { ICodeExchanger } from "@/application/ports/oauth/ICodeExchanger";
 import { ITokenSerializer } from "@/application/ports/serializer/ITokenSerializer";
-import { IOAuthCallbackStrategy } from "@/application/ports/strategy/IOAuthCallbackStrategy";
+import { IOAuthCallbackStrategy } from "@/application/ports/strategy/oauth/IOAuthCallbackStrategy";
 import { IServiceConnectionRepository } from "@/application/repositories/IServiceConnectionRepository";
 import { IUserRepository } from "@/application/repositories/IUserRepository";
 import { ServiceConnection } from "@/domain/entities/ServiceConnection";
@@ -58,7 +58,7 @@ export class GoogleOAuthCallbackStrategy implements IOAuthCallbackStrategy {
         return this.handleLogin(exchangeData, expiresAt, normalizedEmail, returnTo);
 
       case OAuthMethod.connect:
-        return this.handleConnect(exchangeData, expiresAt, normalizedEmail, returnTo, loggedUserId);
+        return this.handleConnect(exchangeData, expiresAt, returnTo, loggedUserId);
       default:
         throw new AppError("Metodo não suportado")
     }
@@ -76,20 +76,24 @@ export class GoogleOAuthCallbackStrategy implements IOAuthCallbackStrategy {
     if (existingUser) {
       throw new InvalidCredentialsError("Já existe um usuário cadastrado com esses dados. Faça login e conecte o serviço")
     }
-    const user = await this.users.createFromLocal({
-      email: email,
-      name: exchangeData?.profile?.name || "NoNameService",
+
+    const persistUser = User.create({
+      email: exchangeData.profile.email,
+      name: exchangeData.profile.name,
+      passwordHash: null,
     })
 
-    const createdServiceConnection = await this.createServiceConnection(user, exchangeData, expiresAt)
-    const jwt = this.tokens.sign({ sub: user.id });
+    const savedUser = await this.users.save(persistUser)
+
+    const createdServiceConnection = await this.createServiceConnection(savedUser, exchangeData, expiresAt)
+    const jwt = this.tokens.sign({ sub: savedUser.id });
     return {
       token: jwt,
       isPasswordSetupRequired: true,
       user: {
         id: createdServiceConnection.userId,
         email: createdServiceConnection.email,
-        name: user.name
+        name: savedUser.name
       },
       method: OAuthMethod.register,
       returnTo
@@ -135,7 +139,6 @@ export class GoogleOAuthCallbackStrategy implements IOAuthCallbackStrategy {
   private async handleConnect(
     exchangeData: GoogleOAuthResult,
     expiresAt: Date,
-    email: string,
     returnTo?: string,
     loggedUserId?: string
   ): Promise<AuthResponse> {
