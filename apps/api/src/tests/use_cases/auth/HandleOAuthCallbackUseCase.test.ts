@@ -1,18 +1,18 @@
 import { IStateStore } from "@/application/ports/oauth/IStateStore";
-import { IOAuthCallbackStrategy } from "@/application/ports/strategy/IOAuthCallbackStrategy";
+import { IOAuthCallbackFactory } from "@/application/ports/strategy/oauth/IOAuthCallbackFactory";
+import { IOAuthCallbackStrategy } from "@/application/ports/strategy/oauth/IOAuthCallbackStrategy";
 import { HandleOAuthCallbackUseCase } from "@/application/use_cases/auth/HandleOAuthCallbackUseCase";
-import { OAuthCallbackStrategyFactory } from "@/infrastructure/adapter/oauth/factory/OAuthCallbackStrategyFactory";
 import { UserBuilder } from "@/tests/builders/UserBuilder";
 import { createMockStateStore } from "@/tests/factories/MockStateStoreFactory";
 import { createMockOAuthStrategyFactory } from "@/tests/factories/MockStrategyFactory";
 import { OAuthState } from "@/types/oauth/state";
-import { NotFoundError, OAuthMethod, ServiceProvider } from "@harmonia/shared";
+import { AuthResponse, NotFoundError, OAuthMethod, ServiceProvider } from "@harmonia/shared";
 
 describe("HandleOAuthCallbackUseCase", () => {
   let useCase: HandleOAuthCallbackUseCase;
 
   let mockStateStore: jest.Mocked<IStateStore<OAuthState>>;
-  let mockStrategyFactory: jest.Mocked<OAuthCallbackStrategyFactory>;
+  let mockStrategyFactory: jest.Mocked<IOAuthCallbackFactory>;
   let mockStrategy: jest.Mocked<IOAuthCallbackStrategy>;
 
 
@@ -39,14 +39,22 @@ describe("HandleOAuthCallbackUseCase", () => {
       method: OAuthMethod.connect,
       userId: user.id
     }
-    mockStrategyFactory.create.mockReturnValue(mockStrategy);
+    const processResponse: AuthResponse = {
+      isPasswordSetupRequired: false,
+      token: "token-123",
+      user,
+      method: stateData.method,
+      returnTo: stateData.returnTo
+    }
+    mockStrategyFactory.getStrategy.mockReturnValue(mockStrategy);
     mockStateStore.get.mockResolvedValue(stateData);
-
+    mockStrategy.processCallback.mockResolvedValue(processResponse);
     const result = await useCase.execute(input.provider, { code: input.code, state: input.state });
 
+    expect(result).toEqual(processResponse);
     expect(mockStateStore.get).toHaveBeenCalledWith(input.state);
     expect(mockStateStore.delete).toHaveBeenCalledWith(input.state);
-    expect(mockStrategyFactory.create).toHaveBeenCalledWith(input.provider);
+    expect(mockStrategyFactory.getStrategy).toHaveBeenCalledWith(input.provider);
     expect(mockStrategy.processCallback).toHaveBeenCalledWith(input.code, stateData, stateData.userId);
   })
 
@@ -57,14 +65,14 @@ describe("HandleOAuthCallbackUseCase", () => {
       state: "123456"
     }
     const error = new NotFoundError("State não encontrado")
-    mockStrategyFactory.create.mockReturnValue(mockStrategy);
+    mockStrategyFactory.getStrategy.mockReturnValue(mockStrategy);
     mockStateStore.get.mockResolvedValue(undefined);
 
     await expect(useCase.execute(input.provider, { code: input.code, state: input.state })).rejects.toThrow(error);
 
     expect(mockStateStore.get).toHaveBeenCalledWith(input.state);
     expect(mockStateStore.delete).not.toHaveBeenCalled();
-    expect(mockStrategyFactory.create).not.toHaveBeenCalled();
+    expect(mockStrategyFactory.getStrategy).not.toHaveBeenCalled();
     expect(mockStrategy.processCallback).not.toHaveBeenCalled();
   })
 
@@ -78,14 +86,14 @@ describe("HandleOAuthCallbackUseCase", () => {
     const stateData: OAuthState = {
       method: OAuthMethod.connect,
     }
-    mockStrategyFactory.create.mockReturnValue(mockStrategy);
+    mockStrategyFactory.getStrategy.mockReturnValue(mockStrategy);
     mockStateStore.get.mockResolvedValue(stateData);
 
     await expect(useCase.execute(input.provider, { code: input.code, state: input.state })).rejects.toThrow(error)
 
     expect(mockStateStore.get).toHaveBeenCalled();
     expect(mockStateStore.delete).not.toHaveBeenCalled();
-    expect(mockStrategyFactory.create).not.toHaveBeenCalled();
+    expect(mockStrategyFactory.getStrategy).not.toHaveBeenCalled();
     expect(mockStrategy.processCallback).not.toHaveBeenCalled()
   })
 })

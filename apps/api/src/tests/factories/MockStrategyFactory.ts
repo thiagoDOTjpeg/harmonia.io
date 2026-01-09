@@ -1,7 +1,5 @@
-import { OAuthCallbackStrategyFactory } from "@/infrastructure/adapter/oauth/factory/OAuthCallbackStrategyFactory";
+import { IOAuthCallbackFactory } from "@/application/ports/strategy/oauth/IOAuthCallbackFactory";
 
-export const createMockOAuthStrategyFactory = (): jest.Mocked<OAuthCallbackStrategyFactory> => {
-  return {
-    create: jest.fn(),
-  } as unknown as jest.Mocked<OAuthCallbackStrategyFactory>;
-}
+export const createMockOAuthStrategyFactory = (): jest.Mocked<IOAuthCallbackFactory> => ({
+  getStrategy: jest.fn()
+})

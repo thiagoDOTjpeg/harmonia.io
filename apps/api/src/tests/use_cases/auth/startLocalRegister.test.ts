@@ -23,25 +23,29 @@ describe("Start Local Register Use Case", () => {
     useCase = new StartLocalRegister(mockUserRepository, mockPasswordHasher, mockTokenManager);
   })
   it("should successfully register a user and return token and user info", async () => {
-    const validUser = new UserBuilder().build();
     const passwordHash = "senha-hasheada"
-    mockUserRepository.createFromLocal.mockResolvedValue(validUser);
+    mockUserRepository.findByEmail.mockResolvedValue(null);
     mockPasswordHasher.hash.mockResolvedValue(passwordHash);
     mockTokenManager.sign.mockReturnValue("tokencriptografado");
 
-    const payload = { email: validUser.email, password: "teste123", name: validUser.name };
+    mockUserRepository.save.mockImplementation(async (user) => user)
+
+    const payload = { email: "test@example.com", password: "teste123", name: "Test User" };
     const result = await useCase.execute(payload);
 
     expect(result.token).toBe("tokencriptografado");
-    expect(result.user).toMatchObject({ id: validUser.id, email: validUser.email, name: validUser.name });
+    expect(result.user.email).toBe(payload.email);
+    expect(result.user.name).toBe(payload.name);
 
-    expect(mockUserRepository.findByEmail).toHaveBeenCalledWith(validUser.email);
+    expect(mockUserRepository.findByEmail).toHaveBeenCalledWith(payload.email);
     expect(mockPasswordHasher.hash).toHaveBeenCalledWith(payload.password);
-    expect(mockUserRepository.createFromLocal).toHaveBeenCalledWith({
-      email: payload.email,
-      name: payload.name,
-      passwordHash,
-    });
+
+    expect(mockUserRepository.save).toHaveBeenCalledWith(
+      expect.objectContaining({
+        email: payload.email,
+        name: payload.name,
+      })
+    );
   });
 
   it("should throw an error if the email already exists", async () => {
@@ -57,7 +61,7 @@ describe("Start Local Register Use Case", () => {
 
     expect(mockUserRepository.findByEmail).toHaveBeenCalledTimes(1);
     expect(mockPasswordHasher.hash).not.toHaveBeenCalled();
-    expect(mockUserRepository.createFromLocal).not.toHaveBeenCalled();
+    expect(mockUserRepository.save).not.toHaveBeenCalled();
     expect(mockTokenManager.sign).not.toHaveBeenCalled();
   });
 
@@ -69,7 +73,7 @@ describe("Start Local Register Use Case", () => {
     const prismaError = new Error("Unique constraint failed");
     (prismaError as any).code = 'P2002';
 
-    mockUserRepository.createFromLocal.mockRejectedValue(prismaError);
+    mockUserRepository.save.mockRejectedValue(prismaError);
 
     await expect(useCase.execute({
       email: validUser.email,
@@ -78,6 +82,6 @@ describe("Start Local Register Use Case", () => {
     }))
       .rejects.toThrow("Email já utilizado");
 
-    expect(mockUserRepository.createFromLocal).toHaveBeenCalledTimes(1);
+    expect(mockUserRepository.save).toHaveBeenCalledTimes(1);
   });
 })
