@@ -1,17 +1,12 @@
 import { User } from '@/domain/entities/User';
 import { UserSummary } from '@/domain/entities/UserSummary';
-import { Prisma } from '@prisma/client';
 
 export interface IUserRepository {
   findByEmail(email: string): Promise<User | null>;
   findByUserId(userId: string): Promise<User | null>;
   getUserSummary(userId: string): Promise<UserSummary | null>
 
-  createFromLocal(input: {
-    email: string;
-    name: string | null;
-    passwordHash?: string;
-  }): Promise<User>;
+  save(user: User): Promise<void>;
 
-  update(userId: string, userData: Prisma.UserUpdateInput): Promise<User>;
+  update(user: User): Promise<User>;
 }

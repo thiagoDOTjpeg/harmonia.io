@@ -1,5 +1,5 @@
 import { UserSummary } from '@/domain/entities/UserSummary';
-import { Prisma, PrismaClient } from '@prisma/client';
+import { PrismaClient } from '@prisma/client';
 import { IUserRepository } from '../../../../application/repositories/IUserRepository';
 import { User } from '../../../../domain/entities/User';
 import { UserMapper } from '../mapper/UserMapper';
@@ -27,25 +27,18 @@ export class PrismaUserRepository implements IUserRepository {
     return summary ? UserSummaryMapper.toDomain(summary) : null;
   }
 
-  async createFromLocal(input: {
-    email: string;
-    name: string;
-    passwordHash?: string;
-  }): Promise<User> {
-    const user = await this.prisma.user.create({
-      data: {
-        email: input.email.trim().toLowerCase(),
-        name: input.name,
-        passwordHash: input.passwordHash ?? Prisma.skip,
-      },
+  async save(newUser: User): Promise<void> {
+    const rawData = newUser.toPersistence();
+    await this.prisma.user.create({
+      data: rawData
     });
-    return UserMapper.toDomain(user);
   }
 
-  async update(userId: string, userData: Prisma.UserUpdateInput): Promise<User> {
+  async update(user: User): Promise<User> {
+    const rawData = user.toPersistence();
     const updatedUser = await this.prisma.user.update({
-      where: { id: userId },
-      data: userData
+      where: { id: rawData.id },
+      data: rawData
     });
 
     return UserMapper.toDomain(updatedUser);
