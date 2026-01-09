@@ -12,7 +12,7 @@ import { SystemClock } from '../infrastructure/time/SystemClock';
 // Use cases Auth
 import { IAuthProvider } from '@/application/ports/auth/IAuthProvider';
 import { IAuthUrlProvider } from '@/application/ports/oauth/IAuthUrlProvider';
-import { IOAuthCallbackStrategy } from '@/application/ports/strategy/IOAuthCallbackStrategy';
+import { IOAuthCallbackStrategy } from '@/application/ports/strategy/oauth/IOAuthCallbackStrategy';
 import { EmailProvider } from '@/application/providers/EmailProvider';
 import { GoogleAuthProvider } from '@/application/providers/GoogleAuthProvider';
 import { SpotifyAuthProvider } from '@/application/providers/SpotifyAuthProvider';
