@@ -18,7 +18,7 @@ export class User {
   get name(): string { return this._name; }
   get isVerified(): boolean { return this._emailVerifiedAt !== null; }
 
-  static create(props: { name: string, email: string, passwordHash: string }): User {
+  static create(props: { name: string, email: string, passwordHash: string | null }): User {
     return new User(
       v4(),
       Email.create(props.email),
