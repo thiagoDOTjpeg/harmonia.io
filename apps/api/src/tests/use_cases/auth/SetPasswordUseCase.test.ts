@@ -29,7 +29,7 @@ describe("SetPasswordUseCase", () => {
     await useCase.execute(mockUser, { newPassword });
 
     expect(mockPasswordHasher.hash).toHaveBeenCalled()
-    expect(mockUserRepository.update).toHaveBeenCalledWith(mockUser.id, { passwordHash });
+    expect(mockUserRepository.update).toHaveBeenCalledWith({ ...mockUser, _passwordHash: passwordHash });
   })
 
   it("should throw error when user already has a password", async () => {

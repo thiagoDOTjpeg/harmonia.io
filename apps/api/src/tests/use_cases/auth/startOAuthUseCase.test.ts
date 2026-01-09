@@ -1,7 +1,9 @@
+import { ICodeGenerator } from "@/application/ports/crypto/ICodeGenerator";
 import { IAuthUrlProviderFactory } from "@/application/ports/factory/IAuthUrlProviderFactory";
 import { IAuthUrlProvider } from "@/application/ports/oauth/IAuthUrlProvider";
 import { IStateStore } from "@/application/ports/oauth/IStateStore";
 import { StartOAuthUseCase } from "@/application/use_cases/auth/StartOAuthUseCase";
+import { createMockCodeGeneratorFactory } from "@/tests/factories/MockCodeGeneratorFactory";
 import { OAuthState } from "@/types/oauth/state";
 import { BadRequestError, OAuthMethod, ServiceProvider } from "@harmonia/shared";
 import { createMockAuthUrlFactory, createMockAuthUrlProvider } from "../../factories/MockAuthUrlProviderFactory";
@@ -16,6 +18,7 @@ describe("Start OAuth Use Case", () => {
   let mockOAuthStateStore: jest.Mocked<IStateStore<OAuthState>>;
   let MockAuthUrlProviderFactory: jest.Mocked<IAuthUrlProviderFactory>;
   let mockAuthUrlProvider: jest.Mocked<IAuthUrlProvider>;
+  let mockCodeGenerator: jest.Mocked<ICodeGenerator>;
 
 
   beforeEach(() => {
@@ -24,8 +27,9 @@ describe("Start OAuth Use Case", () => {
     mockOAuthStateStore = createMockStateStore<OAuthState>();
     MockAuthUrlProviderFactory = createMockAuthUrlFactory();
     mockAuthUrlProvider = createMockAuthUrlProvider();
+    mockCodeGenerator = createMockCodeGeneratorFactory();
 
-    useCase = new StartOAuthUseCase(mockOAuthStateStore, MockAuthUrlProviderFactory);
+    useCase = new StartOAuthUseCase(mockOAuthStateStore, MockAuthUrlProviderFactory, mockCodeGenerator);
   })
 
   it("should generate the state, persist in the store and return the url for redirect", async () => {

@@ -47,7 +47,7 @@ describe("ResetPasswordUseCase", () => {
     expect(mockUserRepository.findByEmail).toHaveBeenCalledWith(input.email);
     expect(mockStateStore.get).toHaveBeenCalledWith(foundUser.id);
     expect(mockHasher.hash).toHaveBeenCalledWith(input.newPassword);
-    expect(mockUserRepository.update).toHaveBeenCalledWith(foundUser.id, { passwordHash: "hashed-password" });
+    expect(mockUserRepository.update).toHaveBeenCalledWith({ ...foundUser, _passwordHash: "hashed-password" });
     expect(mockStateStore.delete).toHaveBeenCalledWith(foundUser.id);
   })
 
