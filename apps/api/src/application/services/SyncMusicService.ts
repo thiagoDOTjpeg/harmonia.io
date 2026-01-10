@@ -1,4 +1,5 @@
 import { IEncryptor } from "@/application/ports/crypto/IEncryptor";
+import { ILogger } from "@/application/ports/logger/ILogger";
 import { ITokenSerializer } from "@/application/ports/serializer/ITokenSerializer";
 import { EnsureValidConnectionsUseCase } from "@/application/use_cases/service-connection/EnsureValidConnectionsUseCase";
 import { PrismaPlaylistRepository } from "@/infrastructure/db/prisma/repositories/PrismaPlaylistRepository";
@@ -17,7 +18,8 @@ export class SyncMusicService {
     private readonly AESEncrypter: IEncryptor,
     private readonly tokenSerializer: ITokenSerializer<TokenEncrypted>,
     private readonly ensureValidConnectionsUseCase: EnsureValidConnectionsUseCase,
-    private readonly googleMusicClient: IGoogleMusicClient
+    private readonly googleMusicClient: IGoogleMusicClient,
+    private readonly logger: ILogger
   ) { }
 
   public async syncPlaylist(user: User, bodyParsed: createSyncPlaylistDTO) {
@@ -64,7 +66,7 @@ export class SyncMusicService {
     });
 
 
-    console.log(`[API] Job ${job.id} adicionado para sincronização`);
+    this.logger.info({ jobId: job.id, userId: user.id, playlistId: youtubePlaylistId }, 'Sync job added');
 
     return {
       jobId: job.id,

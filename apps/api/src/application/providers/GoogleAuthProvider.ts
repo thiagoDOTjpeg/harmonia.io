@@ -1,3 +1,4 @@
+import { ILogger } from "@/application/ports/logger/ILogger";
 import { ServiceConnection } from "@/domain/entities/ServiceConnection";
 import { ERRORS } from "@/types/constant/errors";
 import { GoogleTokenResponse } from "@/types/google";
@@ -5,6 +6,8 @@ import { AppError } from "@harmonia/shared";
 import { IAuthProvider } from "../ports/auth/IAuthProvider";
 
 export class GoogleAuthProvider implements IAuthProvider {
+  constructor(private readonly logger: ILogger) { }
+
   async revokeToken(accessToken: string): Promise<void> {
     const postData = `token=${accessToken}`;
 
@@ -24,9 +27,9 @@ export class GoogleAuthProvider implements IAuthProvider {
         throw new AppError(ERRORS.GOOGLE_REVOKE_TOKEN);
       }
 
-      console.log('Token do Google revogado com sucesso');
+      this.logger.info('Google token revoked successfully');
     } catch (error) {
-      console.error('Erro ao revogar token:', error);
+      this.logger.error({ err: error }, 'Error revoking Google token');
       throw error;
     }
   }

@@ -1,9 +1,11 @@
+import { ILogger } from "@/application/ports/logger/ILogger";
 import { ServiceConnection } from "@/domain/entities/ServiceConnection";
 import { ERRORS } from "@/types/constant/errors";
 import { SpotifyTokenResponse } from "@/types/spotify";
 import { IAuthProvider } from "../ports/auth/IAuthProvider";
 
 export class SpotifyAuthProvider implements IAuthProvider {
+  constructor(private readonly logger: ILogger) { }
 
   revokeToken(accessToken: string): Promise<void> {
     throw new Error("Method not implemented.");
@@ -38,7 +40,8 @@ export class SpotifyAuthProvider implements IAuthProvider {
       };
       const response = await fetch("https://accounts.spotify.com/api/token", requestOptions)
       if (!response.ok) {
-        console.log(await response.text());
+        const errorText = await response.text();
+        this.logger.error({ error: errorText }, 'Spotify token refresh failed');
       }
 
       const json = await response.json() as SpotifyTokenResponse;

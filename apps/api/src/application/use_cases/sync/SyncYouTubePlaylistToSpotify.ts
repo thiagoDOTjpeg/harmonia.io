@@ -1,4 +1,5 @@
 import { IGoogleMusicClient } from "@/application/ports/google/IGoogleMusicClient";
+import { logger } from "@/infrastructure/logger";
 import { SyncPlaylistInput, SyncPlaylistResult } from "@/types/playlist";
 import { SpotifyMusicClient } from "../../../infrastructure/client/SpotifyMusicClient";
 import { IPlaylistRepository } from "../../repositories/IPlaylistRepository";
@@ -29,7 +30,7 @@ export class SyncYouTubePlaylistToSpotify {
       input.googleAccessToken
     );
 
-    console.log(`[Sync] ${youtubeVideos.length} vídeos encontrados no YouTube`);
+    logger.info({ videoCount: youtubeVideos.length }, 'YouTube videos fetched');
 
     let syncedPlaylist = await this.playlistRepository.findByYoutubePlaylistId(
       input.userId,
@@ -42,7 +43,7 @@ export class SyncYouTubePlaylistToSpotify {
         `Synced from YouTube • ${youtubePlaylistInfo.description || 'Harmonia.io'}`
       );
 
-      console.log(`[Sync] Playlist criada no Spotify: ${spotifyPlaylistId}`);
+      logger.info({ spotifyPlaylistId }, 'Spotify playlist created');
 
       syncedPlaylist = await this.playlistRepository.create({
         userId: input.userId,
@@ -54,7 +55,7 @@ export class SyncYouTubePlaylistToSpotify {
         spotifyTitle: youtubePlaylistInfo.title,
       });
     } else {
-      console.log(`[Sync] Playlist já existe, atualizando...`);
+      logger.info({ playlistId: syncedPlaylist.id }, 'Playlist exists, updating');
     }
 
     const existingPlaylistTracks = await this.playlistTrackRepository.findByPlaylistId(
@@ -71,7 +72,7 @@ export class SyncYouTubePlaylistToSpotify {
       const video = youtubeVideos[i];
 
       try {
-        console.log(`[Sync] Processando (${i + 1}/${youtubeVideos.length}): ${video.title}`);
+        logger.debug({ trackIndex: i + 1, totalTracks: youtubeVideos.length, videoTitle: video.title }, 'Processing track');
 
         let track = await this.trackRepository.findByYoutubeVideoId(video.videoId);
 
@@ -96,12 +97,12 @@ export class SyncYouTubePlaylistToSpotify {
               matchSource: 'auto',
             });
           } else {
-            console.log(`[Sync] ❌ Falha no match: ${video.title}`);
+            logger.warn({ videoTitle: video.title, videoId: video.videoId }, 'Match failed');
           }
 
           await new Promise((resolve) => setTimeout(resolve, 1000));
         } else {
-          console.log(`[Sync] ♻️  Reutilizando match: ${track.spotifyArtist} - ${track.spotifyTrackId}`);
+          logger.debug({ spotifyArtist: track.spotifyArtist, spotifyTrackId: track.spotifyTrackId }, 'Reusing existing match');
         }
 
         const isNewInPlaylist = !existingTrackIds.has(track.id);
@@ -118,7 +119,7 @@ export class SyncYouTubePlaylistToSpotify {
             if (!error.message?.includes('Unique constraint')) {
               throw error;
             }
-            console.log(`[Sync] Track já existe na playlist (race condition): ${track.id}`);
+            logger.debug({ trackId: track.id }, 'Track already exists in playlist (race condition)');
           }
         }
 
@@ -129,22 +130,22 @@ export class SyncYouTubePlaylistToSpotify {
           failedCount++;
         }
       } catch (error) {
-        console.error(`[Sync] Erro ao processar ${video.videoId}:`, error);
+        logger.error({ err: error, videoId: video.videoId }, 'Error processing video');
         failedCount++;
       }
     }
 
     if (tracksToAdd.length > 0) {
-      console.log(`[Sync] Adicionando ${tracksToAdd.length} músicas novas no Spotify...`);
+      logger.info({ tracksToAdd: tracksToAdd.length }, 'Adding new tracks to Spotify');
 
       await spotifyClient.addTracksToPlaylist(
         syncedPlaylist.spotifyPlaylistId,
         tracksToAdd
       );
 
-      console.log(`[Sync] ✅ ${tracksToAdd.length} músicas adicionadas no Spotify`);
+      logger.info({ addedTracks: tracksToAdd.length }, 'Tracks added to Spotify');
     } else {
-      console.log(`[Sync] Nenhuma música nova para adicionar`);
+      logger.info('No new tracks to add');
     }
 
     const finalStatus =
@@ -157,7 +158,7 @@ export class SyncYouTubePlaylistToSpotify {
       lastSyncedAt: new Date(),
     });
 
-    console.log(`[Sync] Concluído! ${syncedCount}/${youtubeVideos.length} músicas sincronizadas (${newTracksCount} novas)`);
+    logger.info({ syncedTracks: syncedCount, totalTracks: youtubeVideos.length, newTracks: newTracksCount }, 'Sync completed');
 
     return {
       playlistId: syncedPlaylist.id,

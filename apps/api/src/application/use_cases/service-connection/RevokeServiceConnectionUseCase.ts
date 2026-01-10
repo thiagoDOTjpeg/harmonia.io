@@ -1,5 +1,6 @@
 import { IAuthProvider } from "@/application/ports/auth/IAuthProvider";
 import { IEncryptor } from "@/application/ports/crypto/IEncryptor";
+import { ILogger } from "@/application/ports/logger/ILogger";
 import { ITokenSerializer } from "@/application/ports/serializer/ITokenSerializer";
 import { IServiceConnectionRepository } from "@/application/repositories/IServiceConnectionRepository";
 import { ERRORS } from "@/types/constant/errors";
@@ -11,7 +12,8 @@ export class RevokeServiceConnectionUseCase {
     private readonly serviceConnectionRepository: IServiceConnectionRepository,
     private readonly aesEncrypter: IEncryptor,
     private readonly tokenSerializer: ITokenSerializer<TokenEncrypted>,
-    private readonly googleProvider: IAuthProvider
+    private readonly googleProvider: IAuthProvider,
+    private readonly logger: ILogger
   ) { }
 
   async execute(userId: string, serviceConnectionId: string) {
@@ -24,7 +26,7 @@ export class RevokeServiceConnectionUseCase {
         const decodedRefreshToken = this.aesEncrypter.decrypt(iv, cipherText, tag);
         await this.googleProvider.revokeToken(decodedRefreshToken);
       } catch (error) {
-        console.error("Falha ao revogar token externo do Google, mas prosseguindo com delete local:", error);
+        this.logger.warn({ err: error, serviceConnectionId }, 'Failed to revoke external Google token, proceeding with local delete');
       }
     }
     await this.serviceConnectionRepository.delete(serviceConnection);

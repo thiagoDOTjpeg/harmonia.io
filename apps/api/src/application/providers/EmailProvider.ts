@@ -1,3 +1,4 @@
+import { ILogger } from "@/application/ports/logger/ILogger";
 import { ERRORS } from "@/types/constant/errors";
 import { AppError, RequestAccessDTO } from "@harmonia/shared";
 import { createTransport, Transporter } from "nodemailer";
@@ -5,7 +6,7 @@ import { IEmailProvider } from "../ports/email/IEmailProvider";
 
 export class EmailProvider implements IEmailProvider {
   private transporter: Transporter;
-  constructor() {
+  constructor(private readonly logger: ILogger) {
     this.transporter = createTransport({
       host: "smtp.umbler.com",
       port: 587,
@@ -30,7 +31,7 @@ export class EmailProvider implements IEmailProvider {
     try {
       await this.transporter.sendMail(mailOptions)
     } catch (error) {
-      console.error("Ocorreu um erro ao enviar o email", error);
+      this.logger.error({ err: error }, 'Error sending reset password email');
       throw new AppError(ERRORS.EMAIL_NOT_SENT)
     }
   }
@@ -46,7 +47,7 @@ export class EmailProvider implements IEmailProvider {
     try {
       await this.transporter.sendMail(mailOptions);
     } catch (error) {
-      console.error("Ocorreu um erro ao enviar o email", error);
+      this.logger.error({ err: error }, 'Error sending request access email');
       throw new AppError(ERRORS.EMAIL_NOT_SENT)
     }
   }
