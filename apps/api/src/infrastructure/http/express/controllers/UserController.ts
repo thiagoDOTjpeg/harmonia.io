@@ -1,6 +1,7 @@
 import { User } from '@/domain/entities/User';
 import { ServiceConnectionMapper } from '@/infrastructure/db/prisma/mapper/ServiceConnectionMapper';
 import { UserSummaryMapper } from '@/infrastructure/db/prisma/mapper/UserSummaryMapper';
+import { logger } from '@/infrastructure/logger';
 import { Container } from '@/main/container';
 import { NotFoundError, UnathorizedError } from '@harmonia/shared';
 import { NextFunction, Request, Response } from 'express';
@@ -24,7 +25,7 @@ export class UserController {
 
       return res.json(summaryDTO);
     } catch (error) {
-      console.error("Ocorreu um erro ao buscar o resumo", error);
+      logger.error({ err: error }, 'Error fetching user summary');
       next(error)
     }
   }
@@ -48,7 +49,7 @@ export class UserController {
 
       return res.json(serviceConnectionsDTO)
     } catch (error) {
-      console.error("Ocorreu um erro ao buscar os serviços do usuário", error);
+      logger.error({ err: error }, 'Error fetching user connections');
       next(error)
     }
   }
@@ -64,7 +65,7 @@ export class UserController {
       await Container.getRevokeServiceConnectionUseCase().execute(user.id, id);
       return res.status(204).send();
     } catch (error) {
-      console.error("Ocorreu um erro ao revogar a conexão", error);
+      logger.error({ err: error }, 'Error revoking service connection');
       next(error)
     }
   }

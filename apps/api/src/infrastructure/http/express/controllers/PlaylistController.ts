@@ -1,5 +1,6 @@
 import { User } from "@/domain/entities/User";
 import { UserPlaylistsMapper } from "@/infrastructure/db/prisma/mapper/UserPlaylistsMapper";
+import { logger } from '@/infrastructure/logger';
 import { Container } from "@/main/container";
 import { Request, Response } from 'express';
 import { AuthMiddleware } from "../middlewares/AuthMiddleware";
@@ -17,7 +18,7 @@ export class PlaylistController {
 
       return res.json(playlistsDTO);
     } catch (error) {
-      console.error('Get playlists error:', error);
+      logger.error({ err: error }, 'Get playlists error');
       throw error
     }
   }
