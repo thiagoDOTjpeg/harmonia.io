@@ -3,6 +3,9 @@ import { PrismaPlaylistTrackRepository } from '../infrastructure/db/prisma/repos
 import { PrismaTrackRepository } from '../infrastructure/db/prisma/repositories/PrismaTrackRepository';
 import { PrismaUserRepository } from '../infrastructure/db/prisma/repositories/PrismaUserRepository';
 
+import { ILogger } from '@/application/ports/logger/ILogger';
+import { PinoLoggerAdapter } from '@/infrastructure/logger/PinoLoggerAdapter';
+
 import { GoogleOAuthClient } from '../infrastructure/client/GoogleOAuthClient';
 
 import { BcryptPasswordHasher } from '../infrastructure/crypto/BcryptPasswordHasher';
@@ -31,6 +34,7 @@ import { SpotifyOAuthCallbackStrategy } from '@/infrastructure/adapter/oauth/str
 import { AESSerializer } from '@/infrastructure/adapter/serializer/AESSerializer';
 import { GoogleMusicClient } from '@/infrastructure/client/GoogleMusicClient';
 import { AESTokenEncrypter } from '@/infrastructure/crypto/AESTokenEncrypter';
+import { CryptoCodeGenerator } from '@/infrastructure/crypto/CryptoCodeGenerator';
 import { prisma } from '@/infrastructure/db/prisma/client';
 import { PrismaServiceConnectionRepository } from '@/infrastructure/db/prisma/repositories/PrismaServiceConnectionRepository';
 import { PlaylistSyncQueue } from '@/infrastructure/queue/PlaylistSyncQueue';
@@ -46,8 +50,11 @@ const ENCRYPTION_KEY: string = process.env.AES_SECRET || "";
 
 export class Container {
 
+  // Infra - Logger first (needed by other instances)
+  private static loggerInstance: ILogger = new PinoLoggerAdapter();
+
   // Infra
-  private static googleClient = new GoogleOAuthClient();
+  private static googleClient = new GoogleOAuthClient(Container.loggerInstance);
   private static spotifyClient = new SpotifyOAuthClient();
   private static googleMusicClient = new GoogleMusicClient();
   private static syncQueue: PlaylistSyncQueue;
@@ -60,11 +67,22 @@ export class Container {
   private static serviceConnectionRepository = new PrismaServiceConnectionRepository(prisma);
 
   // Crypto & Time & Serializer
+  private static codeGenerator = new CryptoCodeGenerator();
   private static tokenManager = new JwtTokenManager();
   private static passwordHasher = new BcryptPasswordHasher();
   private static AESEncrypter = new AESTokenEncrypter(ENCRYPTION_KEY);
   private static tokenSerializer = new AESSerializer();
   private static clock = new SystemClock();
+
+  // ===== GETTERS - LOGGER =====
+
+  static getLogger(): ILogger {
+    return this.loggerInstance;
+  }
+
+  static getChildLogger(bindings: Record<string, unknown>): ILogger {
+    return this.loggerInstance.child(bindings);
+  }
 
   // ===== GETTERS - CLIENTS =====
 
@@ -136,15 +154,15 @@ export class Container {
   // ===== GETTERS - PROVIDERS =====
 
   static getGoogleProvider() {
-    return new GoogleAuthProvider();
+    return new GoogleAuthProvider(this.loggerInstance);
   }
 
   static getSpotifyProvider() {
-    return new SpotifyAuthProvider();
+    return new SpotifyAuthProvider(this.loggerInstance);
   }
 
   static getEmailProvider() {
-    return new EmailProvider();
+    return new EmailProvider(this.loggerInstance);
   }
 
   // ===== GETTERS - SERVICES =====
@@ -156,7 +174,8 @@ export class Container {
       this.AESEncrypter,
       this.tokenSerializer,
       this.getEnsureValidConnectionsUseCase(),
-      this.googleMusicClient
+      this.googleMusicClient,
+      this.loggerInstance
     );
   }
 
@@ -185,11 +204,11 @@ export class Container {
   // ===== GETTERS - INFRA =====
 
   static getOAuthStateStore() {
-    return new RedisStateStore<OAuthState>("oauth");
+    return new RedisStateStore<OAuthState>("oauth", this.loggerInstance);
   }
 
   static getPasswordResetStateStore() {
-    return new RedisStateStore<ResetState>("reset");
+    return new RedisStateStore<ResetState>("reset", this.loggerInstance);
   }
   static getTokenManager() {
     return this.tokenManager;
@@ -219,7 +238,8 @@ export class Container {
     return new RequestPasswordResetUseCase(
       this.userRepository,
       this.getPasswordResetStateStore(),
-      this.getEmailProvider()
+      this.getEmailProvider(),
+      this.codeGenerator
     )
   }
 
@@ -233,8 +253,8 @@ export class Container {
 
   static getEnsureValidConnectionsUseCase() {
     const providers: Record<ServiceProvider, IAuthProvider> = {
-      [ServiceProvider.GOOGLE]: new GoogleAuthProvider(),
-      [ServiceProvider.SPOTIFY]: new SpotifyAuthProvider()
+      [ServiceProvider.GOOGLE]: new GoogleAuthProvider(this.loggerInstance),
+      [ServiceProvider.SPOTIFY]: new SpotifyAuthProvider(this.loggerInstance)
     }
     return new EnsureValidConnectionsUseCase(
       this.serviceConnectionRepository,
@@ -250,12 +270,13 @@ export class Container {
       this.serviceConnectionRepository,
       this.AESEncrypter,
       this.tokenSerializer,
-      this.getGoogleProvider()
+      this.getGoogleProvider(),
+      this.loggerInstance
     );
   }
 
   static getStartOAuthUseCase() {
-    return new StartOAuthUseCase(this.getOAuthStateStore(), this.getAuthUrlFactory());
+    return new StartOAuthUseCase(this.getOAuthStateStore(), this.getAuthUrlFactory(), this.codeGenerator);
   }
 
   static getHandleOAuthCallback() {

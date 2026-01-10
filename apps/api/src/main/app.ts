@@ -3,6 +3,7 @@ import dotenv from 'dotenv';
 import express from 'express';
 
 import { ErrorHandlerMiddleware } from '@/infrastructure/http/express/middlewares/ErrorHandlerMiddleware';
+import { RequestIdMiddleware } from '@/infrastructure/http/express/middlewares/RequestIdMiddleware';
 import authRoutes from '../infrastructure/http/express/routes/auth.routes';
 import playlistRoutes from '../infrastructure/http/express/routes/playlist.routes';
 import syncRoutes from '../infrastructure/http/express/routes/sync.routes';
@@ -12,6 +13,7 @@ dotenv.config();
 
 const app = express();
 
+app.use(RequestIdMiddleware.handle);
 app.use(cors({ origin: true }));
 app.use(express.json());
 

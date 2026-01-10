@@ -1,8 +1,8 @@
-import app from "./app";
+import { logger } from '@/infrastructure/logger';
+import app from './app';
 
 const PORT = process.env.PORT || 4000;
 
 app.listen(PORT, () => {
-  console.log('');
-  console.log(`Rodando na porta ${PORT}`);
+  logger.info({ port: PORT }, 'Server started');
 });
