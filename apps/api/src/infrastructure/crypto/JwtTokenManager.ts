@@ -2,6 +2,7 @@ import { TokenResponse } from '@/types/token';
 import { InvalidCredentialsError } from '@harmonia/shared';
 import jwt from 'jsonwebtoken';
 import { ITokenManager } from '../../application/ports/crypto/ITokenManager';
+
 export class JwtTokenManager implements ITokenManager {
   private readonly secret = process.env.JWT_SECRET || 'dev-secret';
   private readonly expiresIn = '7d';

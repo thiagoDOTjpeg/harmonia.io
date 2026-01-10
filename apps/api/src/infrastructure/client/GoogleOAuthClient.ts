@@ -1,3 +1,4 @@
+import { ILogger } from '@/application/ports/logger/ILogger';
 import { IAuthUrlProvider } from '@/application/ports/oauth/IAuthUrlProvider';
 import { ICodeExchanger } from '@/application/ports/oauth/ICodeExchanger';
 import { ERRORS } from '@/types/constant/errors';
@@ -7,6 +8,7 @@ import { TokenExchangeError } from '@harmonia/shared';
 
 export class GoogleOAuthClient implements IAuthUrlProvider, ICodeExchanger<GoogleOAuthResult> {
   constructor(
+    private readonly logger: ILogger,
     private readonly clientId = process.env.GOOGLE_CLIENT_ID!,
     private readonly clientSecret = process.env.GOOGLE_CLIENT_SECRET!,
     private readonly redirectUri = process.env.GOOGLE_REDIRECT_URI!,
@@ -47,7 +49,8 @@ export class GoogleOAuthClient implements IAuthUrlProvider, ICodeExchanger<Googl
       body,
     });
     if (!tokenRes.ok) {
-      console.error(await tokenRes.text());
+      const errorText = await tokenRes.text();
+      this.logger.error({ error: errorText }, 'Google token exchange failed');
 
       throw new TokenExchangeError(ERRORS.TOKEN_EXCHANGE_ERROR)
     }

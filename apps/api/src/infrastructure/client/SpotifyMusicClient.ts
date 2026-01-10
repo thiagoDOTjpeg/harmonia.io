@@ -1,3 +1,4 @@
+import { logger } from '@/infrastructure/logger';
 import { SpotifyCreatePlaylistResponse, SpotifySearchResponse, SpotifySearchResult } from '@/types/spotify';
 import { ISpotifyMusicClient } from '../../application/ports/spotify/ISpotifyMusicClient';
 import { MusicMatchingService } from '../../domain/services/MusicMatchingService';
@@ -26,7 +27,7 @@ export class SpotifyMusicClient implements ISpotifyMusicClient {
     );
 
     if (!response.ok) {
-      console.error('Spotify search failed:', await response.text());
+      logger.error({ error: await response.text() }, 'Spotify search failed');
       return null;
     }
 
@@ -34,7 +35,7 @@ export class SpotifyMusicClient implements ISpotifyMusicClient {
     const tracks = data.tracks?.items;
 
     if (!tracks || tracks.length === 0) {
-      console.log(`No Spotify results for: ${youtubeTitle}`);
+      logger.debug({ youtubeTitle }, 'No Spotify results found');
       return null;
     }
 
@@ -67,14 +68,16 @@ export class SpotifyMusicClient implements ISpotifyMusicClient {
     }
 
     if (bestMatch && bestMatch.matchScore > 0.6) {
-      console.log(
-        `✅ Match found: "${youtubeTitle}" → "${bestMatch.name}" by ${bestMatch.artist} (score: ${bestMatch.matchScore.toFixed(2)})`
+      logger.debug(
+        { youtubeTitle, matchedTrack: bestMatch.name, artist: bestMatch.artist, score: bestMatch.matchScore },
+        'Match found'
       );
       return bestMatch;
     }
 
-    console.log(
-      `❌ No good match for: "${youtubeTitle}" (best score: ${bestScore.toFixed(2)})`
+    logger.debug(
+      { youtubeTitle, bestScore },
+      'No good match found'
     );
     return null;
   }
