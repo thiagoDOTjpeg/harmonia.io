@@ -53,7 +53,7 @@ export class SyncController {
     try {
       const queryParsed = baseSyncPlaylistSchema.parse(req.params);
       const service = Container.getSyncMusicService();
-      const result = service.cancelSync(queryParsed);
+      const result = service.retrySync(queryParsed);
 
       return res.json(result);
     } catch (error) {

@@ -1,5 +1,6 @@
+import { OpenAPIRegistry } from '@asteasolutions/zod-to-openapi';
 import { z } from 'zod';
-import { registry } from '../openApiRegistry';
+import { USER_ROUTES_OPENAPI } from '../../http/routes.constants';
 
 // ==================== SCHEMAS DE RESPONSE ====================
 
@@ -41,114 +42,124 @@ const ServiceConnectionSchema = z.object({
   createdAt: z.string().datetime(),
 }).openapi('ServiceConnection');
 
-const ErrorResponseSchema = z.object({
-  error: z.string(),
-  message: z.string().optional(),
-  statusCode: z.number().optional(),
-}).openapi('ErrorResponse');
-
 const MessageResponseSchema = z.object({
   message: z.string(),
 }).openapi('MessageResponse');
 
-// ==================== REGISTRAR ROTAS ====================
+// ==================== SCHEMAS DE ERRO ====================
 
-// GET /user/dashboard
-registry.registerPath({
-  method: 'get',
-  path: '/user/dashboard',
-  tags: ['User'],
-  summary: 'Obter resumo do dashboard',
-  description: 'Retorna dados resumidos do usuário para exibição no dashboard',
-  security: [{ bearerAuth: [] }],
-  responses: {
-    200: {
-      description: 'Dados do dashboard',
-      content: {
-        'application/json': {
-          schema: UserSummaryResponseSchema,
-        },
-      },
-    },
-    401: {
-      description: 'Não autorizado',
-      content: {
-        'application/json': {
-          schema: ErrorResponseSchema,
-        },
-      },
-    },
-  },
-});
+const UnauthorizedErrorSchema = z.object({
+  error: z.literal('unathorized'),
+  message: z.string(),
+}).openapi('UnauthorizedError');
 
-// GET /user/connections
-registry.registerPath({
-  method: 'get',
-  path: '/user/connections',
-  tags: ['User'],
-  summary: 'Listar conexões de serviços',
-  description: 'Retorna todas as conexões OAuth do usuário (Google, Spotify)',
-  security: [{ bearerAuth: [] }],
-  responses: {
-    200: {
-      description: 'Lista de conexões',
-      content: {
-        'application/json': {
-          schema: z.array(ServiceConnectionSchema),
-        },
-      },
-    },
-    401: {
-      description: 'Não autorizado',
-      content: {
-        'application/json': {
-          schema: ErrorResponseSchema,
-        },
-      },
-    },
-  },
-});
+const NotFoundErrorSchema = z.object({
+  message: z.string(),
+}).openapi('NotFoundError');
 
-// DELETE /user/connection/:id
-registry.registerPath({
-  method: 'delete',
-  path: '/user/connection/{id}',
-  tags: ['User'],
-  summary: 'Revogar conexão de serviço',
-  description: 'Remove uma conexão OAuth específica do usuário',
-  security: [{ bearerAuth: [] }],
-  request: {
-    params: z.object({
-      id: z.string().uuid().openapi({
-        description: 'ID da conexão a ser revogada',
-        example: '550e8400-e29b-41d4-a716-446655440000',
+// ==================== FUNÇÃO DE REGISTRO ====================
+
+/**
+ * Registra todas as rotas de usuário no OpenAPI Registry
+ */
+export function registerUserDocs(registry: OpenAPIRegistry): void {
+  // GET /user/dashboard
+  registry.registerPath({
+    method: 'get',
+    path: USER_ROUTES_OPENAPI.DASHBOARD,
+    tags: ['User'],
+    summary: 'Obter resumo do dashboard',
+    description: 'Retorna dados resumidos do usuário para exibição no dashboard',
+    security: [{ bearerAuth: [] }],
+    responses: {
+      200: {
+        description: 'Dados do dashboard',
+        content: {
+          'application/json': {
+            schema: UserSummaryResponseSchema,
+          },
+        },
+      },
+      401: {
+        description: 'Token JWT ausente, inválido ou expirado',
+        content: {
+          'application/json': {
+            schema: UnauthorizedErrorSchema,
+          },
+        },
+      },
+    },
+  });
+
+  // GET /user/connections
+  registry.registerPath({
+    method: 'get',
+    path: USER_ROUTES_OPENAPI.CONNECTIONS,
+    tags: ['User'],
+    summary: 'Listar conexões de serviços',
+    description: 'Retorna todas as conexões OAuth do usuário (Google, Spotify)',
+    security: [{ bearerAuth: [] }],
+    responses: {
+      200: {
+        description: 'Lista de conexões',
+        content: {
+          'application/json': {
+            schema: z.array(ServiceConnectionSchema),
+          },
+        },
+      },
+      401: {
+        description: 'Token JWT ausente, inválido ou expirado',
+        content: {
+          'application/json': {
+            schema: UnauthorizedErrorSchema,
+          },
+        },
+      },
+    },
+  });
+
+  // DELETE /user/connection/:id
+  registry.registerPath({
+    method: 'delete',
+    path: USER_ROUTES_OPENAPI.CONNECTION_REVOKE,
+    tags: ['User'],
+    summary: 'Revogar conexão de serviço',
+    description: 'Remove uma conexão OAuth específica do usuário',
+    security: [{ bearerAuth: [] }],
+    request: {
+      params: z.object({
+        id: z.string().uuid().openapi({
+          description: 'ID da conexão a ser revogada',
+          example: '550e8400-e29b-41d4-a716-446655440000',
+        }),
       }),
-    }),
-  },
-  responses: {
-    200: {
-      description: 'Conexão revogada com sucesso',
-      content: {
-        'application/json': {
-          schema: MessageResponseSchema,
+    },
+    responses: {
+      200: {
+        description: 'Conexão revogada com sucesso',
+        content: {
+          'application/json': {
+            schema: MessageResponseSchema,
+          },
+        },
+      },
+      401: {
+        description: 'Token JWT ausente, inválido ou expirado',
+        content: {
+          'application/json': {
+            schema: UnauthorizedErrorSchema,
+          },
+        },
+      },
+      404: {
+        description: 'Conexão não encontrada',
+        content: {
+          'application/json': {
+            schema: NotFoundErrorSchema,
+          },
         },
       },
     },
-    401: {
-      description: 'Não autorizado',
-      content: {
-        'application/json': {
-          schema: ErrorResponseSchema,
-        },
-      },
-    },
-    404: {
-      description: 'Conexão não encontrada',
-      content: {
-        'application/json': {
-          schema: ErrorResponseSchema,
-        },
-      },
-    },
-  },
-});
+  });
+}

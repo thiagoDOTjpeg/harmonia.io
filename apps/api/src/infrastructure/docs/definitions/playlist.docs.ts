@@ -1,5 +1,6 @@
+import { OpenAPIRegistry } from '@asteasolutions/zod-to-openapi';
 import { z } from 'zod';
-import { registry } from '../openApiRegistry';
+import { PLAYLIST_ROUTES_OPENAPI } from '../../http/routes.constants';
 
 // ==================== SCHEMAS DE RESPONSE ====================
 
@@ -17,38 +18,44 @@ const UserPlaylistSchema = z.object({
   updated_at: z.string().datetime(),
 }).openapi('UserPlaylist');
 
-const ErrorResponseSchema = z.object({
-  error: z.string(),
-  message: z.string().optional(),
-  statusCode: z.number().optional(),
-}).openapi('ErrorResponse');
+// ==================== SCHEMAS DE ERRO ====================
 
-// ==================== REGISTRAR ROTAS ====================
+const UnauthorizedErrorSchema = z.object({
+  error: z.literal('unathorized'),
+  message: z.string(),
+}).openapi('UnauthorizedError');
 
-// GET /playlists
-registry.registerPath({
-  method: 'get',
-  path: '/playlists',
-  tags: ['Playlist'],
-  summary: 'Listar playlists do usuário',
-  description: 'Retorna todas as playlists sincronizadas do usuário',
-  security: [{ bearerAuth: [] }],
-  responses: {
-    200: {
-      description: 'Lista de playlists',
-      content: {
-        'application/json': {
-          schema: z.array(UserPlaylistSchema),
+// ==================== FUNÇÃO DE REGISTRO ====================
+
+/**
+ * Registra todas as rotas de playlist no OpenAPI Registry
+ */
+export function registerPlaylistDocs(registry: OpenAPIRegistry): void {
+  // GET /playlists
+  registry.registerPath({
+    method: 'get',
+    path: PLAYLIST_ROUTES_OPENAPI.LIST,
+    tags: ['Playlist'],
+    summary: 'Listar playlists do usuário',
+    description: 'Retorna todas as playlists sincronizadas do usuário',
+    security: [{ bearerAuth: [] }],
+    responses: {
+      200: {
+        description: 'Lista de playlists',
+        content: {
+          'application/json': {
+            schema: z.array(UserPlaylistSchema),
+          },
+        },
+      },
+      401: {
+        description: 'Token JWT ausente, inválido ou expirado',
+        content: {
+          'application/json': {
+            schema: UnauthorizedErrorSchema,
+          },
         },
       },
     },
-    401: {
-      description: 'Não autorizado',
-      content: {
-        'application/json': {
-          schema: ErrorResponseSchema,
-        },
-      },
-    },
-  },
-});
+  });
+}

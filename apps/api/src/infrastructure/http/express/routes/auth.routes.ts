@@ -1,29 +1,30 @@
 import { Router } from 'express';
+import { AUTH_ROUTES } from '../../routes.constants';
 import { AuthController } from '../controllers/AuthController';
 import { AuthMiddleware } from '../middlewares/AuthMiddleware';
 
 const router = Router();
 
-router.post("/auth/request-reset", AuthController.requestReset)
+router.post(AUTH_ROUTES.REQUEST_RESET, AuthController.requestReset)
 
-router.post("/auth/reset-password", AuthController.resetPassword)
+router.post(AUTH_ROUTES.RESET_PASSWORD, AuthController.resetPassword)
 
-router.post("/auth/set-password", AuthMiddleware.authenticate, AuthController.setPassword)
+router.post(AUTH_ROUTES.SET_PASSWORD, AuthMiddleware.authenticate, AuthController.setPassword)
 
-router.get("/auth/:provider", AuthController.startOAuthFlow)
+router.get(AUTH_ROUTES.OAUTH_START, AuthController.startOAuthFlow)
 
-router.get("/auth/:provider/callback", AuthController.handleOAuthCallback)
+router.get(AUTH_ROUTES.OAUTH_CALLBACK, AuthController.handleOAuthCallback)
 
 router.post(
-  '/auth/register',
+  AUTH_ROUTES.REGISTER,
   AuthController.localRegister
 );
 
 router.post(
-  '/auth/login',
+  AUTH_ROUTES.LOGIN,
   AuthController.localLogin
 );
 
-router.post("/auth/request-access", AuthController.requestAccess);
+router.post(AUTH_ROUTES.REQUEST_ACCESS, AuthController.requestAccess);
 
 export default router;
