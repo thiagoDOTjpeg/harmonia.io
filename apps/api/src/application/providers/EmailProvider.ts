@@ -1,3 +1,4 @@
+import { ERRORS } from "@/types/constant/errors";
 import { AppError, RequestAccessDTO } from "@harmonia/shared";
 import { createTransport, Transporter } from "nodemailer";
 import { IEmailProvider } from "../ports/email/IEmailProvider";
@@ -19,7 +20,7 @@ export class EmailProvider implements IEmailProvider {
     })
   }
 
-  async sendResetPasswordEmail(outputEmail: string, randomCode: number): Promise<void> {
+  async sendResetPasswordEmail(outputEmail: string, randomCode: string): Promise<void> {
     const mailOptions = {
       from: process.env.NODEMAILER_EMAIL,
       to: outputEmail,
@@ -30,7 +31,7 @@ export class EmailProvider implements IEmailProvider {
       await this.transporter.sendMail(mailOptions)
     } catch (error) {
       console.error("Ocorreu um erro ao enviar o email", error);
-      throw new AppError("Ocorreu um erro ao enviar o email")
+      throw new AppError(ERRORS.EMAIL_NOT_SENT)
     }
   }
 
@@ -46,7 +47,7 @@ export class EmailProvider implements IEmailProvider {
       await this.transporter.sendMail(mailOptions);
     } catch (error) {
       console.error("Ocorreu um erro ao enviar o email", error);
-      throw new AppError("Ocorreu um erro ao enviar o email")
+      throw new AppError(ERRORS.EMAIL_NOT_SENT)
     }
   }
 }

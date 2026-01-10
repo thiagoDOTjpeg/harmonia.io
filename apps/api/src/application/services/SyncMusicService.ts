@@ -3,6 +3,7 @@ import { ITokenSerializer } from "@/application/ports/serializer/ITokenSerialize
 import { EnsureValidConnectionsUseCase } from "@/application/use_cases/service-connection/EnsureValidConnectionsUseCase";
 import { PrismaPlaylistRepository } from "@/infrastructure/db/prisma/repositories/PrismaPlaylistRepository";
 import { PlaylistSyncQueue } from "@/infrastructure/queue/PlaylistSyncQueue";
+import { ERRORS } from "@/types/constant/errors";
 import { TokenEncrypted } from "@/types/encrypter";
 import { cancelSyncPlaylistDTO, createSyncPlaylistDTO, getSyncPlaylistStatusDTO, PlaylistLimitExceededError, retrySyncPlaylistDTO, ServiceProvider } from "@harmonia/shared";
 import { ServiceConnection } from "../../domain/entities/ServiceConnection";
@@ -26,14 +27,14 @@ export class SyncMusicService {
     try {
       connections = await this.ensureValidConnectionsUseCase.execute(user.id);
     } catch (error) {
-      throw new Error("Erro ao sincronizar playlist", { cause: error })
+      throw new Error(ERRORS.SYNC_PLAYLIST, { cause: error })
     }
 
     const googleConnection = connections.get(ServiceProvider.GOOGLE)
     const spotifyConnection = connections.get(ServiceProvider.SPOTIFY)
 
     if (spotifyConnection === undefined || googleConnection === undefined) {
-      throw new Error("Conexão com serviços necessário não estão ativas")
+      throw new Error(ERRORS.SERVICE_CONNECTIONS_NOT_ACTIVE);
     }
 
     const youtubePlaylistInfo = await this.googleMusicClient.getPlaylistInfo(

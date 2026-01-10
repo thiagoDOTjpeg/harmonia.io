@@ -1,5 +1,6 @@
 import { IAuthUrlProvider } from '@/application/ports/oauth/IAuthUrlProvider';
 import { ICodeExchanger } from '@/application/ports/oauth/ICodeExchanger';
+import { ERRORS } from '@/types/constant/errors';
 import { GoogleTokenResponse, GoogleUserInfo } from '@/types/google';
 import { GoogleOAuthResult } from '@/types/oauth/results';
 import { TokenExchangeError } from '@harmonia/shared';
@@ -48,7 +49,7 @@ export class GoogleOAuthClient implements IAuthUrlProvider, ICodeExchanger<Googl
     if (!tokenRes.ok) {
       console.error(await tokenRes.text());
 
-      throw new TokenExchangeError()
+      throw new TokenExchangeError(ERRORS.TOKEN_EXCHANGE_ERROR)
     }
     const tokens = (await tokenRes.json()) as GoogleTokenResponse;
 

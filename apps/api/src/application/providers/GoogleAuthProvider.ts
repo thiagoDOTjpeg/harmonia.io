@@ -1,4 +1,5 @@
 import { ServiceConnection } from "@/domain/entities/ServiceConnection";
+import { ERRORS } from "@/types/constant/errors";
 import { GoogleTokenResponse } from "@/types/google";
 import { AppError } from "@harmonia/shared";
 import { IAuthProvider } from "../ports/auth/IAuthProvider";
@@ -20,15 +21,13 @@ export class GoogleAuthProvider implements IAuthProvider {
       const response = await fetch("https://oauth2.googleapis.com/revoke", requestOptions);
 
       if (!response.ok) {
-        const errorText = await response.text();
-        console.error('Erro ao revogar token do Google:', errorText);
-        throw new AppError(`Falha ao revogar token: ${response.status} ${response.statusText}`);
+        throw new AppError(ERRORS.GOOGLE_REVOKE_TOKEN);
       }
 
       console.log('Token do Google revogado com sucesso');
     } catch (error) {
       console.error('Erro ao revogar token:', error);
-      throw new AppError("Erro ao revogar acesso do Google");
+      throw error;
     }
   }
 
@@ -41,7 +40,7 @@ export class GoogleAuthProvider implements IAuthProvider {
 
   public async refreshToken(refreshToken: string | null): Promise<GoogleTokenResponse> {
     if (!refreshToken) {
-      throw new Error("Refresh Token é inválido")
+      throw new Error(ERRORS.INVALID_TOKEN)
     }
     const clientId = process.env.GOOGLE_CLIENT_ID || ""
     const secretId = process.env.GOOGLE_CLIENT_SECRET || ""
@@ -62,7 +61,7 @@ export class GoogleAuthProvider implements IAuthProvider {
       const json = await response.json() as GoogleTokenResponse;
       return json;
     } catch (error) {
-      throw new Error("Erro ao reautenticar tokens")
+      throw new Error(ERRORS.REAUTH_TOKEN)
     }
   }
 

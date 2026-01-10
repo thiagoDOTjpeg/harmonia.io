@@ -1,5 +1,6 @@
 import { IAuthUrlProviderFactory } from "@/application/ports/factory/IAuthUrlProviderFactory";
 import { IAuthUrlProvider } from "@/application/ports/oauth/IAuthUrlProvider";
+import { ERRORS } from "@/types/constant/errors";
 import { BadRequestError, ServiceProvider } from "@harmonia/shared";
 
 export class OAuthUrlFactory implements IAuthUrlProviderFactory {
@@ -11,7 +12,7 @@ export class OAuthUrlFactory implements IAuthUrlProviderFactory {
 
   getStrategy(serviceProvider: ServiceProvider): IAuthUrlProvider {
     const authProvider = this.authProviders[serviceProvider];
-    if (!authProvider) throw new BadRequestError("Serviço não suportado")
+    if (!authProvider) throw new BadRequestError(ERRORS.SERVICE_CONNECTION_INVALID)
     return authProvider;
   }
 

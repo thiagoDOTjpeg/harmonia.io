@@ -8,6 +8,7 @@ import { IServiceConnectionRepository } from "@/application/repositories/IServic
 import { IUserRepository } from "@/application/repositories/IUserRepository";
 import { ServiceConnection } from "@/domain/entities/ServiceConnection";
 import { User } from "@/domain/entities/User";
+import { ERRORS } from "@/types/constant/errors";
 import { TokenEncrypted } from "@/types/encrypter";
 import { SpotifyOAuthResult } from "@/types/oauth/results";
 import { OAuthState } from "@/types/oauth/state";
@@ -47,7 +48,7 @@ export class SpotifyOAuthCallbackStrategy implements IOAuthCallbackStrategy {
     );
 
     if (!exchangeData.profile.email || !exchangeData.profile.display_name) {
-      throw new InvalidCredentialsError("Não foi possível obter/verificar o email/nome.")
+      throw new InvalidCredentialsError(ERRORS.OAUTH_INVALID_CREDENTIALS)
     }
 
     const normalizedEmail = exchangeData.profile.email?.trim().toLowerCase();
@@ -60,7 +61,7 @@ export class SpotifyOAuthCallbackStrategy implements IOAuthCallbackStrategy {
       case OAuthMethod.connect:
         return this.handleConnect(exchangeData, expiresAt, normalizedEmail, returnTo, loggedUserId)
       default:
-        throw new AppError("Metodo não suportado")
+        throw new AppError(ERRORS.OAUTH_INVALID_METHOD)
     }
   }
 
@@ -73,7 +74,7 @@ export class SpotifyOAuthCallbackStrategy implements IOAuthCallbackStrategy {
 
     const existingUser = await this.users.findByEmail(email);
     if (existingUser) {
-      throw new InvalidCredentialsError("Já existe um usuário cadastrado com esses dados. Faça login e conecte o serviço")
+      throw new InvalidCredentialsError(ERRORS.OAUTH_USER_ALREADY_EXISTIS)
     }
 
     const persistUser = User.create({
@@ -107,7 +108,7 @@ export class SpotifyOAuthCallbackStrategy implements IOAuthCallbackStrategy {
   ): Promise<AuthResponse> {
     const user = await this.users.findByEmail(email);
     if (!user) {
-      throw new NotFoundError("Nenhum usuário encontrado, faça o registro")
+      throw new NotFoundError(ERRORS.OAUTH_USER_NOT_FOUND)
 
     }
 
@@ -115,7 +116,7 @@ export class SpotifyOAuthCallbackStrategy implements IOAuthCallbackStrategy {
     const existingServiceConnection = await this.serviceConnection.findByServiceId(exchangeData.profile.id)
     if (existingServiceConnection) {
       if (existingServiceConnection.userId !== user.id) {
-        throw new InvalidCredentialsError("Esta conta Spotify já está vinculada.")
+        throw new InvalidCredentialsError(ERRORS.SPOTIFY_ACCOUNT_ALREADY_LINKED)
       }
       serviceConnection = await this.updateServiceConnection(user, exchangeData, expiresAt);
     } else {
@@ -144,11 +145,11 @@ export class SpotifyOAuthCallbackStrategy implements IOAuthCallbackStrategy {
     loggedUserId?: string
   ): Promise<AuthResponse> {
     if (!loggedUserId) {
-      throw new UnathorizedError("Usuário não identificado para conexão.")
+      throw new UnathorizedError(ERRORS.OAUTH_CONNECT_USER_INVALID)
     }
     const user = await this.users.findByUserId(loggedUserId);
     if (!user) {
-      throw new NotFoundError("Nenhum usuário encontrado, conta do serviço diferente da cadastrada");
+      throw new NotFoundError(ERRORS.OAUTH_CONNECT_USER_NOT_FOUND);
     }
 
     let serviceConnection: ServiceConnection;
@@ -156,7 +157,7 @@ export class SpotifyOAuthCallbackStrategy implements IOAuthCallbackStrategy {
 
     if (existingServiceConnection) {
       if (existingServiceConnection.userId !== user.id) {
-        throw new InvalidCredentialsError("Esta conta Spotify já está vinculada.")
+        throw new InvalidCredentialsError(ERRORS.SPOTIFY_ACCOUNT_ALREADY_LINKED)
       }
       serviceConnection = await this.updateServiceConnection(user, exchangeData, expiresAt);
     } else {

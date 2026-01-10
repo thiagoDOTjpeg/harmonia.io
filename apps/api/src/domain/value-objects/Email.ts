@@ -1,4 +1,5 @@
-import { AppError } from '@harmonia/shared'; 
+import { ERRORS } from '@/types/constant/errors';
+import { AppError } from '@harmonia/shared';
 
 export class Email {
   private readonly value: string;
@@ -10,13 +11,13 @@ export class Email {
 
   static create(email: string): Email {
     if (!email) {
-      throw new AppError('Email é obrigatório');
+      throw new AppError(ERRORS.EMAIL_REQUIRED);
     }
     const normalized = email.trim().toLowerCase();
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(normalized)) {
-      throw new AppError(`Email inválido: ${email}`);
+      throw new AppError(ERRORS.EMAIL_INVALID);
     }
 
     return new Email(normalized);

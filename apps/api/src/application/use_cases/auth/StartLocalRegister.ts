@@ -1,5 +1,6 @@
 import { IHasher } from '@/application/ports/crypto/IHasher';
 import { User } from '@/domain/entities/User';
+import { ERRORS } from '@/types/constant/errors';
 import { AppError, AuthResponse, RegisterDTO } from '@harmonia/shared';
 import { ITokenManager } from '../../ports/crypto/ITokenManager';
 import { IUserRepository } from '../../repositories/IUserRepository';
@@ -15,7 +16,7 @@ export class StartLocalRegister {
     try {
       const existing = await this.userRepository.findByEmail(input.email);
       if (existing) {
-        throw new AppError("Email já utilizado")
+        throw new AppError(ERRORS.EMAIL_ALREADY_IN_USE)
       }
 
       const passwordHash = await this.passwordHasher.hash(input.password);
@@ -37,7 +38,7 @@ export class StartLocalRegister {
       };
     } catch (error: any) {
       if (error?.code === 'P2002') {
-        throw new AppError("Email já utilizado")
+        throw new AppError(ERRORS.EMAIL_ALREADY_IN_USE)
       }
       throw error;
     }
