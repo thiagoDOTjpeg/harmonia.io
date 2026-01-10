@@ -8,6 +8,7 @@ import { createMockHasher } from "@/tests/factories/MockPasswordHasherFactory";
 import { createMockStateStore } from "@/tests/factories/MockStateStoreFactory";
 import { createMockUserRepository } from "@/tests/factories/MockUserRepositoryFactory";
 import { ResetState } from "@/types/auth";
+import { ERRORS } from "@/types/constant/errors";
 import { AppError, ResetPasswordDTO } from "@harmonia/shared";
 
 describe("ResetPasswordUseCase", () => {
@@ -57,7 +58,7 @@ describe("ResetPasswordUseCase", () => {
       email: "test@gmail.com",
       newPassword: "newPassword-123"
     }
-    const error = new AppError("O código, e-mail ou senha estão inválidos ou expirados.");
+    const error = new AppError(ERRORS.RESET_PASSWORD);
     mockUserRepository.findByEmail.mockResolvedValue(null);
 
     await expect(useCase.execute(input)).rejects.toThrow(error)
@@ -76,7 +77,7 @@ describe("ResetPasswordUseCase", () => {
       email: "test@gmail.com",
       newPassword: "newPassword-123"
     }
-    const error = new AppError("O código, e-mail ou senha estão inválidos ou expirados.");
+    const error = new AppError(ERRORS.RESET_PASSWORD);
     mockUserRepository.findByEmail.mockResolvedValue(foundUser);
     mockStateStore.get.mockResolvedValue(undefined);
 
@@ -99,7 +100,7 @@ describe("ResetPasswordUseCase", () => {
       email: "test@gmail.com",
       newPassword: "newPassword-123"
     }
-    const error = new AppError("O código, e-mail ou senha estão inválidos ou expirados.");
+    const error = new AppError(ERRORS.RESET_PASSWORD);
     mockUserRepository.findByEmail.mockResolvedValue(foundUser);
     mockStateStore.get.mockResolvedValue(foundState)
 

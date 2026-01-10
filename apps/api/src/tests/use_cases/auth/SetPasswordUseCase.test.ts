@@ -1,6 +1,7 @@
 import { IHasher } from "@/application/ports/crypto/IHasher";
 import { IUserRepository } from "@/application/repositories/IUserRepository";
 import { SetPasswordUseCase } from "@/application/use_cases/auth/SetPasswordUseCase";
+import { ERRORS } from "@/types/constant/errors";
 import { AppError } from "@harmonia/shared";
 import { UserBuilder } from "../../builders/UserBuilder";
 import { createMockHasher } from "../../factories/MockPasswordHasherFactory";
@@ -34,7 +35,7 @@ describe("SetPasswordUseCase", () => {
 
   it("should throw error when user already has a password", async () => {
     const newPassword = "senha-nova"
-    const error = new AppError("Caso tenha esquecido a senha, vá para o formulário de esqueci minha senha")
+    const error = new AppError(ERRORS.SET_PASSWORD_USER_HAS_PASSWORD)
     const mockUser = new UserBuilder().withPasswordHash("senha-haseheada").build();
 
     await expect(useCase.execute(mockUser, { newPassword })).rejects.toThrow(error)

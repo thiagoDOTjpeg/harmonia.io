@@ -2,6 +2,8 @@ import { IHasher } from "@/application/ports/crypto/IHasher";
 import { ITokenManager } from "@/application/ports/crypto/ITokenManager";
 import { IUserRepository } from "@/application/repositories/IUserRepository";
 import { StartLocalRegister } from "@/application/use_cases/auth/StartLocalRegister";
+import { ERRORS } from "@/types/constant/errors";
+import { AppError } from "@harmonia/shared";
 import { UserBuilder } from "../../builders/UserBuilder";
 import { createMockHasher } from "../../factories/MockPasswordHasherFactory";
 import { createMockTokenManager } from "../../factories/MockTokenManager";
@@ -51,13 +53,14 @@ describe("Start Local Register Use Case", () => {
   it("should throw an error if the email already exists", async () => {
     const validUser = new UserBuilder().build();
     mockUserRepository.findByEmail.mockResolvedValue(validUser);
+    const error = new AppError(ERRORS.EMAIL_ALREADY_IN_USE)
 
     await expect(useCase.execute({
       email: validUser.email,
       password: "teste123",
       name: validUser.name
     }))
-      .rejects.toThrow("Email já utilizado");
+      .rejects.toThrow(error);
 
     expect(mockUserRepository.findByEmail).toHaveBeenCalledTimes(1);
     expect(mockPasswordHasher.hash).not.toHaveBeenCalled();
@@ -67,6 +70,7 @@ describe("Start Local Register Use Case", () => {
 
   it("should throw AppError when DB throws constraint violation (P2002) even if findByEmail returns null", async () => {
     const validUser = new UserBuilder().build();
+    const error = new AppError(ERRORS.EMAIL_ALREADY_IN_USE)
 
     mockUserRepository.findByEmail.mockResolvedValue(null);
 
@@ -80,7 +84,7 @@ describe("Start Local Register Use Case", () => {
       password: "teste123",
       name: validUser.name
     }))
-      .rejects.toThrow("Email já utilizado");
+      .rejects.toThrow(error);
 
     expect(mockUserRepository.save).toHaveBeenCalledTimes(1);
   });

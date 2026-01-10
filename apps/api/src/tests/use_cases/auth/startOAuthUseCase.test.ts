@@ -4,6 +4,7 @@ import { IAuthUrlProvider } from "@/application/ports/oauth/IAuthUrlProvider";
 import { IStateStore } from "@/application/ports/oauth/IStateStore";
 import { StartOAuthUseCase } from "@/application/use_cases/auth/StartOAuthUseCase";
 import { createMockCodeGeneratorFactory } from "@/tests/factories/MockCodeGeneratorFactory";
+import { ERRORS } from "@/types/constant/errors";
 import { OAuthState } from "@/types/oauth/state";
 import { BadRequestError, OAuthMethod, ServiceProvider } from "@harmonia/shared";
 import { createMockAuthUrlFactory, createMockAuthUrlProvider } from "../../factories/MockAuthUrlProviderFactory";
@@ -34,10 +35,12 @@ describe("Start OAuth Use Case", () => {
 
   it("should generate the state, persist in the store and return the url for redirect", async () => {
     const redirectToValue = "http://redirectTo.com.br"
+    const expectedState = Buffer.from("mocked-entropy-for-test-32b").toString("base64url");
+
     MockAuthUrlProviderFactory.getStrategy.mockReturnValue(mockAuthUrlProvider)
     mockAuthUrlProvider.buildAuthUrl.mockReturnValue(redirectToValue)
+    mockCodeGenerator.generateState.mockReturnValue(expectedState)
 
-    const expectedState = Buffer.from("mocked-entropy-for-test-32b").toString("base64url");
 
     const mockInput = {
       provider: ServiceProvider.GOOGLE,
@@ -61,7 +64,7 @@ describe("Start OAuth Use Case", () => {
   })
 
   it("should propagate error when strategy is not found", async () => {
-    const error = new BadRequestError("Serviço não suportado");
+    const error = new BadRequestError(ERRORS.SERVICE_CONNECTION_INVALID)
 
     MockAuthUrlProviderFactory.getStrategy.mockImplementation(() => {
       throw error

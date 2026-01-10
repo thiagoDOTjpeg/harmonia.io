@@ -2,6 +2,8 @@ import { IHasher } from "@/application/ports/crypto/IHasher"
 import { ITokenManager } from "@/application/ports/crypto/ITokenManager"
 import { IUserRepository } from "@/application/repositories/IUserRepository"
 import { StartLocalLogin } from "@/application/use_cases/auth/StartLocalLogin"
+import { ERRORS } from "@/types/constant/errors"
+import { InvalidCredentialsError } from "@harmonia/shared"
 import { UserBuilder } from "../../builders/UserBuilder"
 import { createMockHasher } from "../../factories/MockPasswordHasherFactory"
 import { createMockTokenManager } from "../../factories/MockTokenManager"
@@ -43,12 +45,13 @@ describe("Start Local Login User Case", () => {
 
   it("should throw an error for wrong/incorrect password", async () => {
     const validUser = new UserBuilder().build();
+    const error = new InvalidCredentialsError(ERRORS.INVALID_CREDENTIALS)
 
     mockUserRepository.findByEmail.mockResolvedValue(validUser);
     mockPasswordHasher.verify.mockResolvedValue(false);
 
     const payload = { email: "teste123@123.com", password: "senhaErrada" };
-    await expect(useCase.execute(payload)).rejects.toThrow("Email ou senha inválidos");
+    await expect(useCase.execute(payload)).rejects.toThrow(error);
 
     expect(mockUserRepository.findByEmail).toHaveBeenCalledTimes(1)
     expect(mockPasswordHasher.verify).toHaveBeenCalledTimes(1);
@@ -57,9 +60,10 @@ describe("Start Local Login User Case", () => {
 
   it("should throw and error if the user doesn't exists", async () => {
     mockUserRepository.findByEmail.mockResolvedValue(null);
+    const error = new InvalidCredentialsError(ERRORS.INVALID_CREDENTIALS)
 
     const payload = { email: "teste123@123.com", password: "senhaErrada" };
-    await expect(useCase.execute(payload)).rejects.toThrow("Email ou senha inválidos");
+    await expect(useCase.execute(payload)).rejects.toThrow(error);
 
     expect(mockUserRepository.findByEmail).toHaveBeenCalledTimes(1)
     expect(mockPasswordHasher.verify).not.toHaveBeenCalled();
@@ -68,11 +72,12 @@ describe("Start Local Login User Case", () => {
 
   it("should throw and error if the user exists but doesn't have a password", async () => {
     const validUser = new UserBuilder().withoutPassword().build();
+    const error = new InvalidCredentialsError(ERRORS.INVALID_CREDENTIALS)
 
     mockUserRepository.findByEmail.mockResolvedValue(validUser);
 
     const payload = { email: "teste123@123.com", password: "senhaErrada" };
-    await expect(useCase.execute(payload)).rejects.toThrow("Email ou senha inválidos");
+    await expect(useCase.execute(payload)).rejects.toThrow(error);
 
     expect(mockUserRepository.findByEmail).toHaveBeenCalledTimes(1)
     expect(mockPasswordHasher.verify).not.toHaveBeenCalled();

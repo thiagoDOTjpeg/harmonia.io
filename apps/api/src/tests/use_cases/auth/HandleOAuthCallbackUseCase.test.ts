@@ -5,6 +5,7 @@ import { HandleOAuthCallbackUseCase } from "@/application/use_cases/auth/HandleO
 import { UserBuilder } from "@/tests/builders/UserBuilder";
 import { createMockStateStore } from "@/tests/factories/MockStateStoreFactory";
 import { createMockOAuthStrategyFactory } from "@/tests/factories/MockStrategyFactory";
+import { ERRORS } from "@/types/constant/errors";
 import { OAuthState } from "@/types/oauth/state";
 import { AuthResponse, NotFoundError, OAuthMethod, ServiceProvider } from "@harmonia/shared";
 
@@ -64,7 +65,7 @@ describe("HandleOAuthCallbackUseCase", () => {
       code: "123456",
       state: "123456"
     }
-    const error = new NotFoundError("State não encontrado")
+    const error = new NotFoundError(ERRORS.STATE_NOT_FOUND)
     mockStrategyFactory.getStrategy.mockReturnValue(mockStrategy);
     mockStateStore.get.mockResolvedValue(undefined);
 
@@ -82,7 +83,7 @@ describe("HandleOAuthCallbackUseCase", () => {
       code: "123456",
       state: "123456"
     }
-    const error = new NotFoundError("Nenhum usuário conectado");
+    const error = new NotFoundError(ERRORS.USER_NOT_CONNECTED);
     const stateData: OAuthState = {
       method: OAuthMethod.connect,
     }
