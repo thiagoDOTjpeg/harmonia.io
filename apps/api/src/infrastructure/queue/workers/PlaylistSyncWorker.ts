@@ -1,3 +1,5 @@
+import { RequestContext } from '@/infrastructure/context/RequestContext';
+import { logger } from '@/infrastructure/logger';
 import { SyncPlaylistJobData, SyncProgress, SyncResult } from '@/types/sync-job';
 import { Job } from 'bull';
 import { MusicMatchingService } from '../../../domain/services/MusicMatchingService';
@@ -25,10 +27,19 @@ export class PlaylistSyncWorker {
   }
 
   static async process(job: Job<SyncPlaylistJobData>): Promise<SyncResult> {
+    return RequestContext.run(
+      { requestId: job.id?.toString() || 'unknown', correlationId: job.id?.toString() },
+      async () => {
+        return PlaylistSyncWorker.executeSync(job);
+      }
+    );
+  }
+
+  private static async executeSync(job: Job<SyncPlaylistJobData>): Promise<SyncResult> {
     const startTime = Date.now();
     const { data } = job;
 
-    console.log(`[Worker] Iniciando sync da playlist ${data.playlistId}`);
+    logger.info({ playlistId: data.playlistId, userId: data.userId }, 'Starting playlist sync');
 
     try {
       await job.progress({
@@ -58,7 +69,7 @@ export class PlaylistSyncWorker {
         data.googleAccessToken
       );
 
-      console.log(`[Worker] ${youtubeVideos.length} vídeos encontrados no YouTube`);
+      logger.info({ videoCount: youtubeVideos.length }, 'YouTube videos fetched');
 
       await job.progress({
         status: 'matching',
@@ -79,7 +90,7 @@ export class PlaylistSyncWorker {
           `Synced from YouTube • ${youtubePlaylistInfo.description || 'Harmonia.io'}`
         );
 
-        console.log(`[Worker] Playlist criada no Spotify: ${spotifyPlaylistId}`);
+        logger.info({ spotifyPlaylistId }, 'Spotify playlist created');
 
         syncedPlaylist = await playlistRepository.create({
           userId: data.userId,
@@ -91,7 +102,7 @@ export class PlaylistSyncWorker {
           spotifyTitle: youtubePlaylistInfo.title,
         });
       } else {
-        console.log(`[Worker] Playlist já existe, atualizando...`);
+        logger.info({ playlistId: syncedPlaylist.id }, 'Playlist exists, updating');
       }
 
       const existingPlaylistTracks = await playlistTrackRepository.findByPlaylistId(
@@ -126,7 +137,7 @@ export class PlaylistSyncWorker {
         } as SyncProgress);
 
         try {
-          console.log(`[Worker] Processando (${i + 1}/${youtubeVideos.length}): ${video.title}`);
+          logger.debug({ trackIndex: i + 1, totalTracks: youtubeVideos.length, videoTitle: video.title }, 'Processing track');
 
           let track = await trackRepository.findByYoutubeVideoId(video.videoId);
 
@@ -143,15 +154,16 @@ export class PlaylistSyncWorker {
             spotifyMatch = await spotifyClient.searchTrack(video.title, video.videoOwnerChannelTitle);
 
             if (!spotifyMatch) {
-              console.log(`[Worker] ❌ Falha no match: ${video.title}`);
+              logger.warn({ videoTitle: video.title, videoId: video.videoId }, 'Match failed');
               failedCount++;
               continue;
             }
 
             await new Promise((resolve) => setTimeout(resolve, 1000));
           } else {
-            console.log(
-              `[Worker] ♻️  Reutilizando match: ${track.spotifyArtist} - ${track.spotifyTrackId}`
+            logger.debug(
+              { spotifyArtist: track.spotifyArtist, spotifyTrackId: track.spotifyTrackId },
+              'Reusing existing match'
             );
           }
 
@@ -168,8 +180,9 @@ export class PlaylistSyncWorker {
               });
 
               if (bestVideo.videoId === video.videoId) {
-                console.log(
-                  `[Worker] 🔄 Duplicata: Substituindo "${existingMatch.video.title}" (${existingMatch.video.channelTitle}) por "${video.title}" (${video.channelTitle})`
+                logger.debug(
+                  { oldVideo: existingMatch.video.title, newVideo: video.title, channel: video.channelTitle },
+                  'Duplicate: replacing with better match'
                 );
 
                 processedSpotifyTracks.set(spotifyTrackId, {
@@ -193,8 +206,9 @@ export class PlaylistSyncWorker {
                   });
                 }
               } else {
-                console.log(
-                  `[Worker] 🔄 Duplicata: Mantendo "${existingMatch.video.title}" (${existingMatch.video.channelTitle}), ignorando "${video.title}" (${video.channelTitle})`
+                logger.debug(
+                  { keptVideo: existingMatch.video.title, ignoredVideo: video.title },
+                  'Duplicate: keeping existing'
                 );
               }
 
@@ -238,7 +252,7 @@ export class PlaylistSyncWorker {
               if (!error.message?.includes('Unique constraint')) {
                 throw error;
               }
-              console.log(`[Worker] Track já existe na playlist: ${track.id}`);
+              logger.debug({ trackId: track.id }, 'Track already exists in playlist');
             }
           }
 
@@ -246,7 +260,7 @@ export class PlaylistSyncWorker {
             syncedCount++;
           }
         } catch (error) {
-          console.error(`[Worker] Erro ao processar ${video.videoId}:`, error);
+          logger.error({ err: error, videoId: video.videoId }, 'Error processing video');
           failedCount++;
         }
       }
@@ -264,16 +278,16 @@ export class PlaylistSyncWorker {
           failedTracks: failedCount,
         } as SyncProgress);
 
-        console.log(`[Worker] Adicionando ${uniqueTracksToAdd.length} músicas únicas no Spotify...`);
+        logger.info({ tracksToAdd: uniqueTracksToAdd.length }, 'Adding unique tracks to Spotify');
 
         await spotifyClient.addTracksToPlaylist(
           syncedPlaylist.spotifyPlaylistId,
           uniqueTracksToAdd
         );
 
-        console.log(`[Worker] ✅ ${uniqueTracksToAdd.length} músicas adicionadas no Spotify`);
+        logger.info({ addedTracks: uniqueTracksToAdd.length }, 'Tracks added to Spotify');
       } else {
-        console.log(`[Worker] Nenhuma música nova para adicionar`);
+        logger.info('No new tracks to add');
       }
 
       const finalStatus =
@@ -298,8 +312,9 @@ export class PlaylistSyncWorker {
 
       const duration = Date.now() - startTime;
 
-      console.log(
-        `[Worker] Concluído! ${syncedCount} sincronizadas | ${failedCount} falharam | ${duplicateCount} duplicatas removidas em ${duration}ms`
+      logger.info(
+        { syncedTracks: syncedCount, failedTracks: failedCount, duplicates: duplicateCount, durationMs: duration },
+        'Sync completed'
       );
 
       return {
@@ -313,7 +328,7 @@ export class PlaylistSyncWorker {
         duration,
       };
     } catch (error) {
-      console.error('[Worker] Erro crítico:', error);
+      logger.error({ err: error }, 'CRITICAL: Sync failed');
 
       await job.progress({
         status: 'failed',

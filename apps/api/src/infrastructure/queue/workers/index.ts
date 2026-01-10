@@ -1,3 +1,4 @@
+import { logger } from '@/infrastructure/logger';
 import { PlaylistSyncQueue } from '../PlaylistSyncQueue';
 import { PlaylistSyncWorker } from './PlaylistSyncWorker';
 
@@ -8,10 +9,10 @@ export function startWorkers() {
     return await PlaylistSyncWorker.process(job);
   });
 
-  console.log('✅ Workers iniciados');
+  logger.info('Workers started');
 
   process.on('SIGTERM', async () => {
-    console.log('⏳ Aguardando jobs finalizarem...');
+    logger.info('Waiting for jobs to finish...');
     await queue.close();
     process.exit(0);
   });

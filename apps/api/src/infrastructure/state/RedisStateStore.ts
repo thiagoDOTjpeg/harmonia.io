@@ -1,8 +1,12 @@
+import { ILogger } from '@/application/ports/logger/ILogger';
 import { IStateStore } from '../../application/ports/oauth/IStateStore';
 import { redis } from '../db/redis/client';
 
 export class RedisStateStore<T> implements IStateStore<T> {
-  constructor(private readonly prefix: string) { }
+  constructor(
+    private readonly prefix: string,
+    private readonly logger: ILogger
+  ) { }
 
   private buildKey(key: string): string {
     return `${this.prefix}:${key}`
@@ -14,7 +18,7 @@ export class RedisStateStore<T> implements IStateStore<T> {
       if (!data) return undefined;
       return JSON.parse(data) as T;
     } catch (error) {
-      console.error('Redis get error:', error);
+      this.logger.error({ err: error, key }, 'Redis get error');
       return undefined;
     }
   }
@@ -23,7 +27,7 @@ export class RedisStateStore<T> implements IStateStore<T> {
     try {
       await redis.setEx(this.buildKey(key), expirationInSeconds, JSON.stringify(value));
     } catch (error) {
-      console.error('Redis set error:', error);
+      this.logger.error({ err: error, key }, 'Redis set error');
       throw error;
     }
   }
@@ -32,7 +36,7 @@ export class RedisStateStore<T> implements IStateStore<T> {
     try {
       await redis.del(this.buildKey(key));
     } catch (error) {
-      console.error('Redis delete error:', error);
+      this.logger.error({ err: error, key }, 'Redis delete error');
     }
   }
 }

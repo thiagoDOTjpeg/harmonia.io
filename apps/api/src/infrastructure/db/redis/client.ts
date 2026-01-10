@@ -1,3 +1,4 @@
+import { logger } from '@/infrastructure/logger';
 import { createClient } from "redis";
 
 const redisClient = createClient({
@@ -15,13 +16,15 @@ const redisClient = createClient({
 });
 
 redisClient.on('error', (err) => {
-  console.error('Redis connection error:', err);
+  logger.error({ err }, 'Redis connection error');
 });
 
 redisClient.on('connect', () => {
-  console.log('✅ Redis connected, ambiente:', process.env.NODE_ENV);
+  logger.info({ env: process.env.NODE_ENV }, 'Redis connected');
 });
 
-redisClient.connect().catch(console.error);
+redisClient.connect().catch((err) => {
+  logger.error({ err }, 'Failed to connect to Redis');
+});
 
 export { redisClient as redis };
