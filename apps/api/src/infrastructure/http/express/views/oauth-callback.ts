@@ -47,21 +47,16 @@ export function getOAuthCallbackHTML(data: OAuthCallbackData, returnTo?: string)
         if (window.opener && !window.opener.closed) {
           messageElement.textContent = message.type === 'oauth-success' ? 'Autenticação concluída!' : 'Falha na autenticação.';
           
-          console.log('📤 Enviando mensagem para a janela principal:', message, 'para a origem:', targetOrigin);
           window.opener.postMessage(message, targetOrigin);
 
-          // Dê tempo para a mensagem ser processada antes de fechar.
           setTimeout(() => {
-            console.log('🚪 Fechando popup.');
             window.close();
-          }, 10000); // 500ms é um tempo seguro.
+          }, 10000);
 
         } else {
-          console.error('❌ A janela principal (opener) não foi encontrada ou está fechada.');
           messageElement.textContent = 'Janela principal não encontrada. Pode fechar esta aba.';
         }
       } catch (e) {
-        console.error('❌ Erro no script de callback:', e);
         document.getElementById('message').textContent = 'Ocorreu um erro inesperado.';
       }
     })();
