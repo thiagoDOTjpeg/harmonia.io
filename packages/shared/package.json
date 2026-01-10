@@ -31,11 +31,14 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "date-fns": "4.1.0",
+    "date-fns": "4.1.0"
+  },
+  "peerDependencies": {
     "zod": "^3.22.4"
   },
   "devDependencies": {
     "@harmonia/config-typescript": "*",
-    "typescript": "^5.3.3"
+    "typescript": "^5.3.3",
+    "zod": "^3.22.4"
   }
 }
