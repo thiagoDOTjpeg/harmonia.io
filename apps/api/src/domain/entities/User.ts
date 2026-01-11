@@ -1,4 +1,5 @@
 import { IHasher } from "@/application/ports/crypto/IHasher";
+import { ERRORS } from "@/types/constant/errors";
 import { UserProps } from "@/types/entity/user";
 import { AppError } from "@harmonia/shared";
 import { v4 } from "uuid";
@@ -18,7 +19,7 @@ export class User {
   get name(): string { return this._name; }
   get isVerified(): boolean { return this._emailVerifiedAt !== null; }
 
-  static create(props: { name: string, email: string, passwordHash: string }): User {
+  static create(props: { name: string, email: string, passwordHash: string | null }): User {
     return new User(
       v4(),
       Email.create(props.email),
@@ -64,7 +65,7 @@ export class User {
 
   verifyEmail(): void {
     if (this._emailVerifiedAt) {
-      throw new AppError("Email já verificado");
+      throw new AppError(ERRORS.EMAIL_ALREADY_VERIFIED);
     }
     this._emailVerifiedAt = new Date();
   }

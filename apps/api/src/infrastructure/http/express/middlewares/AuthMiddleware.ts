@@ -1,4 +1,7 @@
-import { AppError, NotFoundError, UnathorizedError } from "@harmonia/shared";
+import { RequestContext } from "@/infrastructure/context";
+import { logger } from "@/infrastructure/logger";
+import { ERRORS } from "@/types/constant/errors";
+import { AppError, InvalidCredentialsError, NotFoundError, UnathorizedError } from "@harmonia/shared";
 import { NextFunction, Request, Response } from "express";
 import { User } from "../../../../domain/entities/User";
 import { Container } from "../../../../main/container";
@@ -14,14 +17,23 @@ export class AuthMiddleware {
       if (parts?.length !== 2 || parts[0] !== "Bearer") throw new UnathorizedError("Formato do token inválido")
 
       const token = parts[1];
-
       const tokenManager = Container.getTokenManager();
       const decoded = tokenManager.decode(token);
-      if ("error" in decoded) throw new UnathorizedError("Token inválido ou expirado")
+
+      RequestContext.setUserId(decoded.token.sub);
+
       next();
     } catch (error) {
-      console.error("Auth middleware error: ", error);
-      throw new AppError("Erro ao autenticar")
+      if (error instanceof InvalidCredentialsError || error instanceof UnathorizedError) {
+        throw error;
+      }
+
+      if (error instanceof Error && (error.name === 'JsonWebTokenError' || error.name === 'TokenExpiredError')) {
+        throw new UnathorizedError(ERRORS.INVALID_TOKEN);
+      }
+
+      logger.error({ err: error }, 'Auth middleware unexpected crash');
+      throw new AppError("Erro interno de autenticação");
     }
   }
 
@@ -44,7 +56,7 @@ export class AuthMiddleware {
       if (!user) throw new NotFoundError("Usuário do token não existe")
       return user;
     } catch (error) {
-      console.error("Auth middleware error: ", error);
+      logger.error({ err: error }, 'Auth middleware error');
       throw new AppError("Erro ao autenticar")
     }
   }

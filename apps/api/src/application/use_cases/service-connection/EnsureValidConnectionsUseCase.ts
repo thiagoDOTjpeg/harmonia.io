@@ -4,6 +4,7 @@ import { IEncryptor } from "@/application/ports/crypto/IEncryptor";
 import { ITokenSerializer } from "@/application/ports/serializer/ITokenSerializer";
 import { IServiceConnectionRepository } from "@/application/repositories/IServiceConnectionRepository";
 import { ServiceConnection } from "@/domain/entities/ServiceConnection";
+import { ERRORS } from "@/types/constant/errors";
 import { TokenEncrypted } from "@/types/encrypter";
 import { ServiceProvider } from "@harmonia/shared";
 import { Prisma } from "@prisma/client";
@@ -21,13 +22,13 @@ export class EnsureValidConnectionsUseCase {
     const serviceConnetions: Map<ServiceProvider, ServiceConnection> = new Map();
     const existingConnections = await this.serviceConnectionRepository.findAllByUserId(userId);
     if (existingConnections == null) {
-      throw new Error("Conexão com serviços necessários não estão ativas")
+      throw new Error(ERRORS.SERVICE_CONNECTIONS_NOT_ACTIVE)
     }
     await Promise.all(
       existingConnections.map(async (service) => {
         const authProvider = this.providers[service.provider];
         if (!authProvider) {
-          throw new Error("Serviço de conexão não identificado")
+          throw new Error(ERRORS.SERVICE_CONNECTION_INVALID)
         }
         if (authProvider.isExpired(service)) {
           const serializedRefreshToken = this.tokenSerializer.deserialize(service?.refreshToken);

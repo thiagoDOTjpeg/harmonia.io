@@ -8,6 +8,7 @@ import { createMockHasher } from "@/tests/factories/MockPasswordHasherFactory";
 import { createMockStateStore } from "@/tests/factories/MockStateStoreFactory";
 import { createMockUserRepository } from "@/tests/factories/MockUserRepositoryFactory";
 import { ResetState } from "@/types/auth";
+import { ERRORS } from "@/types/constant/errors";
 import { AppError, ResetPasswordDTO } from "@harmonia/shared";
 
 describe("ResetPasswordUseCase", () => {
@@ -30,10 +31,10 @@ describe("ResetPasswordUseCase", () => {
   it("should sucessfully change the users password", async () => {
     const foundUser: User = new UserBuilder().build();
     const foundState: ResetState = {
-      randomCode: 123456
+      randomCode: "123456"
     }
     const input: ResetPasswordDTO = {
-      code: 123456,
+      code: "123456",
       email: "test@gmail.com",
       newPassword: "newPassword-123"
     }
@@ -47,17 +48,17 @@ describe("ResetPasswordUseCase", () => {
     expect(mockUserRepository.findByEmail).toHaveBeenCalledWith(input.email);
     expect(mockStateStore.get).toHaveBeenCalledWith(foundUser.id);
     expect(mockHasher.hash).toHaveBeenCalledWith(input.newPassword);
-    expect(mockUserRepository.update).toHaveBeenCalledWith(foundUser.id, { passwordHash: "hashed-password" });
+    expect(mockUserRepository.update).toHaveBeenCalledWith({ ...foundUser, _passwordHash: "hashed-password" });
     expect(mockStateStore.delete).toHaveBeenCalledWith(foundUser.id);
   })
 
   it("should throw an error if doesn't find the user", async () => {
     const input: ResetPasswordDTO = {
-      code: 123456,
+      code: "123456",
       email: "test@gmail.com",
       newPassword: "newPassword-123"
     }
-    const error = new AppError("O código, e-mail ou senha estão inválidos ou expirados.");
+    const error = new AppError(ERRORS.RESET_PASSWORD);
     mockUserRepository.findByEmail.mockResolvedValue(null);
 
     await expect(useCase.execute(input)).rejects.toThrow(error)
@@ -72,11 +73,11 @@ describe("ResetPasswordUseCase", () => {
   it("should throw an error if the state store doesn't find the state code", async () => {
     const foundUser = new UserBuilder().build();
     const input: ResetPasswordDTO = {
-      code: 123456,
+      code: "123456",
       email: "test@gmail.com",
       newPassword: "newPassword-123"
     }
-    const error = new AppError("O código, e-mail ou senha estão inválidos ou expirados.");
+    const error = new AppError(ERRORS.RESET_PASSWORD);
     mockUserRepository.findByEmail.mockResolvedValue(foundUser);
     mockStateStore.get.mockResolvedValue(undefined);
 
@@ -92,14 +93,14 @@ describe("ResetPasswordUseCase", () => {
   it("should throw an error if the code sent on the dto is different from the retrivied state", async () => {
     const foundUser = new UserBuilder().build();
     const foundState: ResetState = {
-      randomCode: 654312
+      randomCode: "654312"
     }
     const input: ResetPasswordDTO = {
-      code: 123456,
+      code: "123456",
       email: "test@gmail.com",
       newPassword: "newPassword-123"
     }
-    const error = new AppError("O código, e-mail ou senha estão inválidos ou expirados.");
+    const error = new AppError(ERRORS.RESET_PASSWORD);
     mockUserRepository.findByEmail.mockResolvedValue(foundUser);
     mockStateStore.get.mockResolvedValue(foundState)
 

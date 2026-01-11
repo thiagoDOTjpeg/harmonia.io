@@ -1,3 +1,4 @@
+import { logger } from '@/infrastructure/logger';
 import { baseSyncPlaylistSchema, createSyncPlaylistSchema } from '@harmonia/shared';
 import { NextFunction, Request, Response } from 'express';
 import { User } from '../../../../domain/entities/User';
@@ -16,7 +17,7 @@ export class SyncController {
 
       return res.json(result);
     } catch (error) {
-      console.error('Sync playlist error:', error);
+      logger.error({ err: error }, 'Sync playlist error');
       next(error)
     } 9
   }
@@ -30,7 +31,7 @@ export class SyncController {
 
       return res.json(result);
     } catch (error) {
-      console.error('Get sync status error:', error);
+      logger.error({ err: error }, 'Get sync status error');
       next(error)
     }
   }
@@ -43,7 +44,7 @@ export class SyncController {
 
       return res.json(result);
     } catch (error) {
-      console.error('Cancel sync error:', error);
+      logger.error({ err: error }, 'Cancel sync error');
       next(error)
     }
   }
@@ -56,7 +57,7 @@ export class SyncController {
 
       return res.json(result);
     } catch (error) {
-      console.error('Retry sync error:', error);
+      logger.error({ err: error }, 'Retry sync error');
       next(error)
     }
   }
@@ -68,7 +69,7 @@ export class SyncController {
 
       return res.json(result)
     } catch (error) {
-      console.error('Get queue stats error:', error);
+      logger.error({ err: error }, 'Get queue stats error');
       next(error)
     }
   }

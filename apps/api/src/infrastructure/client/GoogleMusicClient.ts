@@ -1,4 +1,5 @@
 import { IGoogleMusicClient } from "@/application/ports/google/IGoogleMusicClient";
+import { ERRORS } from "@/types/constant/errors";
 import { YouTubePlaylistInfo, YouTubeVideo } from "@/types/google";
 import { YouTubePlaylistItemsResponse, YouTubePlaylistResponse } from "@/types/playlist";
 import { AppError } from "@harmonia/shared";
@@ -19,14 +20,14 @@ export class GoogleMusicClient implements IGoogleMusicClient {
     );
 
     if (!response.ok) {
-      throw new AppError(`Failed to get playlist info: ${await response.text()}`);
+      throw new AppError(ERRORS.PLAYLIST_NOT_FOUND);
     }
 
     const data = await response.json() as YouTubePlaylistResponse;
     const playlist = data.items?.[0];
 
     if (!playlist) {
-      throw new Error('Playlist not found');
+      throw new Error(ERRORS.PLAYLIST_NOT_FOUND);
     }
 
     return {
@@ -63,7 +64,7 @@ export class GoogleMusicClient implements IGoogleMusicClient {
       );
 
       if (!response.ok) {
-        throw new AppError(`Failed to get playlist items: ${await response.text()}`);
+        throw new AppError(ERRORS.PLAYLIST_NOT_FOUND);
       }
 
       const data = await response.json() as YouTubePlaylistItemsResponse;

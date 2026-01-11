@@ -1,3 +1,4 @@
+import { logger } from '@/infrastructure/logger';
 import { OAuthParamCallbackSchema, OAuthParamSchema } from '@/schemas/oauth';
 import { AppError, BadRequestError, LoginSchema, OAuthMethod, OAuthQuerySchema, RegisterSchema, RequestAccessSchema, RequestResetPasswordDTO, ResetPasswordDTO, SetPasswordDTO, UnathorizedError } from '@harmonia/shared';
 import { NextFunction, Request, Response } from 'express';
@@ -15,7 +16,7 @@ export class AuthController {
       await provider.sendRequestAccessEmail(data);
       res.status(200).send();
     } catch (error) {
-      console.error("Ocorreu um erro ao pedir o email de acesso");
+      logger.error({ err: error }, 'Error requesting access email');
       next(error);
     }
   }
@@ -41,7 +42,7 @@ export class AuthController {
       const { redirectTo } = await useCase.execute(intent, provider, returnTo, userId)
       res.redirect(redirectTo)
     } catch (error) {
-      console.error("Ocorreu um erro ao fazer o login OAuth", error);
+      logger.error({ err: error, provider: req.params.provider }, 'Error starting OAuth flow');
       next(error);
     }
   }
@@ -62,7 +63,7 @@ export class AuthController {
         method: result.method
       }, result.returnTo));
     } catch (error) {
-      console.error('Google callback error:', error);
+      logger.error({ err: error, provider: req.params.provider }, 'OAuth callback error');
       if (error instanceof AppError) {
         return res.send(getOAuthCallbackHTML({
           success: false,
@@ -94,7 +95,7 @@ export class AuthController {
 
       return res.status(201).json(result);
     } catch (error) {
-      console.error('Local register error:', error);
+      logger.error({ err: error }, 'Local register error');
       next(error)
     }
   }
@@ -117,7 +118,7 @@ export class AuthController {
 
       return res.json(result);
     } catch (error) {
-      console.error('Local login error:', error);
+      logger.error({ err: error }, 'Local login error');
       next(error);
     }
   }
@@ -131,10 +132,9 @@ export class AuthController {
       await useCase.execute({ email: body.email });
       return res.status(204).send();
     } catch (error) {
-      console.error("Ocorreu um erro ao fazer o request de reset de senha", error)
+      logger.error({ err: error }, 'Error requesting password reset');
       next(error);
     }
-
   }
 
   static async resetPassword(req: Request, res: Response, next: NextFunction) {
@@ -146,7 +146,7 @@ export class AuthController {
       await useCase.execute({ code: body.code, email: body.email, newPassword: body.newPassword })
       return res.status(204).send();
     } catch (error) {
-      console.error("Ocorreu um erro ao fazer o reset da senha", error)
+      logger.error({ err: error }, 'Error resetting password');
       next(error);
     }
   }
@@ -162,7 +162,7 @@ export class AuthController {
       await useCase.execute(user, body);
       res.status(204).send()
     } catch (error) {
-      console.error("Ocorreu um erro ao setar a senha do usuário", error);
+      logger.error({ err: error }, 'Error setting password');
       next(error);
     }
   }

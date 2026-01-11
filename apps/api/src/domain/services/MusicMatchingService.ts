@@ -1,3 +1,5 @@
+import { logger } from '@/infrastructure/logger';
+
 export class MusicMatchingService {
   static cleanYouTubeTitle(title: string): { title: string; artist?: string } {
     let cleaned = title
@@ -109,7 +111,7 @@ export class MusicMatchingService {
     const topicMatch = channelTitle.match(/^(.+?)\s*-\s*Topic$/i);
     if (topicMatch) {
       const artist = topicMatch[1].trim();
-      console.log(`[Query] Canal Topic oficial: track:"${title}" artist:"${artist}"`);
+      logger.debug({ type: 'topic_channel', title, artist }, 'Query generated');
       return {
         query: `track:"${title}" artist:"${artist}"`,
         expectedTitle: title,
@@ -123,7 +125,7 @@ export class MusicMatchingService {
       if (!artist.includes(' ') && /[a-z][A-Z]/.test(artist)) {
         artist = artist.replace(/([a-z])([A-Z])/g, '$1 $2');
       }
-      console.log(`[Query] Canal VEVO oficial: track:"${title}" artist:"${artist}"`);
+      logger.debug({ type: 'vevo_channel', title, artist }, 'Query generated');
       return {
         query: `track:"${title}" artist:"${artist}"`,
         expectedTitle: title,
@@ -133,7 +135,7 @@ export class MusicMatchingService {
 
     if (artistFromTitle) {
       if (this.similarity(artistFromTitle, channelTitle) > 0.8) {
-        console.log(`[Query] Artista no título (bate com canal): track:"${title}" artist:"${artistFromTitle}"`);
+        logger.debug({ type: 'artist_title_matches_channel', title, artist: artistFromTitle }, 'Query generated');
         return {
           query: `track:"${title}" artist:"${artistFromTitle}"`,
           expectedTitle: title,
@@ -142,7 +144,7 @@ export class MusicMatchingService {
       }
 
       if (this.similarity(title, channelTitle) > 0.8) {
-        console.log(`[Query] Artista no título (invertido): track:"${artistFromTitle}" artist:"${title}"`);
+        logger.debug({ type: 'inverted', title: artistFromTitle, artist: title }, 'Query generated');
         return {
           query: `track:"${artistFromTitle}" artist:"${title}"`,
           expectedTitle: artistFromTitle,
@@ -151,14 +153,14 @@ export class MusicMatchingService {
       }
 
       if (!this.isLikelyDistributor(channelTitle)) {
-        console.log(`[Query] Conflito, usando nome do canal: track:"${title}" artist:"${channelTitle}"`);
+        logger.debug({ type: 'conflict_using_channel', title, artist: channelTitle }, 'Query generated');
         return {
           query: `track:"${title}" artist:"${channelTitle}"`,
           expectedTitle: title,
           expectedArtist: channelTitle,
         };
       } else {
-        console.log(`[Query] Distribuidora, usando artista do título: track:"${title}" artist:"${artistFromTitle}"`);
+        logger.debug({ type: 'distributor_using_title_artist', title, artist: artistFromTitle }, 'Query generated');
         return {
           query: `track:"${title}" artist:"${artistFromTitle}"`,
           expectedTitle: title,
@@ -168,7 +170,7 @@ export class MusicMatchingService {
     }
 
     if (!this.isLikelyDistributor(channelTitle)) {
-      console.log(`[Query] Canal do artista (sem artista no título): track:"${title}" artist:"${channelTitle}"`);
+      logger.debug({ type: 'artist_channel', title, artist: channelTitle }, 'Query generated');
       return {
         query: `track:"${title}" artist:"${channelTitle}"`,
         expectedTitle: title,
@@ -176,7 +178,7 @@ export class MusicMatchingService {
       };
     }
 
-    console.log(`[Query] Distribuidora detectada (${channelTitle}), buscando só por: track:"${title}"`);
+    logger.debug({ type: 'distributor_detected', title, channel: channelTitle }, 'Query generated (title only)');
     return {
       query: `track:"${title}"`,
       expectedTitle: title,
@@ -205,15 +207,23 @@ export class MusicMatchingService {
         artistScore = this.similarity(referenceArtist, spotifyArtists);
       }
 
-      console.log(`[Match] Título: ${titleScore.toFixed(2)} | Artista: ${artistScore.toFixed(2)} | Final: ${(titleScore * 0.7 + artistScore * 0.3).toFixed(2)}`);
-      console.log(`[Match] (Ref): "${referenceTitle}" by "${referenceArtist}" <-> (Spotify Cleaned): "${spotifyTitle}" by "${spotifyArtists}"`);
+      logger.debug({
+        titleScore,
+        artistScore,
+        finalScore: titleScore * 0.7 + artistScore * 0.3,
+        reference: { title: referenceTitle, artist: referenceArtist },
+        spotify: { title: spotifyTitle, artists: spotifyArtists }
+      }, 'Match score calculated');
 
       return titleScore * 0.7 + artistScore * 0.3;
     } else {
       artistScore = 0.5;
 
-      console.log(`[Match] Só título (distribuidora): ${titleScore.toFixed(2)}`);
-      console.log(`[Match] (Ref): "${referenceTitle}" (sem artista) <-> (Spotify): "${spotifyTitle}" by "${spotifyArtists}"`);
+      logger.debug({
+        titleScore,
+        reference: { title: referenceTitle },
+        spotify: { title: spotifyTitle, artists: spotifyArtists }
+      }, 'Match score calculated (title only)');
 
       return titleScore;
     }

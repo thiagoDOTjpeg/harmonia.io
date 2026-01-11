@@ -1,3 +1,4 @@
+import { logger } from '@/infrastructure/logger';
 import { SyncPlaylistJobData } from '@/types/sync-job';
 import Bull, { Job, Queue } from 'bull';
 
@@ -15,7 +16,7 @@ export class PlaylistSyncQueue {
       enableReadyCheck: false,
     };
 
-    console.log(`🔍 [Queue] Conectando ao Redis: ${redisConfig.host}:${redisConfig.port}`);
+    logger.info({ host: redisConfig.host, port: redisConfig.port }, 'Connecting to Redis queue');
 
     this.queue = new Bull<SyncPlaylistJobData>('sync-playlist', {
       redis: redisConfig,
@@ -41,31 +42,31 @@ export class PlaylistSyncQueue {
 
   private setupEventListeners() {
     this.queue.on('completed', (job, result) => {
-      console.log(`[Queue] Job ${job.id} concluído:`, result);
+      logger.info({ jobId: job.id, result }, 'Job completed');
     });
 
     this.queue.on('failed', (job, err) => {
-      console.error(`[Queue] Job ${job.id} falhou:`, err.message);
+      logger.error({ err, jobId: job.id }, 'Job failed');
     });
 
     this.queue.on('progress', (job, progress) => {
-      console.log(`[Queue] Job ${job.id} progresso:`, progress);
+      logger.debug({ jobId: job.id, progress }, 'Job progress');
     });
 
     this.queue.on('stalled', (job) => {
-      console.warn(`[Queue] Job ${job.id} travado (provavelmente worker morreu)`);
+      logger.warn({ jobId: job.id }, 'Job stalled (worker may have died)');
     });
 
     this.queue.on('error', (error) => {
-      console.error('[Queue] Erro na fila:', error.message);
+      logger.error({ err: error }, 'Queue error');
     });
 
     this.queue.on('waiting', (jobId) => {
-      console.log(`[Queue] Job ${jobId} aguardando processamento`);
+      logger.debug({ jobId }, 'Job waiting');
     });
 
     this.queue.on('active', (job) => {
-      console.log(`[Queue] Job ${job.id} iniciado`);
+      logger.info({ jobId: job.id }, 'Job started');
     });
   }
 
@@ -78,7 +79,7 @@ export class PlaylistSyncQueue {
     );
 
     if (duplicate) {
-      console.log(`[Queue] Job duplicado encontrado: ${duplicate.id}`);
+      logger.info({ jobId: duplicate.id, userId: data.userId }, 'Duplicate job found');
       return duplicate;
     }
 
@@ -87,7 +88,7 @@ export class PlaylistSyncQueue {
       jobId: `sync-${data.userId}-${data.youtubePlaylistId}-${Date.now()}`,
     });
 
-    console.log(`[Queue] Job ${job.id} adicionado à fila`);
+    logger.info({ jobId: job.id, userId: data.userId, playlistId: data.youtubePlaylistId }, 'Job added to queue');
     return job;
   }
 
@@ -106,7 +107,7 @@ export class PlaylistSyncQueue {
 
     if (['waiting', 'active', 'delayed'].includes(state)) {
       await job.remove();
-      console.log(`[Queue] Job ${jobId} cancelado`);
+      logger.info({ jobId }, 'Job cancelled');
       return true;
     }
 
@@ -124,7 +125,7 @@ export class PlaylistSyncQueue {
 
     if (state === 'failed') {
       await job.retry();
-      console.log(`[Queue] Job ${jobId} reiniciado`);
+      logger.info({ jobId }, 'Job retried');
       return true;
     }
 
@@ -134,17 +135,17 @@ export class PlaylistSyncQueue {
   async cleanOldJobs() {
     await this.queue.clean(7 * 24 * 3600 * 1000, 'completed');
     await this.queue.clean(14 * 24 * 3600 * 1000, 'failed');
-    console.log('[Queue] Jobs antigos limpos');
+    logger.info('Old jobs cleaned');
   }
 
   async pause(): Promise<void> {
     await this.queue.pause();
-    console.log('[Queue] Fila pausada');
+    logger.info('Queue paused');
   }
 
   async resume(): Promise<void> {
     await this.queue.resume();
-    console.log('[Queue] Fila retomada');
+    logger.info('Queue resumed');
   }
 
   async getStats() {
@@ -185,6 +186,6 @@ export class PlaylistSyncQueue {
 
   async close(): Promise<void> {
     await this.queue.close();
-    console.log('[Queue] Conexão fechada');
+    logger.info('Queue connection closed');
   }
 }

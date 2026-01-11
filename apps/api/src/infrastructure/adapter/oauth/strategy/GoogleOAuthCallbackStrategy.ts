@@ -3,11 +3,12 @@ import { IEncryptor } from "@/application/ports/crypto/IEncryptor";
 import { ITokenManager } from "@/application/ports/crypto/ITokenManager";
 import { ICodeExchanger } from "@/application/ports/oauth/ICodeExchanger";
 import { ITokenSerializer } from "@/application/ports/serializer/ITokenSerializer";
-import { IOAuthCallbackStrategy } from "@/application/ports/strategy/IOAuthCallbackStrategy";
+import { IOAuthCallbackStrategy } from "@/application/ports/strategy/oauth/IOAuthCallbackStrategy";
 import { IServiceConnectionRepository } from "@/application/repositories/IServiceConnectionRepository";
 import { IUserRepository } from "@/application/repositories/IUserRepository";
 import { ServiceConnection } from "@/domain/entities/ServiceConnection";
 import { User } from "@/domain/entities/User";
+import { ERRORS } from "@/types/constant/errors";
 import { TokenEncrypted } from "@/types/encrypter";
 import { GoogleOAuthResult } from "@/types/oauth/results";
 import { OAuthState } from "@/types/oauth/state";
@@ -45,7 +46,7 @@ export class GoogleOAuthCallbackStrategy implements IOAuthCallbackStrategy {
       this.clock.now().getTime() + Math.max(exchangeData.tokens.expires_in - 60, 0) * 1000
     );
     if (!exchangeData.profile.email || !exchangeData.profile.name) {
-      throw new InvalidCredentialsError("Não foi possível obter/verificar o email/nome.")
+      throw new InvalidCredentialsError(ERRORS.OAUTH_INVALID_CREDENTIALS)
     }
     const normalizedEmail = exchangeData.profile.email?.trim().toLowerCase();
 
@@ -58,9 +59,9 @@ export class GoogleOAuthCallbackStrategy implements IOAuthCallbackStrategy {
         return this.handleLogin(exchangeData, expiresAt, normalizedEmail, returnTo);
 
       case OAuthMethod.connect:
-        return this.handleConnect(exchangeData, expiresAt, normalizedEmail, returnTo, loggedUserId);
+        return this.handleConnect(exchangeData, expiresAt, returnTo, loggedUserId);
       default:
-        throw new AppError("Metodo não suportado")
+        throw new AppError(ERRORS.OAUTH_INVALID_METHOD)
     }
   }
 
@@ -74,22 +75,26 @@ export class GoogleOAuthCallbackStrategy implements IOAuthCallbackStrategy {
 
     const existingUser = await this.users.findByEmail(email);
     if (existingUser) {
-      throw new InvalidCredentialsError("Já existe um usuário cadastrado com esses dados. Faça login e conecte o serviço")
+      throw new InvalidCredentialsError(ERRORS.OAUTH_USER_ALREADY_EXISTIS)
     }
-    const user = await this.users.createFromLocal({
-      email: email,
-      name: exchangeData?.profile?.name || "NoNameService",
+
+    const persistUser = User.create({
+      email: exchangeData.profile.email,
+      name: exchangeData.profile.name,
+      passwordHash: null,
     })
 
-    const createdServiceConnection = await this.createServiceConnection(user, exchangeData, expiresAt)
-    const jwt = this.tokens.sign({ sub: user.id });
+    const savedUser = await this.users.save(persistUser)
+
+    const createdServiceConnection = await this.createServiceConnection(savedUser, exchangeData, expiresAt)
+    const jwt = this.tokens.sign({ sub: savedUser.id });
     return {
       token: jwt,
       isPasswordSetupRequired: true,
       user: {
         id: createdServiceConnection.userId,
         email: createdServiceConnection.email,
-        name: user.name
+        name: savedUser.name
       },
       method: OAuthMethod.register,
       returnTo
@@ -104,14 +109,14 @@ export class GoogleOAuthCallbackStrategy implements IOAuthCallbackStrategy {
   ): Promise<AuthResponse> {
     const user = await this.users.findByEmail(email);
     if (!user) {
-      throw new NotFoundError("Nenhum usuário encontrado, faça o registro")
+      throw new NotFoundError(ERRORS.OAUTH_USER_NOT_FOUND)
     }
 
     let serviceConnection: ServiceConnection;
     const existingServiceConnection = await this.serviceConnection.findByServiceId(exchangeData.profile.sub)
     if (existingServiceConnection) {
       if (existingServiceConnection.userId !== user.id) {
-        throw new InvalidCredentialsError("Esta conta Google já está vinculada.")
+        throw new InvalidCredentialsError(ERRORS.GOOGLE_ACCOUNT_ALREADY_LINKED)
       }
       serviceConnection = await this.updateServiceConnection(user, exchangeData, expiresAt);
     } else {
@@ -135,16 +140,15 @@ export class GoogleOAuthCallbackStrategy implements IOAuthCallbackStrategy {
   private async handleConnect(
     exchangeData: GoogleOAuthResult,
     expiresAt: Date,
-    email: string,
     returnTo?: string,
     loggedUserId?: string
   ): Promise<AuthResponse> {
     if (!loggedUserId) {
-      throw new UnathorizedError("Usuário não identificado para conexão.")
+      throw new UnathorizedError(ERRORS.OAUTH_CONNECT_USER_INVALID)
     }
     const user = await this.users.findByUserId(loggedUserId);
     if (!user) {
-      throw new NotFoundError("Nenhum usuário encontrado, conta do serviço diferente da cadastrada");
+      throw new NotFoundError(ERRORS.OAUTH_CONNECT_USER_NOT_FOUND);
     }
 
     let serviceConnection: ServiceConnection;
@@ -152,7 +156,7 @@ export class GoogleOAuthCallbackStrategy implements IOAuthCallbackStrategy {
 
     if (existingServiceConnection) {
       if (existingServiceConnection.userId !== user.id) {
-        throw new InvalidCredentialsError("Esta conta Google já está vinculada.")
+        throw new InvalidCredentialsError(ERRORS.GOOGLE_ACCOUNT_ALREADY_LINKED)
       }
       serviceConnection = await this.updateServiceConnection(user, exchangeData, expiresAt);
     } else {

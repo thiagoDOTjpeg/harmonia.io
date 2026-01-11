@@ -1,4 +1,5 @@
 import { ITokenSerializer } from "@/application/ports/serializer/ITokenSerializer";
+import { ERRORS } from "@/types/constant/errors";
 import { TokenEncrypted } from "@/types/encrypter";
 
 export class AESSerializer implements ITokenSerializer<TokenEncrypted> {
@@ -9,10 +10,10 @@ export class AESSerializer implements ITokenSerializer<TokenEncrypted> {
   }
   deserialize(data: string | null): TokenEncrypted {
     if (!data) {
-      throw new Error("Erro ao deserializar o Token")
+      throw new Error(ERRORS.TOKEN_SERIALIZER_ERROR)
     }
     if (/^[^:]+:[^:]+:[^:]+$/.test(data) === false) {
-      throw new Error("Token encriptado inválido")
+      throw new Error(ERRORS.TOKEN_SERIALIZER_INVALID)
     }
     const [iv, cipher, tag] = data.split(":")
     return {

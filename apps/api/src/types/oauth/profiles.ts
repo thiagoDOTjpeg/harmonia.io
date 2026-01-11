@@ -1,6 +1,6 @@
 export type OAuthUserProfile = {
-  email?: string;
-  name?: string | null;
+  email: string;
+  name: string;
 };
 
 export type GoogleOAuthProfile = OAuthUserProfile & {
@@ -8,7 +8,7 @@ export type GoogleOAuthProfile = OAuthUserProfile & {
   email_verified?: boolean;
 };
 
-export type SpotifyOAuthProfile = OAuthUserProfile & {
+export type SpotifyOAuthProfile = Omit<OAuthUserProfile, "name"> & {
   id: string;
-  display_name?: string | null;
+  display_name: string;
 };
