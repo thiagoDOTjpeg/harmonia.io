@@ -5,7 +5,7 @@ import { AppError, AuthResponse, RegisterDTO } from '@harmonia/shared';
 import { ITokenManager } from '../../ports/crypto/ITokenManager';
 import { IUserRepository } from '../../repositories/IUserRepository';
 
-export class StartLocalRegister {
+export class StartLocalRegisterUseCase {
   constructor(
     private readonly userRepository: IUserRepository,
     private readonly passwordHasher: IHasher,

@@ -1,25 +1,21 @@
 import { IGoogleMusicClient } from "@/application/ports/google/IGoogleMusicClient";
+import { ISpotifyMusicClient } from "@/application/ports/spotify/ISpotifyMusicClient";
 import { logger } from "@/infrastructure/logger";
 import { SyncPlaylistInput, SyncPlaylistResult } from "@/types/playlist";
-import { SpotifyMusicClient } from "../../../infrastructure/client/SpotifyMusicClient";
 import { IPlaylistRepository } from "../../repositories/IPlaylistRepository";
 import { IPlaylistTrackRepository } from "../../repositories/IPlaylistTrackRepository";
 import { ITrackRepository } from "../../repositories/ITrackRepository";
 
-export class SyncYouTubePlaylistToSpotify {
+export class SyncYouTubePlaylistToSpotifyUseCase {
   constructor(
     private readonly playlistRepository: IPlaylistRepository,
     private readonly trackRepository: ITrackRepository,
     private readonly playlistTrackRepository: IPlaylistTrackRepository,
     private readonly googleClient: IGoogleMusicClient,
+    private readonly spotifyClient: ISpotifyMusicClient,
   ) { }
 
   async execute(input: SyncPlaylistInput): Promise<SyncPlaylistResult> {
-    const spotifyClient = new SpotifyMusicClient(
-      input.spotifyAccessToken,
-      input.spotifyUserId
-    );
-
     const youtubePlaylistInfo = await this.googleClient.getPlaylistInfo(
       input.youtubePlaylistId,
       input.googleAccessToken
@@ -38,7 +34,7 @@ export class SyncYouTubePlaylistToSpotify {
     );
 
     if (!syncedPlaylist) {
-      const spotifyPlaylistId = await spotifyClient.createPlaylist(
+      const spotifyPlaylistId = await this.spotifyClient.createPlaylist(
         youtubePlaylistInfo.title,
         `Synced from YouTube • ${youtubePlaylistInfo.description || 'Harmonia.io'}`
       );
@@ -85,7 +81,7 @@ export class SyncYouTubePlaylistToSpotify {
         }
 
         if (!track.hasSpotifyMatch()) {
-          const spotifyMatch = await spotifyClient.searchTrack(video.title, video.videoOwnerChannelTitle);
+          const spotifyMatch = await this.spotifyClient.searchTrack(video.title, video.videoOwnerChannelTitle);
 
           if (spotifyMatch) {
             track = await this.trackRepository.updateSpotifyMatch(track.id, {
@@ -138,7 +134,7 @@ export class SyncYouTubePlaylistToSpotify {
     if (tracksToAdd.length > 0) {
       logger.info({ tracksToAdd: tracksToAdd.length }, 'Adding new tracks to Spotify');
 
-      await spotifyClient.addTracksToPlaylist(
+      await this.spotifyClient.addTracksToPlaylist(
         syncedPlaylist.spotifyPlaylistId,
         tracksToAdd
       );

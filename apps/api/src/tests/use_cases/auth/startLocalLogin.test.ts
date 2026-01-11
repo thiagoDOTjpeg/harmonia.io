@@ -1,7 +1,7 @@
 import { IHasher } from "@/application/ports/crypto/IHasher"
 import { ITokenManager } from "@/application/ports/crypto/ITokenManager"
 import { IUserRepository } from "@/application/repositories/IUserRepository"
-import { StartLocalLogin } from "@/application/use_cases/auth/StartLocalLogin"
+import { StartLocalLoginUseCase } from "@/application/use_cases/auth/StartLocalLoginUseCase"
 import { ERRORS } from "@/types/constant/errors"
 import { InvalidCredentialsError } from "@harmonia/shared"
 import { UserBuilder } from "../../builders/UserBuilder"
@@ -11,7 +11,7 @@ import { createMockUserRepository } from "../../factories/MockUserRepositoryFact
 
 
 describe("Start Local Login User Case", () => {
-  let useCase: StartLocalLogin;
+  let useCase: StartLocalLoginUseCase;
   let mockUserRepository: jest.Mocked<IUserRepository>
   let mockPasswordHasher: jest.Mocked<IHasher>
   let mockTokenManager: jest.Mocked<ITokenManager>
@@ -23,7 +23,7 @@ describe("Start Local Login User Case", () => {
     mockPasswordHasher = createMockHasher()
     mockTokenManager = createMockTokenManager()
 
-    useCase = new StartLocalLogin(mockUserRepository, mockPasswordHasher, mockTokenManager);
+    useCase = new StartLocalLoginUseCase(mockUserRepository, mockPasswordHasher, mockTokenManager);
   })
 
   it("should successfully login and return token and user info", async () => {

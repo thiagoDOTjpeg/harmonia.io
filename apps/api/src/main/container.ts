@@ -41,8 +41,8 @@ import { PlaylistSyncQueue } from '@/infrastructure/queue/PlaylistSyncQueue';
 import { ResetState } from '@/types/auth';
 import { OAuthState } from '@/types/oauth/state';
 import { ServiceProvider } from '@harmonia/shared';
-import { StartLocalLogin } from '../application/use_cases/auth/StartLocalLogin';
-import { StartLocalRegister } from '../application/use_cases/auth/StartLocalRegister';
+import { StartLocalLoginUseCase } from '../application/use_cases/auth/StartLocalLoginUseCase';
+import { StartLocalRegisterUseCase } from '../application/use_cases/auth/StartLocalRegisterUseCase';
 import { SpotifyOAuthClient } from '../infrastructure/client/SpotifyOAuthClient';
 import { RedisStateStore } from '../infrastructure/state/RedisStateStore';
 
@@ -284,7 +284,7 @@ export class Container {
   }
 
   static getStartLocalLogin() {
-    return new StartLocalLogin(
+    return new StartLocalLoginUseCase(
       this.userRepository,
       this.passwordHasher,
       this.tokenManager,
@@ -292,7 +292,7 @@ export class Container {
   }
 
   static getStartLocalRegister() {
-    return new StartLocalRegister(
+    return new StartLocalRegisterUseCase(
       this.userRepository,
       this.passwordHasher,
       this.tokenManager,

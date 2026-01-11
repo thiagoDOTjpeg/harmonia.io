@@ -4,7 +4,7 @@ import { IUserRepository } from '@/application/repositories/IUserRepository';
 import { ERRORS } from '@/types/constant/errors';
 import { AuthResponse, InvalidCredentialsError, LoginDTO } from '@harmonia/shared';
 
-export class StartLocalLogin {
+export class StartLocalLoginUseCase {
   constructor(
     private readonly userRepository: IUserRepository,
     private readonly passwordHasher: IHasher,

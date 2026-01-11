@@ -1,7 +1,7 @@
 import { IHasher } from "@/application/ports/crypto/IHasher";
 import { ITokenManager } from "@/application/ports/crypto/ITokenManager";
 import { IUserRepository } from "@/application/repositories/IUserRepository";
-import { StartLocalRegister } from "@/application/use_cases/auth/StartLocalRegister";
+import { StartLocalRegisterUseCase } from "@/application/use_cases/auth/StartLocalRegisterUseCase";
 import { ERRORS } from "@/types/constant/errors";
 import { AppError } from "@harmonia/shared";
 import { UserBuilder } from "../../builders/UserBuilder";
@@ -10,7 +10,7 @@ import { createMockTokenManager } from "../../factories/MockTokenManager";
 import { createMockUserRepository } from "../../factories/MockUserRepositoryFactory";
 
 describe("Start Local Register Use Case", () => {
-  let useCase: StartLocalRegister;
+  let useCase: StartLocalRegisterUseCase;
   let mockUserRepository: jest.Mocked<IUserRepository>
   let mockPasswordHasher: jest.Mocked<IHasher>
   let mockTokenManager: jest.Mocked<ITokenManager>
@@ -22,7 +22,7 @@ describe("Start Local Register Use Case", () => {
     mockPasswordHasher = createMockHasher();
     mockTokenManager = createMockTokenManager();
 
-    useCase = new StartLocalRegister(mockUserRepository, mockPasswordHasher, mockTokenManager);
+    useCase = new StartLocalRegisterUseCase(mockUserRepository, mockPasswordHasher, mockTokenManager);
   })
   it("should successfully register a user and return token and user info", async () => {
     const passwordHash = "senha-hasheada"
