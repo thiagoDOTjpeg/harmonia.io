@@ -27,20 +27,24 @@ import { SetPasswordUseCase } from '@/application/use_cases/auth/SetPasswordUseC
 import { StartOAuthUseCase } from '@/application/use_cases/auth/StartOAuthUseCase';
 import { EnsureValidConnectionsUseCase } from '@/application/use_cases/service-connection/EnsureValidConnectionsUseCase';
 import { RevokeServiceConnectionUseCase } from '@/application/use_cases/service-connection/RevokeServiceConnectionUseCase';
+import { SyncYouTubePlaylistToSpotifyUseCase } from '@/application/use_cases/sync/SyncYouTubePlaylistToSpotifyUseCase';
 import { OAuthCallbackStrategyFactory } from '@/infrastructure/adapter/oauth/factory/OAuthCallbackStrategyFactory';
 import { OAuthUrlFactory } from '@/infrastructure/adapter/oauth/factory/OAuthUrlFactory';
 import { GoogleOAuthCallbackStrategy } from '@/infrastructure/adapter/oauth/strategy/GoogleOAuthCallbackStrategy';
 import { SpotifyOAuthCallbackStrategy } from '@/infrastructure/adapter/oauth/strategy/SpotifyOAuthCallbackStrategy';
 import { AESSerializer } from '@/infrastructure/adapter/serializer/AESSerializer';
 import { GoogleMusicClient } from '@/infrastructure/client/GoogleMusicClient';
+import { SpotifyMusicClient } from '@/infrastructure/client/SpotifyMusicClient';
 import { AESTokenEncrypter } from '@/infrastructure/crypto/AESTokenEncrypter';
 import { CryptoCodeGenerator } from '@/infrastructure/crypto/CryptoCodeGenerator';
 import { prisma } from '@/infrastructure/db/prisma/client';
 import { PrismaServiceConnectionRepository } from '@/infrastructure/db/prisma/repositories/PrismaServiceConnectionRepository';
+import { RedisClient } from '@/infrastructure/db/redis';
 import { PlaylistSyncQueue } from '@/infrastructure/queue/PlaylistSyncQueue';
 import { ResetState } from '@/types/auth';
 import { OAuthState } from '@/types/oauth/state';
 import { ServiceProvider } from '@harmonia/shared';
+import Redis from 'ioredis';
 import { StartLocalLoginUseCase } from '../application/use_cases/auth/StartLocalLoginUseCase';
 import { StartLocalRegisterUseCase } from '../application/use_cases/auth/StartLocalRegisterUseCase';
 import { SpotifyOAuthClient } from '../infrastructure/client/SpotifyOAuthClient';
@@ -50,13 +54,15 @@ const ENCRYPTION_KEY: string = process.env.AES_SECRET || "";
 
 export class Container {
 
-  // Infra - Logger first (needed by other instances)
+  // Infra 
   private static loggerInstance: ILogger = new PinoLoggerAdapter();
+  private static redisInstance: Redis = RedisClient.getInstance().getRedis();
 
   // Infra
   private static googleClient = new GoogleOAuthClient(Container.loggerInstance);
   private static spotifyClient = new SpotifyOAuthClient();
   private static googleMusicClient = new GoogleMusicClient();
+  private static spotifyMusicClient = new SpotifyMusicClient();
   private static syncQueue: PlaylistSyncQueue;
 
   // Repositories
@@ -204,11 +210,11 @@ export class Container {
   // ===== GETTERS - INFRA =====
 
   static getOAuthStateStore() {
-    return new RedisStateStore<OAuthState>("oauth", this.loggerInstance);
+    return new RedisStateStore<OAuthState>("oauth", this.loggerInstance, this.redisInstance);
   }
 
   static getPasswordResetStateStore() {
-    return new RedisStateStore<ResetState>("reset", this.loggerInstance);
+    return new RedisStateStore<ResetState>("reset", this.loggerInstance, this.redisInstance);
   }
   static getTokenManager() {
     return this.tokenManager;
@@ -223,6 +229,20 @@ export class Container {
       this.syncQueue = new PlaylistSyncQueue();
     }
     return this.syncQueue;
+  }
+
+
+  // ===== GETTERS - USE CASES SYNC =====
+
+  static getSyncYoutubePlaylistToSpotifyUseCase() {
+    return new SyncYouTubePlaylistToSpotifyUseCase(
+      this.playlistRepository,
+      this.trackRepository,
+      this.playlistTrackRepository,
+      this.googleMusicClient,
+      this.spotifyMusicClient,
+      this.loggerInstance
+    );
   }
 
   // ===== GETTERS - USE CASES AUTH =====
