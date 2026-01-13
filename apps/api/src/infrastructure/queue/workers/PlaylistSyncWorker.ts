@@ -28,7 +28,7 @@ export class PlaylistSyncWorker {
 
   static async process(job: Job<SyncPlaylistJobData>): Promise<SyncResult> {
     return RequestContext.run(
-      { requestId: job.id?.toString() || 'unknown', correlationId: job.id?.toString() },
+      { requestId: job.id?.toString() || 'unknown', correlationId: job.id?.toString(), userId: job.data.userId },
       async () => {
         return PlaylistSyncWorker.executeSync(job);
       }

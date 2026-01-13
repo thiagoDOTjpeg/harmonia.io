@@ -5,12 +5,7 @@ import { MusicMatchingService } from '../../domain/services/MusicMatchingService
 
 
 export class SpotifyMusicClient implements ISpotifyMusicClient {
-  constructor(
-    private readonly accessToken: string,
-    private readonly spotifyId: string
-  ) { }
-
-  async searchTrack(youtubeTitle: string, channelTitle: string): Promise<SpotifySearchResult | null> {
+  async searchTrack(youtubeTitle: string, channelTitle: string, accessToken: string): Promise<SpotifySearchResult | null> {
     const query = MusicMatchingService.generateSpotifyQuery(youtubeTitle, channelTitle);
 
     const response = await fetch(
@@ -21,7 +16,7 @@ export class SpotifyMusicClient implements ISpotifyMusicClient {
       })}`,
       {
         headers: {
-          Authorization: `Bearer ${this.accessToken}`,
+          Authorization: `Bearer ${accessToken}`,
         },
       }
     );
@@ -82,13 +77,13 @@ export class SpotifyMusicClient implements ISpotifyMusicClient {
     return null;
   }
 
-  async createPlaylist(name: string, description?: string): Promise<string> {
+  async createPlaylist(name: string, accessToken: string, spotifyId: string, description?: string): Promise<string> {
     const response = await fetch(
-      `https://api.spotify.com/v1/users/${this.spotifyId}/playlists`,
+      `https://api.spotify.com/v1/users/${spotifyId}/playlists`,
       {
         method: 'POST',
         headers: {
-          Authorization: `Bearer ${this.accessToken}`,
+          Authorization: `Bearer ${accessToken}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
@@ -107,7 +102,7 @@ export class SpotifyMusicClient implements ISpotifyMusicClient {
     return data.id;
   }
 
-  async addTracksToPlaylist(playlistId: string, trackUris: string[]): Promise<void> {
+  async addTracksToPlaylist(playlistId: string, trackUris: string[], accessToken: string, spotifyId: string): Promise<void> {
     const chunks = this.chunkArray(trackUris, 100);
 
     for (const chunk of chunks) {
@@ -116,7 +111,7 @@ export class SpotifyMusicClient implements ISpotifyMusicClient {
         {
           method: 'POST',
           headers: {
-            Authorization: `Bearer ${this.accessToken}`,
+            Authorization: `Bearer ${accessToken}`,
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({ uris: chunk }),

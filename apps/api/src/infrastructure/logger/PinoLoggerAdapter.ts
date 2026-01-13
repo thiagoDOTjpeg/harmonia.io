@@ -123,5 +123,3 @@ const loggerInstance = new PinoLoggerAdapter();
 export const logger = loggerInstance;
 
 export const pinoInstance = loggerInstance.getRawPino();
-
-export type { ILogger };

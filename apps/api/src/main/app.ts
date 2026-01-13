@@ -9,6 +9,7 @@ import playlistRoutes from '../infrastructure/http/express/routes/playlist.route
 import syncRoutes from '../infrastructure/http/express/routes/sync.routes';
 import userRoutes from '../infrastructure/http/express/routes/user.route';
 
+
 dotenv.config();
 
 const app = express();

@@ -1,7 +1,4 @@
-import { startWorkers } from "@/infrastructure/queue/workers";
-import bullBoardRoutes from '../infrastructure/http/express/routes/bull-board.routes';
-import app from "./app";
+import { startWorker } from '@/infrastructure/worker';
 
-startWorkers();
+startWorker();
 
-app.use(bullBoardRoutes);
