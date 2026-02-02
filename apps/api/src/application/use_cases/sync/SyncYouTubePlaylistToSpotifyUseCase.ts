@@ -1,6 +1,6 @@
 import { IGoogleMusicClient } from "@/application/ports/google/IGoogleMusicClient";
 import { ISpotifyMusicClient } from "@/application/ports/spotify/ISpotifyMusicClient";
-import { IServiceConnectionRepository } from "@/application/repositories/IServiceConnectionRepository";
+import { MusicMatchingService } from "@/domain/services/MusicMatchingService";
 import { ILogger } from "@/infrastructure/logger";
 import { SyncPlaylistJobData } from "@/types/sync-job";
 import { IPlaylistRepository } from "../../repositories/IPlaylistRepository";
@@ -11,7 +11,6 @@ export class SyncYouTubePlaylistToSpotifyUseCase {
   constructor(
     private readonly playlistRepository: IPlaylistRepository,
     private readonly trackRepository: ITrackRepository,
-    private readonly serviceConnectionRepository: IServiceConnectionRepository,
     private readonly playlistTrackRepository: IPlaylistTrackRepository,
     private readonly googleMusicClient: IGoogleMusicClient,
     private readonly spotifyMusicClient: ISpotifyMusicClient,
@@ -40,13 +39,9 @@ export class SyncYouTubePlaylistToSpotifyUseCase {
         data.youtubePlaylistId
       );
 
-      const connections = await this.serviceConnectionRepository.findAllByUserId(data.userId);
-
-      this.logger.info("Service Connections retrived")
-
       if (!syncedPlaylist) {
         const spotifyPlaylistId = await this.spotifyMusicClient.createPlaylist(
-          youtubePlaylistInfo.title,
+          youtubePlaylistInfo.title, data.spotifyAccessToken, data.spotifyUserId,
           `Synced from YouTube • ${youtubePlaylistInfo.description || 'Harmonia.io'}`
         );
 
@@ -102,7 +97,7 @@ export class SyncYouTubePlaylistToSpotifyUseCase {
 
           let spotifyMatch = null;
           if (!track.hasSpotifyMatch()) {
-            spotifyMatch = await this.spotifyMusicClient.searchTrack(video.title, video.videoOwnerChannelTitle);
+            spotifyMatch = await this.spotifyMusicClient.searchTrack(video.title, video.videoOwnerChannelTitle, data.spotifyAccessToken);
 
             if (!spotifyMatch) {
               this.logger.warn({ videoTitle: video.title, videoId: video.videoId }, 'Match failed');
@@ -124,7 +119,7 @@ export class SyncYouTubePlaylistToSpotifyUseCase {
             const existingMatch = processedSpotifyTracks.get(spotifyTrackId);
 
             if (existingMatch) {
-              const bestVideo = this.selectBestVideo(existingMatch.video, {
+              const bestVideo = MusicMatchingService.selectBestVideo(existingMatch.video, {
                 videoId: video.videoId,
                 title: video.title,
                 channelTitle: video.channelTitle,
@@ -225,7 +220,9 @@ export class SyncYouTubePlaylistToSpotifyUseCase {
 
         await this.spotifyMusicClient.addTracksToPlaylist(
           syncedPlaylist.spotifyPlaylistId,
-          uniqueTracksToAdd
+          uniqueTracksToAdd,
+          data.spotifyAccessToken,
+          data.spotifyUserId
         );
 
         this.logger.info({ addedTracks: uniqueTracksToAdd.length }, 'Tracks added to Spotify');

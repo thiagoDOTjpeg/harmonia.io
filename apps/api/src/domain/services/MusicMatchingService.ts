@@ -274,6 +274,25 @@ export class MusicMatchingService {
     return distributorTerms.some(term => normalized.includes(term));
   }
 
+  static selectBestVideo(
+    video1: { videoId: string; title: string; channelTitle: string },
+    video2: { videoId: string; title: string; channelTitle: string }
+  ): { videoId: string; title: string; channelTitle: string } {
+    const isVideo1Official = /(-\s*topic|vevo)$/i.test(video1.channelTitle);
+    const isVideo2Official = /(-\s*topic|vevo)$/i.test(video2.channelTitle);
+
+    if (isVideo1Official && !isVideo2Official) return video1;
+    if (isVideo2Official && !isVideo1Official) return video2;
+
+    const isVideo1Distributor = MusicMatchingService.isLikelyDistributor(video1.channelTitle);
+    const isVideo2Distributor = MusicMatchingService.isLikelyDistributor(video2.channelTitle);
+
+    if (!isVideo1Distributor && isVideo2Distributor) return video1;
+    if (!isVideo2Distributor && isVideo1Distributor) return video2;
+
+    return video1;
+  }
+
   static extractArtistFromChannel(channelTitle: string): string | null {
     const topicMatch = channelTitle.match(/^(.+?)\s*-\s*Topic$/i);
     if (topicMatch) {
