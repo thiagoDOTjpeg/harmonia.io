@@ -228,15 +228,19 @@ export class SyncYouTubePlaylistToSpotifyUseCase {
 
         const CHUNK_SIZE = 100;
         for (let i = 0; i < uniqueTracksToAdd.length; i += CHUNK_SIZE) {
+          try {
+            const chunk = uniqueTracksToAdd.slice(i, i + CHUNK_SIZE);
 
-          const chunk = uniqueTracksToAdd.slice(i, i + CHUNK_SIZE);
-
-          await this.spotifyMusicClient.addTracksToPlaylist(
-            syncedPlaylist.spotifyPlaylistId,
-            chunk,
-            data.spotifyAccessToken,
-            data.spotifyUserId
-          );
+            await this.spotifyMusicClient.addTracksToPlaylist(
+              syncedPlaylist.spotifyPlaylistId,
+              chunk,
+              data.spotifyAccessToken,
+              data.spotifyUserId
+            );
+          } catch (error) {
+            this.logger.warn({ error }, "Occurred an error on the batching add on the spotify continuing with the next batch");
+            continue
+          }
         }
 
         this.logger.info({ addedTracks: uniqueTracksToAdd.length }, 'Tracks added to Spotify');

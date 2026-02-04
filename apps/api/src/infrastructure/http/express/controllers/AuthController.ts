@@ -4,8 +4,8 @@ import { AppError, BadRequestError, LoginSchema, OAuthMethod, OAuthQuerySchema, 
 import { NextFunction, Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 import { Container } from '../../../../main/container';
+import { getOAuthCallbackHTML } from '../../../../presentation/views/oauth-callback';
 import { AuthMiddleware } from '../middlewares/AuthMiddleware';
-import { getOAuthCallbackHTML } from '../views/oauth-callback';
 
 
 export class AuthController {

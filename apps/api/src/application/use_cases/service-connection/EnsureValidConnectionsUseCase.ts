@@ -4,6 +4,7 @@ import { IEncryptor } from "@/application/ports/crypto/IEncryptor";
 import { ITokenSerializer } from "@/application/ports/serializer/ITokenSerializer";
 import { IServiceConnectionRepository } from "@/application/repositories/IServiceConnectionRepository";
 import { ServiceConnection } from "@/domain/entities/ServiceConnection";
+import { logger } from "@/infrastructure/logger";
 import { ERRORS } from "@/types/constant/errors";
 import { TokenEncrypted } from "@/types/encrypter";
 import { ServiceProvider } from "@harmonia/shared";
@@ -19,7 +20,7 @@ export class EnsureValidConnectionsUseCase {
   ) { }
 
   public async execute(userId: string): Promise<Map<ServiceProvider, ServiceConnection>> {
-    const serviceConnetions: Map<ServiceProvider, ServiceConnection> = new Map();
+    const serviceConnetions = new Map<ServiceProvider, ServiceConnection>();
     const existingConnections = await this.serviceConnectionRepository.findAllByUserId(userId);
     if (existingConnections == null) {
       throw new Error(ERRORS.SERVICE_CONNECTIONS_NOT_ACTIVE)
@@ -31,6 +32,7 @@ export class EnsureValidConnectionsUseCase {
           throw new Error(ERRORS.SERVICE_CONNECTION_INVALID)
         }
         if (authProvider.isExpired(service)) {
+          logger.debug({ service })
           const serializedRefreshToken = this.tokenSerializer.deserialize(service?.refreshToken);
           const refreshTokenDecrypted = this.AESEncrypter.decrypt(serializedRefreshToken.iv, serializedRefreshToken.cipherText, serializedRefreshToken.tag);
 
@@ -46,12 +48,20 @@ export class EnsureValidConnectionsUseCase {
             expiresAt,
             updatedAt: new Date(),
           }, service.providerAccountId)
-          serviceConnetions.set(service.provider, savedServiceConnection);
+          serviceConnetions.set(service.provider, { ...savedServiceConnection, accessToken: newTokens.access_token, refreshToken: newTokens.refresh_token });
         } else {
-          serviceConnetions.set(service.provider, service)
+          const accessToken = this.decryptServiceConnectionToken(service.accessToken)
+          const refreshToken = this.decryptServiceConnectionToken(service.refreshToken)
+          serviceConnetions.set(service.provider, { ...service, accessToken, refreshToken })
         }
       })
     )
     return serviceConnetions;
+  }
+
+  private decryptServiceConnectionToken(encryptedToken?: string | null): string {
+    const { cipherText, iv, tag } = this.tokenSerializer.deserialize(encryptedToken)
+    const descriptedToken = this.AESEncrypter.decrypt(iv, cipherText, tag);
+    return descriptedToken;
   }
 }
