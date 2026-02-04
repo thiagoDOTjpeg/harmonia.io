@@ -4,7 +4,6 @@ import { Track } from '../../../../domain/entities/Track';
 
 export class PrismaTrackRepository implements ITrackRepository {
   constructor(private readonly prisma: PrismaClient) { }
-
   private toDomain(prismaTrack: any): Track {
     return new Track(
       prismaTrack.id,
@@ -26,6 +25,14 @@ export class PrismaTrackRepository implements ITrackRepository {
       prismaTrack.updatedAt,
     );
   }
+
+  async findManyByYoutubeIds(inputs: string[]): Promise<Track[]> {
+    const tracks = await this.prisma.track.findMany({
+      where: { youtubeVideoId: { in: inputs } }
+    })
+    return tracks.map((track) => this.toDomain(track));
+  }
+
 
   async findByYoutubeVideoId(youtubeVideoId: string): Promise<Track | null> {
     const track = await this.prisma.track.findUnique({

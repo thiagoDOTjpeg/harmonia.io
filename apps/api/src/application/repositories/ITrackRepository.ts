@@ -15,6 +15,8 @@ export interface ITrackRepository {
     matchSource?: string | null;
   }): Promise<Track>;
 
+  findManyByYoutubeIds(inputs: string[]): Promise<Track[]>;
+
   updateSpotifyMatch(trackId: string, input: {
     spotifyTrackId: string;
     spotifyUri: string;
