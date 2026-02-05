@@ -3,9 +3,10 @@ import { ServiceConnectionMapper } from '@/infrastructure/db/prisma/mapper/Servi
 import { UserSummaryMapper } from '@/infrastructure/db/prisma/mapper/UserSummaryMapper';
 import { logger } from '@/infrastructure/logger';
 import { Container } from '@/main/container';
+import { makeRevokeServiceConnectionUseCase } from '@/main/factories/service-connection.factory';
 import { NotFoundError, UnathorizedError } from '@harmonia/shared';
 import { NextFunction, Request, Response } from 'express';
-import { AuthMiddleware } from '../middlewares/AuthMiddleware';
+import { AuthMiddleware } from '../../infrastructure/http/express/middlewares/AuthMiddleware';
 
 export class UserController {
   static async getUserSummary(req: Request, res: Response, next: NextFunction) {
@@ -57,12 +58,9 @@ export class UserController {
   static async deleteServiceConnectionRevoke(req: Request, res: Response, next: NextFunction) {
     try {
       const user = await AuthMiddleware.getAuthenticatedUser(req, res);
-      if (!user) {
-        throw new UnathorizedError("Usuário não logado")
-      }
 
       const { id } = req.params
-      await Container.getRevokeServiceConnectionUseCase().execute(user.id, id);
+      await makeRevokeServiceConnectionUseCase().execute(user.id, id);
       return res.status(204).send();
     } catch (error) {
       logger.error({ err: error }, 'Error revoking service connection');
