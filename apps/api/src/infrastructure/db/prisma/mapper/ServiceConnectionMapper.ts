@@ -25,12 +25,12 @@ export class ServiceConnectionMapper {
       serviceConnection.providerAccountId || "",
       serviceConnection.email,
       serviceConnection.accessToken,
-      serviceConnection.refreshToken,
       serviceConnection.expiresAt,
       serviceConnection.scopes,
       serviceConnection.metadata,
       serviceConnection.updatedAt,
       serviceConnection.updatedAt,
+      serviceConnection.refreshToken,
     );
   }
 
@@ -44,7 +44,7 @@ export class ServiceConnectionMapper {
       metadata: serviceConnection.metadata,
       provider: serviceConnection.provider as unknown as PrismaServiceProvider,
       providerAccountId: serviceConnection.providerAccountId,
-      refreshToken: serviceConnection.refreshToken,
+      refreshToken: serviceConnection.refreshToken as string | null,
       scopes: serviceConnection.scopes,
       updatedAt: serviceConnection.updatedAt,
       userId: serviceConnection.userId,

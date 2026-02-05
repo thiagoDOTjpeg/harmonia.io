@@ -8,7 +8,7 @@ export class AESSerializer implements ITokenSerializer<TokenEncrypted> {
     const serializedToken = iv + ":" + cipherText + ":" + tag
     return serializedToken;
   }
-  deserialize(data: string | null): TokenEncrypted {
+  deserialize(data?: string | null): TokenEncrypted {
     if (!data) {
       throw new Error(ERRORS.TOKEN_SERIALIZER_ERROR)
     }

@@ -9,11 +9,11 @@ export class ServiceConnection {
     public providerAccountId: string,
     public email: string | null,
     public accessToken: string,
-    public refreshToken: string | null,
     public expiresAt: Date | null,
     public scopes: string,
     public metadata: JsonValue | null,
     public createdAt: Date,
     public updatedAt: Date,
+    public refreshToken?: string | null,
   ) { }
 }

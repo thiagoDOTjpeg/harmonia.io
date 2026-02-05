@@ -6,7 +6,7 @@ import { PrismaPlaylistRepository } from "@/infrastructure/db/prisma/repositorie
 import { PlaylistSyncQueue } from "@/infrastructure/queue/PlaylistSyncQueue";
 import { ERRORS } from "@/types/constant/errors";
 import { TokenEncrypted } from "@/types/encrypter";
-import { cancelSyncPlaylistDTO, createSyncPlaylistDTO, getSyncPlaylistStatusDTO, PlaylistLimitExceededError, retrySyncPlaylistDTO, ServiceProvider } from "@harmonia/shared";
+import { createSyncPlaylistDTO, PlaylistLimitExceededError, retrySyncPlaylistDTO, ServiceProvider } from "@harmonia/shared";
 import { ServiceConnection } from "../../domain/entities/ServiceConnection";
 import { User } from "../../domain/entities/User";
 import { IGoogleMusicClient } from "../ports/google/IGoogleMusicClient";
@@ -74,48 +74,6 @@ export class SyncMusicService {
       status: 'pending',
       message: 'Sincronização iniciada. Use /sync/status/:jobId para acompanhar',
     };
-  }
-
-  public async getSyncStatus(queryParsed: getSyncPlaylistStatusDTO) {
-    const { jobId } = queryParsed;
-    const job = await this.syncQueue.getQueue().getJob(jobId);
-
-    if (!job) {
-      return {
-        success: false,
-        error: "job_not_found",
-        message: "Job não encontrado",
-      }
-    }
-
-    const state = await job.getState();
-    const progress = job.progress();
-
-    return {
-      success: true,
-      data: {
-        jobId: job.id,
-        state,
-        progress,
-        finishedOn: job.finishedOn,
-        processedOn: job.processedOn,
-        returnvalue: job.returnvalue,
-      },
-    };
-  }
-
-  public async cancelSync(queryParsed: cancelSyncPlaylistDTO) {
-    const cancelled = await this.syncQueue.cancelSync(queryParsed.jobId)
-    if (!cancelled) {
-      return {
-        error: 'job_not_found',
-        message: 'Job não encontrado ou já finalizado',
-      };
-    }
-    return {
-      success: true,
-      message: "Sincronização cancelada"
-    }
   }
 
   public async retrySync(queryParsed: retrySyncPlaylistDTO) {
