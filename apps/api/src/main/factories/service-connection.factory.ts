@@ -5,59 +5,41 @@ import { EnsureValidConnectionsUseCase } from "@/application/use_cases/service-c
 import { RevokeServiceConnectionUseCase } from "@/application/use_cases/service-connection/RevokeServiceConnectionUseCase";
 import { AESSerializer } from "@/infrastructure/adapter/serializer/AESSerializer";
 import { AESTokenEncrypter } from "@/infrastructure/crypto/AESTokenEncrypter";
-import { prisma } from "@/infrastructure/db/prisma/client";
-import { PrismaServiceConnectionRepository } from "@/infrastructure/db/prisma/repositories/PrismaServiceConnectionRepository";
 import { PinoLoggerAdapter } from "@/infrastructure/logger";
 import { SystemClock } from "@/infrastructure/time/SystemClock";
 import { ServiceProvider } from "@harmonia/shared";
+import { makePrismaIServiceConnectionRepository } from "./repositories.factory";
 
+// Memoized instances
+const logger = new PinoLoggerAdapter();
+const encryptionKey = process.env.AES_SECRET || "";
+const encryptor = new AESTokenEncrypter(encryptionKey);
+const tokenSerializer = new AESSerializer();
+const clock = new SystemClock();
+const googleAuthProvider = new GoogleAuthProvider(logger);
+const spotifyAuthProvider = new SpotifyAuthProvider(logger);
 
-const makeILogger = () => {
-  return new PinoLoggerAdapter();
-}
-
-const makeIServiceConnectionRepository = () => {
-  return new PrismaServiceConnectionRepository(prisma);
-}
-
-const makeIEncryptor = () => {
-  const encryptionKey = process.env.AES_SECRET || "";
-  return new AESTokenEncrypter(encryptionKey);
-}
-
-const makeITokenSerializer = () => {
-  return new AESSerializer();
-}
-
-const makeIClock = () => {
-  return new SystemClock();
-}
-
-const makeIAuthGoogleProvider = () => {
-  return new GoogleAuthProvider(makeILogger());
-}
-
+const providers: Record<ServiceProvider, IAuthProvider> = {
+  [ServiceProvider.GOOGLE]: googleAuthProvider,
+  [ServiceProvider.SPOTIFY]: spotifyAuthProvider
+};
 
 export const makeEnsureValidConnectionsUseCase = () => {
-  const providers: Record<ServiceProvider, IAuthProvider> = {
-    [ServiceProvider.GOOGLE]: new GoogleAuthProvider(makeILogger()),
-    [ServiceProvider.SPOTIFY]: new SpotifyAuthProvider(makeILogger())
-  }
   return new EnsureValidConnectionsUseCase(
-    makeIServiceConnectionRepository(),
-    makeIEncryptor(),
-    makeITokenSerializer(),
-    makeIClock(),
+    makePrismaIServiceConnectionRepository(),
+    encryptor,
+    tokenSerializer,
+    clock,
     providers
   );
 }
 
 export const makeRevokeServiceConnectionUseCase = () => {
   return new RevokeServiceConnectionUseCase(
-    makeIServiceConnectionRepository(),
-    makeIEncryptor(),
-    makeITokenSerializer(),
-    makeIAuthGoogleProvider(),
-    makeILogger(),
+    makePrismaIServiceConnectionRepository(),
+    encryptor,
+    tokenSerializer,
+    googleAuthProvider,
+    logger,
   );
 }
