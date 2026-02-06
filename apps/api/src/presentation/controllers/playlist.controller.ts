@@ -1,9 +1,9 @@
 import { User } from "@/domain/entities/User";
 import { UserPlaylistsMapper } from "@/infrastructure/db/prisma/mapper/UserPlaylistsMapper";
 import { logger } from '@/infrastructure/logger';
-import { Container } from "@/main/container";
+import { makePrismaIPlaylistRepository } from "@/main/factories/repositories.factory";
 import { Request, Response } from 'express';
-import { AuthMiddleware } from "../middlewares/AuthMiddleware";
+import { AuthMiddleware } from "../../infrastructure/http/express/middlewares/AuthMiddleware";
 
 export class PlaylistController {
   static async getPlaylists(req: Request, res: Response) {
@@ -11,7 +11,7 @@ export class PlaylistController {
       const user = await AuthMiddleware.getAuthenticatedUser(req, res) as User;
       if (!user) return;
 
-      const playlistRepository = Container.getPlaylistRepository();
+      const playlistRepository = makePrismaIPlaylistRepository();
       const playlists = await playlistRepository.findByUserIdView(user.id);
 
       const playlistsDTO = playlists.map((playlist) => UserPlaylistsMapper.toDTO(playlist))

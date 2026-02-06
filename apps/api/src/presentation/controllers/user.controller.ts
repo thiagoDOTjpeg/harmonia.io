@@ -2,7 +2,7 @@ import { User } from '@/domain/entities/User';
 import { ServiceConnectionMapper } from '@/infrastructure/db/prisma/mapper/ServiceConnectionMapper';
 import { UserSummaryMapper } from '@/infrastructure/db/prisma/mapper/UserSummaryMapper';
 import { logger } from '@/infrastructure/logger';
-import { Container } from '@/main/container';
+import { makePrismaIServiceConnectionRepository, makePrismaIUserRsepository } from '@/main/factories/repositories.factory';
 import { makeRevokeServiceConnectionUseCase } from '@/main/factories/service-connection.factory';
 import { NotFoundError, UnathorizedError } from '@harmonia/shared';
 import { NextFunction, Request, Response } from 'express';
@@ -16,7 +16,7 @@ export class UserController {
         throw new UnathorizedError("Usuário não logado")
 
       }
-      const summary = await Container.getUserRepository().getUserSummary(user.id)
+      const summary = await makePrismaIUserRsepository().getUserSummary(user.id)
 
       if (!summary) {
         throw new NotFoundError("Resumo não encontrado")
@@ -38,7 +38,7 @@ export class UserController {
         throw new UnathorizedError("Usuário não logado")
       }
 
-      const serviceConnections = await Container.getServiceConnectionRepository().findAllByUserId(user.id);
+      const serviceConnections = await makePrismaIServiceConnectionRepository().findAllByUserId(user.id);
 
       if (!serviceConnections) {
         throw new NotFoundError("Nenhum serviço conectado");
