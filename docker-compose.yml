@@ -25,7 +25,7 @@ services:
     container_name: harmonia-api
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: apps/api/Dockerfile
     command: sh -c "npm run db:generate && npm run build:shared && npm run dev:api"
     restart: on-failure
     ports:
@@ -48,7 +48,7 @@ services:
     container_name: harmonia-web
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: apps/web/Dockerfile
     command: sh -c "npm run build:shared && npm run dev:web"
     restart: on-failure
     ports:
