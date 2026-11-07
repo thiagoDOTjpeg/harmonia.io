@@ -565,7 +565,6 @@ export default function HomePage() {
         onNavigate={(id) => glideToSection(id as SectionId)}
       />
 
-      {/* Access Request Modal */}
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="border-white/10 bg-zinc-950 sm:max-w-md shadow-2xl">
           <DialogHeader>

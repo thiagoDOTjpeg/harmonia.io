@@ -163,7 +163,6 @@ function PanelLayer({ variant }: { variant: "other" | "harmonia" }) {
         isHarmonia ? "bg-zinc-950" : "bg-[#0d0b0b]"
       }`}
     >
-      {/* Layer header */}
       <div className="flex items-center justify-between border-b border-white/[0.07] px-4 py-3 sm:px-6">
         <div className="flex items-center gap-2">
           {isHarmonia ? (
@@ -186,14 +185,12 @@ function PanelLayer({ variant }: { variant: "other" | "harmonia" }) {
         </span>
       </div>
 
-      {/* Rows */}
       <div className="divide-y divide-white/[0.05]">
         {ROWS.map((row) => (
           <div
             key={row.ytTitle}
             className="grid grid-cols-12 items-center gap-3 px-4 py-2.5 sm:px-6"
           >
-            {/* Source (identical on both layers) */}
             <div className="col-span-6 flex min-w-0 items-center gap-2.5">
               <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md border border-red-500/25 bg-red-500/10">
                 <Play className="h-2.5 w-2.5 fill-red-400 text-red-400" />
@@ -206,7 +203,6 @@ function PanelLayer({ variant }: { variant: "other" | "harmonia" }) {
               </div>
             </div>
 
-            {/* Result */}
             <div className="col-span-6 flex min-w-0 items-center justify-between gap-2">
               {isHarmonia ? (
                 <>
@@ -335,7 +331,6 @@ export function ComparisonSlider({ active }: { active: boolean }) {
 
   return (
     <div className="space-y-4">
-      {/* Quick toggles */}
       <div className="flex items-center justify-center gap-1 rounded-full border border-white/10 bg-zinc-950/80 p-1 w-fit mx-auto">
         {(
           [
@@ -369,7 +364,6 @@ export function ComparisonSlider({ active }: { active: boolean }) {
         })}
       </div>
 
-      {/* Slider stage */}
       <div
         ref={containerRef}
         role="slider"
@@ -384,10 +378,8 @@ export function ComparisonSlider({ active }: { active: boolean }) {
         onKeyDown={handleKeyDown}
         className="relative select-none overflow-hidden rounded-3xl border border-white/10 shadow-[0_32px_80px_-20px_rgba(0,0,0,0.85),inset_0_1px_0_0_rgba(255,255,255,0.09)] cursor-ew-resize touch-none focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
       >
-        {/* Base layer: other converter */}
         <PanelLayer variant="other" />
 
-        {/* Top layer: Harmonia, clipped from the left */}
         <motion.div
           className="absolute inset-0"
           style={{ clipPath, WebkitClipPath: clipPath }}
@@ -395,7 +387,6 @@ export function ComparisonSlider({ active }: { active: boolean }) {
           <PanelLayer variant="harmonia" />
         </motion.div>
 
-        {/* Divider + handle */}
         <motion.div
           className="pointer-events-none absolute inset-y-0 z-20 -translate-x-1/2"
           style={{ left: handleLeft }}
@@ -407,7 +398,6 @@ export function ComparisonSlider({ active }: { active: boolean }) {
         </motion.div>
       </div>
 
-      {/* Score summary */}
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <div className="flex items-center justify-between rounded-2xl border border-red-500/15 bg-red-500/[0.04] px-4 py-3">
           <div>
