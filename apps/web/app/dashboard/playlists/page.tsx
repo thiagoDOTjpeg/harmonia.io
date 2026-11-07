@@ -1,26 +1,31 @@
 "use client";
 
-import { PlaylistManagerDialog } from "@/components/playlist-manager-dialog";
 import PlaylistsSkeleton from "@/components/skeleton/playlists-skeleton";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Badge } from "@harmonia/ui/components/badge";
+import { Button } from "@harmonia/ui/components/button";
 import {
   Card,
   CardDescription,
+  CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
+} from "@harmonia/ui/components/card";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+} from "@harmonia/ui/components/dropdown-menu";
+import {
+  useDeletePlaylistMutation,
+  useSyncPlaylistMutation,
+} from "@/hooks/mutations";
 import { useUserPlaylists } from "@/hooks/queries";
-import { formatTimeAgo, UserPlaylistDTO } from "@harmonia/shared";
+import { formatTimeAgo } from "@harmonia/shared";
 import {
   ExternalLink,
+  ListMusic,
   MoreHorizontal,
   Music2,
   Play,
@@ -29,18 +34,11 @@ import {
   Trash2,
 } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
 
 export default function PlaylistsPage() {
   const { data: playlists, isLoading } = useUserPlaylists();
-  const [selectedPlaylist, setSelectedPlaylist] =
-    useState<UserPlaylistDTO | null>(null);
-  const [dialogOpen, setDialogOpen] = useState(false);
-
-  const handleManage = (playlist: UserPlaylistDTO) => {
-    setSelectedPlaylist(playlist);
-    setDialogOpen(true);
-  };
+  const syncPlaylistMutation = useSyncPlaylistMutation();
+  const deletePlaylistMutation = useDeletePlaylistMutation();
 
   if (isLoading) {
     return <PlaylistsSkeleton />;
@@ -52,7 +50,7 @@ export default function PlaylistsPage() {
         <div>
           <h1 className="text-3xl font-bold">Minhas Playlists</h1>
           <p className="text-muted-foreground mt-1">
-            Gerencie suas playlists sincronizadas
+            Gerencie suas playlists sincronizadas e ajuste o match das músicas
           </p>
         </div>
         <Button asChild>
@@ -66,16 +64,24 @@ export default function PlaylistsPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {playlists && playlists.length > 0 ? (
           playlists.map((playlist) => (
-            <Card key={playlist.id}>
+            <Card key={playlist.id} className="flex flex-col justify-between">
               <CardHeader>
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex items-start gap-4 min-w-0">
-                    <div className="h-16 w-16 shrink-0 rounded-lg bg-primary/10 flex items-center justify-center">
+                    <Link
+                      href={`/dashboard/playlists/${playlist.id}`}
+                      className="h-16 w-16 shrink-0 rounded-lg bg-primary/10 flex items-center justify-center hover:bg-primary/20 transition-colors"
+                    >
                       <Music2 className="h-8 w-8 text-primary" />
-                    </div>
+                    </Link>
                     <div className="min-w-0">
                       <CardTitle className="truncate">
-                        {playlist.youtube_title}
+                        <Link
+                          href={`/dashboard/playlists/${playlist.id}`}
+                          className="hover:underline underline-offset-4"
+                        >
+                          {playlist.youtube_title}
+                        </Link>
                       </CardTitle>
                       <CardDescription className="mt-1">
                         {playlist.songs} músicas • Última sincronização:{" "}
@@ -91,7 +97,9 @@ export default function PlaylistsPage() {
                         >
                           {playlist.sync_status === "completed"
                             ? "Sincronizada"
-                            : "Desincronizada"}
+                            : playlist.sync_status === "partial"
+                              ? "Sincronização Parcial"
+                              : "Desincronizada"}
                         </Badge>
                         <Badge
                           variant="outline"
@@ -132,12 +140,23 @@ export default function PlaylistsPage() {
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                      {playlist.sync_status === "partial" && (
-                        <DropdownMenuItem>
-                          <RefreshCw className="mr-2 h-4 w-4" />
-                          Resincronizar
-                        </DropdownMenuItem>
-                      )}
+                      <DropdownMenuItem asChild>
+                        <Link href={`/dashboard/playlists/${playlist.id}`}>
+                          <ListMusic className="mr-2 h-4 w-4" />
+                          Gerenciar Músicas
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        disabled={syncPlaylistMutation.isPending}
+                        onClick={() =>
+                          syncPlaylistMutation.mutate({
+                            youtubePlaylistId: playlist.youtube_playlist_id,
+                          })
+                        }
+                      >
+                        <RefreshCw className="mr-2 h-4 w-4" />
+                        Resincronizar
+                      </DropdownMenuItem>
                       <DropdownMenuItem
                         onClick={() =>
                           window.open(
@@ -161,7 +180,13 @@ export default function PlaylistsPage() {
                         Abrir no Spotify
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
-                      <DropdownMenuItem className="text-destructive focus:text-destructive">
+                      <DropdownMenuItem
+                        className="text-destructive focus:text-destructive"
+                        disabled={deletePlaylistMutation.isPending}
+                        onClick={() =>
+                          deletePlaylistMutation.mutate(playlist.id)
+                        }
+                      >
                         <Trash2 className="mr-2 h-4 w-4" />
                         Excluir
                       </DropdownMenuItem>
@@ -169,6 +194,15 @@ export default function PlaylistsPage() {
                   </DropdownMenu>
                 </div>
               </CardHeader>
+
+              <CardFooter className="pt-0 flex justify-end">
+                <Button variant="secondary" size="sm" asChild className="w-full sm:w-auto">
+                  <Link href={`/dashboard/playlists/${playlist.id}`}>
+                    <ListMusic className="mr-2 h-4 w-4" />
+                    Abrir e Gerenciar Músicas
+                  </Link>
+                </Button>
+              </CardFooter>
             </Card>
           ))
         ) : (
@@ -194,14 +228,6 @@ export default function PlaylistsPage() {
           </Card>
         )}
       </div>
-
-      {selectedPlaylist && (
-        <PlaylistManagerDialog
-          open={dialogOpen}
-          onOpenChange={setDialogOpen}
-          playlist={selectedPlaylist}
-        />
-      )}
     </div>
   );
 }
