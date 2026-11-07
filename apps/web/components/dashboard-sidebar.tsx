@@ -18,11 +18,10 @@ const navigation = [
 export function DashboardSidebar() {
   const pathname = usePathname();
   const { logout } = useAuthContext();
-  const { clearUser, user } = useUser();
+  const { user } = useUser();
 
   const handleLogout = () => {
     logout();
-    clearUser();
   };
 
   const userInitial = user?.name?.charAt(0)?.toUpperCase() ?? "?";
@@ -129,11 +128,8 @@ export function DashboardSidebar() {
             className="shrink-0 h-8 w-8"
             onClick={handleLogout}
             title="Sair"
-            asChild
           >
-            <Link href="/">
-              <LogOut className="h-4 w-4" />
-            </Link>
+            <LogOut className="h-4 w-4" />
           </Button>
         </div>
       </div>

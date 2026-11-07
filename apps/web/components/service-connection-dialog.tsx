@@ -10,15 +10,14 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useAuthContext } from "@/context/AuthContext";
+import { useServiceConnections } from "@/hooks/queries";
 import { useUser } from "@/hooks/use-user";
 import { formatFullDate } from "@/lib/utils";
 import {
   OAuthMethod,
-  ServiceConnectionDTO,
   ServiceProvider,
 } from "@harmonia/shared";
 import { CheckCircle2, ExternalLink, Unplug, XCircle } from "lucide-react";
-import { useEffect, useState } from "react";
 
 interface ServiceConnectionDialogProps {
   open: boolean;
@@ -48,17 +47,16 @@ export function ServiceConnectionDialog({
   onOpenChange,
   service,
 }: ServiceConnectionDialogProps) {
-  const {
-    getServiceConnections,
-    _hasHydrated,
-    serviceConnections,
-    revokeConnection,
-  } = useUser();
+  const { data: serviceConnections, isLoading: isFetchingConnections } =
+    useServiceConnections({ enabled: open });
+  const { revokeConnection, isLoading: isRevoking } = useUser();
   const { openOAuthPopup } = useAuthContext();
-  const [selectedService, setSelectedService] =
-    useState<ServiceConnectionDTO>();
-  const [isConnected, setIsConnected] = useState(true);
-  const [isLoading, setIsLoading] = useState(false);
+
+  const selectedService = serviceConnections?.find(
+    (serviceConnection) => serviceConnection.provider === service,
+  );
+  const isConnected = !!selectedService;
+  const isLoading = isFetchingConnections || isRevoking;
 
   const hasScope = (scopeKey: string): boolean => {
     if (!selectedService?.scopes) return false;
@@ -71,19 +69,6 @@ export function ServiceConnectionDialog({
       return false;
     }
   };
-
-  useEffect(() => {
-    if (_hasHydrated && !serviceConnections && open) {
-      getServiceConnections();
-    }
-
-    const connection = serviceConnections?.find(
-      (serviceConnection) => serviceConnection.provider === service,
-    );
-
-    setSelectedService(connection);
-    setIsConnected(!!connection);
-  }, [_hasHydrated, serviceConnections, getServiceConnections, service]);
 
   const serviceConfig = {
     [ServiceProvider.GOOGLE]: {
@@ -116,9 +101,8 @@ export function ServiceConnectionDialog({
 
   const handleDisconnect = async () => {
     if (selectedService) {
-      await revokeConnection(selectedService?.id);
+      await revokeConnection(selectedService.id);
     }
-    setIsConnected(false);
   };
 
   // const handleReauthorize = async () => {

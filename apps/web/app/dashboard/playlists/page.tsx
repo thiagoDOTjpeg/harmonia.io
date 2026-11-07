@@ -17,7 +17,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useUser } from "@/hooks/use-user";
+import { useUserPlaylists } from "@/hooks/queries";
 import { formatTimeAgo, UserPlaylistDTO } from "@harmonia/shared";
 import {
   ExternalLink,
@@ -29,10 +29,10 @@ import {
   Trash2,
 } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 export default function PlaylistsPage() {
-  const { getPlaylists, playlists, _hasHydrated } = useUser();
+  const { data: playlists, isLoading } = useUserPlaylists();
   const [selectedPlaylist, setSelectedPlaylist] =
     useState<UserPlaylistDTO | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -42,13 +42,7 @@ export default function PlaylistsPage() {
     setDialogOpen(true);
   };
 
-  useEffect(() => {
-    if (_hasHydrated && !playlists) {
-      getPlaylists();
-    }
-  }, [_hasHydrated, playlists]);
-
-  if (!_hasHydrated) {
+  if (isLoading) {
     return <PlaylistsSkeleton />;
   }
 

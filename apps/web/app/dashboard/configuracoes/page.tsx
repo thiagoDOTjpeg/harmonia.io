@@ -12,13 +12,15 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useUserSummary } from "@/hooks/queries";
 import { useUser } from "@/hooks/use-user";
 import { ServiceProvider } from "@harmonia/shared";
 import { ExternalLink, Heart, Music, Video } from "lucide-react";
 import { useEffect, useState } from "react";
 
 export default function ConfiguracoesPage() {
-  const { user, summary, getSummary, _hasHydrated, isLoading } = useUser();
+  const { user } = useUser();
+  const { data: summary, isLoading } = useUserSummary();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
 
@@ -33,12 +35,6 @@ export default function ConfiguracoesPage() {
       setEmail(user.email || "");
     }
   }, [user]);
-
-  useEffect(() => {
-    if (_hasHydrated && !summary) {
-      getSummary();
-    }
-  }, [_hasHydrated, summary, getSummary]);
 
   const handleManageService = (service: ServiceProvider) => {
     setSelectedService(service);

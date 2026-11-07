@@ -10,22 +10,15 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { useUser } from "@/hooks/use-user";
+import { useUserSummary } from "@/hooks/queries";
 import { formatTimeAgo } from "@/lib/utils";
 import { AlertCircle, Clock, Music2, TrendingUp } from "lucide-react";
 import Link from "next/link";
-import { useEffect } from "react";
 
 export default function DashboardPage() {
-  const { getSummary, isLoading, summary, _hasHydrated } = useUser();
+  const { data: summary, isLoading } = useUserSummary();
 
-  useEffect(() => {
-    if (_hasHydrated && !summary) {
-      getSummary();
-    }
-  }, [_hasHydrated, summary]);
-
-  if (!_hasHydrated) {
+  if (isLoading) {
     return <DashboardSkeleton />;
   }
 
