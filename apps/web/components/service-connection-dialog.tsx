@@ -73,12 +73,12 @@ export function ServiceConnectionDialog({
   };
 
   useEffect(() => {
-    if (_hasHydrated && !serviceConnections) {
+    if (_hasHydrated && !serviceConnections && open) {
       getServiceConnections();
     }
 
     const connection = serviceConnections?.find(
-      (serviceConnection) => serviceConnection.provider === service
+      (serviceConnection) => serviceConnection.provider === service,
     );
 
     setSelectedService(connection);
