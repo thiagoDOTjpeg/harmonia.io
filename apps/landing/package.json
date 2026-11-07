@@ -1,0 +1,43 @@
+{
+  "name": "@harmonia/landing",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "build": "next build",
+    "dev": "dotenv -e ../../.env -- next dev -p 3002 --turbopack",
+    "lint": "next lint",
+    "start": "next start -p 3002"
+  },
+  "dependencies": {
+    "@harmonia/shared": "*",
+    "@harmonia/ui": "*",
+    "@hookform/resolvers": "3.10.0",
+    "@tailwindcss/postcss": "4.1.16",
+    "@types/tailwindcss": "3.0.11",
+    "@vercel/analytics": "^1.3.1",
+    "autoprefixer": "^10.4.20",
+    "dotenv": "17.2.3",
+    "lucide-react": "0.454.0",
+    "next": "16.4.5",
+    "next-themes": "^0.4.6",
+    "nextra": "4.6.0",
+    "nextra-theme-docs": "4.6.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "react-hook-form": "7.66.0",
+    "tech-stack-icons": "3.3.2",
+    "zod": "^3.22.4"
+  },
+  "devDependencies": {
+    "@harmonia/config-typescript": "*",
+    "@types/node": "^20.10.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "eslint": "^8.57.0",
+    "eslint-config-next": "^15.0.3",
+    "postcss": "^8.4.47",
+    "tailwindcss": "4.1.16",
+    "typescript": "^5.3.3"
+  }
+}
+
