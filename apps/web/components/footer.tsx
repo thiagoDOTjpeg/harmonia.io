@@ -3,7 +3,7 @@ import { Github, Globe, Linkedin } from "lucide-react";
 import Link from "next/link";
 
 const LANDING_URL =
-  process.env.NEXT_PUBLIC_LANDING_URL || "http://localhost:3002";
+  process.env.NEXT_PUBLIC_LANDING_URL || "https://harmonia.io";
 
 export function Footer() {
   return (
