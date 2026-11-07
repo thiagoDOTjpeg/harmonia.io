@@ -3,13 +3,17 @@ import { useAuthStore } from "@/lib/store/auth-store";
 import { useUserStore } from "@/lib/store/user-store";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import useQueryUser from "./queries/use-query-user";
 import { toast } from "./use-toast";
 
 export function useUser() {
   const router = useRouter();
   const { token } = useAuthStore();
+  const queryUser = useQueryUser(token!);
   const { setServiceConnections, setPlaylists, setSummary, summary, setHasHydrated, _hasHydrated, playlists, serviceConnections, clearUser, setUser, user } = useUserStore();
   const [isLoading, setIsLoading] = useState(false);
+
+  const { } = queryUser.userPlaylist()
 
   const revokeConnection = async (serviceConnectionId: string) => {
     if (!token) {
