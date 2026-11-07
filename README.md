@@ -1,11 +1,30 @@
-# 🎵 Harmonia.io
+<p align="center">
+  <img src="brand/svg/logo-horizontal-on-green.svg" alt="Harmonia Logo" width="460" />
+</p>
 
-Sincronize playlists entre YouTube e Spotify de forma automática, privada e gratuita.
+<p align="center">
+  <strong>Sincronização inteligente de playlists do YouTube para o Spotify, com score de confiança e processamento em background.</strong>
+</p>
 
-[![MIT License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue.svg)](https://www.typescriptlang.org/)
-[![Next.js](https://img.shields.io/badge/Next.js-16-black.svg)](https://nextjs.org/)
-[![Node.js](https://img.shields.io/badge/Node.js-22+-green.svg)](https://nodejs.org/)
+<p align="center">
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-green.svg" alt="MIT License" /></a>
+  <a href="https://www.typescriptlang.org/"><img src="https://img.shields.io/badge/TypeScript-5.0-blue.svg" alt="TypeScript" /></a>
+  <a href="https://nextjs.org/"><img src="https://img.shields.io/badge/Next.js-16-black.svg" alt="Next.js" /></a>
+  <a href="https://nodejs.org/"><img src="https://img.shields.io/badge/Node.js-22+-green.svg" alt="Node.js" /></a>
+</p>
+
+---
+
+## 🎨 Identidade Visual & Brand Kit
+
+O projeto conta com uma identidade visual consistente baseada em 5 barras de equalizador e tipografia editorial *Instrument Serif Italic*.
+
+| Token | Hex | Cor | Uso Principal |
+|---|---|---|---|
+| `--harmonia-lime` | `#d9f27a` | 🟢 Lima Elétrico | Destaques, botões primários, logo em fundo escuro |
+| `--harmonia-green` | `#0b3d24` | 🌲 Verde Floresta | Fundo escuro de alto contraste, superfícies de destaque |
+
+Todos os vetores (SVG), versões raster (PNG), ícones PWA e favicons estão disponíveis no diretório [`brand/`](brand/). Componentes React prontos para uso em `@harmonia/ui` (`HarmoniaLogo`, `HarmoniaMark`).
 
 ---
 
@@ -91,38 +110,81 @@ Acesse:
 
 ---
 
-## Stack Tecnológica
+## 🛠️ Stack Tecnológica
 
-### Backend
+### Backend & Filas
 
-| Tecnologia                                      | Descrição              |
-| ----------------------------------------------- | ---------------------- |
-| [Node.js 22+](https://nodejs.org/)              | Runtime JavaScript     |
-| [TypeScript 5](https://www.typescriptlang.org/) | Type Safety            |
-| [Express](https://expressjs.com/)               | Web Framework          |
-| [Prisma](https://www.prisma.io/)                | ORM para PostgreSQL    |
-| [BullMQ](https://docs.bullmq.io/)               | Sistema de Filas       |
-| [JWT](https://jwt.io/)                          | Autenticação Stateless |
-| [Zod](https://zod.dev/)                         | Validação de Schemas   |
+<p>
+  <img src="https://img.shields.io/badge/Node.js_22+-339933?style=for-the-badge&logo=nodedotjs&logoColor=white" alt="Node.js" />
+  <img src="https://img.shields.io/badge/TypeScript_5-3178C6?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript" />
+  <img src="https://img.shields.io/badge/Express-000000?style=for-the-badge&logo=express&logoColor=white" alt="Express" />
+  <img src="https://img.shields.io/badge/Prisma-2D3748?style=for-the-badge&logo=prisma&logoColor=white" alt="Prisma" />
+  <img src="https://img.shields.io/badge/BullMQ-CC3534?style=for-the-badge&logo=redis&logoColor=white" alt="BullMQ" />
+  <img src="https://img.shields.io/badge/Redis-DC382D?style=for-the-badge&logo=redis&logoColor=white" alt="Redis" />
+  <img src="https://img.shields.io/badge/JWT-000000?style=for-the-badge&logo=jsonwebtokens&logoColor=white" alt="JWT" />
+  <img src="https://img.shields.io/badge/Zod-3E67B1?style=for-the-badge&logo=zod&logoColor=white" alt="Zod" />
+</p>
 
-### Frontend
+| Tecnologia | Badge | Papel / Descrição |
+| --- | --- | --- |
+| [Node.js](https://nodejs.org/) | `v22+` | Runtime JavaScript assíncrono com performance nativa |
+| [TypeScript](https://www.typescriptlang.org/) | `v5.x` | Tipagem estática rigorosa ponta a ponta |
+| [Express](https://expressjs.com/) | `API Core` | Framework HTTP modular e controle de middlewares |
+| [Prisma](https://www.prisma.io/) | `ORM` | Modelagem, migrações automatizadas e queries no PostgreSQL |
+| [BullMQ](https://docs.bullmq.io/) | `Job Queue` | Gerenciamento de filas assíncronas com retries automáticos |
+| [Redis](https://redis.io/) | `Broker` | Mensageria em memória para filas e cache de rate-limits |
+| [JWT](https://jwt.io/) | `Auth` | Sessões stateless seguras com criptografia |
+| [Zod](https://zod.dev/) | `Schema` | Validação estrita de contratos de entrada e saída |
 
-| Tecnologia                                    | Descrição        |
-| --------------------------------------------- | ---------------- |
-| [Next.js 15](https://nextjs.org/)             | React Framework  |
-| [TypeScript](https://www.typescriptlang.org/) | Type Safety      |
-| [Tailwind CSS](https://tailwindcss.com/)      | Styling          |
-| [shadcn/ui](https://ui.shadcn.com/)           | Componentes      |
-| [Zustand](https://zustand-demo.pmnd.rs/)      | State Management |
+### Frontend & Experiência
 
-### Infraestrutura
+<p>
+  <img src="https://img.shields.io/badge/Next.js_16-000000?style=for-the-badge&logo=nextdotjs&logoColor=white" alt="Next.js" />
+  <img src="https://img.shields.io/badge/React_19-20232A?style=for-the-badge&logo=react&logoColor=61DAFB" alt="React" />
+  <img src="https://img.shields.io/badge/Tailwind_CSS_v4-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white" alt="Tailwind CSS" />
+  <img src="https://img.shields.io/badge/shadcn%2Fui-000000?style=for-the-badge&logo=shadcnui&logoColor=white" alt="shadcn/ui" />
+  <img src="https://img.shields.io/badge/Framer_Motion-0055FF?style=for-the-badge&logo=framer&logoColor=white" alt="Framer Motion" />
+  <img src="https://img.shields.io/badge/Nextra_Docs-000000?style=for-the-badge&logo=markdown&logoColor=white" alt="Nextra" />
+</p>
 
-| Tecnologia                                | Descrição       |
-| ----------------------------------------- | --------------- |
-| [PostgreSQL](https://www.postgresql.org/) | Banco de Dados  |
-| [Redis](https://redis.io/)                | Cache + Filas   |
-| [Docker](https://www.docker.com/)         | Containerização |
-| [Turborepo](https://turbo.build/)         | Monorepo        |
+| Tecnologia | Badge | Papel / Descrição |
+| --- | --- | --- |
+| [Next.js](https://nextjs.org/) | `v16 Turbopack` | App Router, Server Components e compilação instantânea |
+| [React](https://react.dev/) | `v19` | Motor declarativo e reconciliação concorrente |
+| [Tailwind CSS](https://tailwindcss.com/) | `v4` | Estilização utilitária com `@theme` inline |
+| [shadcn/ui](https://ui.shadcn.com/) | `Design System` | Componentes acessíveis customizados com tokens da marca |
+| [Framer Motion](https://www.framer.com/motion/) | `GPU FX` | Animações por caractere, transição de slides e glide |
+| [Nextra](https://nextra.site/) | `Docs` | Documentação técnica com visual limpo e busca nativa |
+
+### Provedores & Integrações
+
+<p>
+  <img src="https://img.shields.io/badge/YouTube_Data_API_v3-FF0000?style=for-the-badge&logo=youtube&logoColor=white" alt="YouTube Data API" />
+  <img src="https://img.shields.io/badge/Spotify_Web_API-1ED760?style=for-the-badge&logo=spotify&logoColor=white" alt="Spotify API" />
+  <img src="https://img.shields.io/badge/Google_OAuth_2.0-4285F4?style=for-the-badge&logo=google&logoColor=white" alt="Google OAuth" />
+</p>
+
+| Provedor | Badge | Papel / Descrição |
+| --- | --- | --- |
+| [YouTube Data API](https://developers.google.com/youtube/v3) | `Ingestão` | Varredura de playlists, extração de títulos e canais |
+| [Spotify Web API](https://developer.spotify.com/documentation/web-api) | `Sincronização` | Busca inteligente com fuzzy match e inserção de faixas |
+| [Google Cloud OAuth](https://cloud.google.com/) | `Permissões` | Fluxo de consentimento OAuth seguro com escopo mínimo |
+
+### Infraestrutura & DevOps
+
+<p>
+  <img src="https://img.shields.io/badge/PostgreSQL-4169E1?style=for-the-badge&logo=postgresql&logoColor=white" alt="PostgreSQL" />
+  <img src="https://img.shields.io/badge/Redis-DC382D?style=for-the-badge&logo=redis&logoColor=white" alt="Redis" />
+  <img src="https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white" alt="Docker" />
+  <img src="https://img.shields.io/badge/Turborepo-000000?style=for-the-badge&logo=turborepo&logoColor=white" alt="Turborepo" />
+</p>
+
+| Ferramenta | Badge | Papel / Descrição |
+| --- | --- | --- |
+| [PostgreSQL](https://www.postgresql.org/) | `DB` | Persistência relacional com tokens cifrados via AES-256 |
+| [Redis](https://redis.io/) | `Memória` | Backing store de baixa latência para fila do BullMQ |
+| [Docker & Compose](https://www.docker.com/) | `Container` | Orquestração reproduzível para deploy e self-hosting |
+| [Turborepo](https://turbo.build/) | `Monorepo` | Pipeline de build paralelo com cache de tarefas |
 
 ---
 
