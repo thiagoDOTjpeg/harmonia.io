@@ -22,4 +22,6 @@ export * from "./components/textarea";
 export * from "./components/toast";
 export * from "./components/toaster";
 export * from "./components/tooltip";
+export * from "./components/brand";
+export * from "./components/background-distortion";
 
