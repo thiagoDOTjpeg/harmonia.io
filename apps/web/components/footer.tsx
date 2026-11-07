@@ -8,7 +8,7 @@ const LANDING_URL =
 export function Footer() {
   return (
     <footer className="border-t border-border bg-card">
-      <div className="container py-12 m-auto">
+      <div className="container py-12 m-auto px-4 sm:px-6">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div className="space-y-3">
             <div className="flex items-center gap-3">

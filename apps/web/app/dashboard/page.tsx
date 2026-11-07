@@ -28,10 +28,10 @@ export default function DashboardPage() {
     (!summary.is_youtube_connected || !summary.is_spotify_connected);
 
   return (
-    <div className="p-8 space-y-8">
+    <div className="p-4 sm:p-6 md:p-8 space-y-6 sm:space-y-8">
       <div>
-        <h1 className="text-3xl font-bold">Visão Geral</h1>
-        <p className="text-muted-foreground mt-1">
+        <h1 className="text-2xl sm:text-3xl font-bold">Visão Geral</h1>
+        <p className="text-sm sm:text-base text-muted-foreground mt-1">
           Bem-vindo de volta! Aqui está um resumo da sua conta.
         </p>
       </div>
@@ -125,23 +125,24 @@ export default function DashboardPage() {
                 <Link
                   key={index}
                   href={`/dashboard/playlists/${activity.id}`}
-                  className="flex items-center justify-between py-3 px-2 -mx-2 rounded-lg hover:bg-muted/40 transition-colors border-b border-border last:border-0"
+                  className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 py-3 px-2 -mx-2 rounded-lg hover:bg-muted/40 transition-colors border-b border-border last:border-0"
                 >
-                  <div className="flex items-center gap-4">
-                    <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center">
-                      <Music2 className="h-6 w-6 text-primary" />
+                  <div className="flex items-center gap-3 sm:gap-4 min-w-0">
+                    <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                      <Music2 className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
                     </div>
-                    <div>
-                      <p className="font-medium hover:underline underline-offset-4">
+                    <div className="min-w-0">
+                      <p className="font-medium text-sm sm:text-base hover:underline underline-offset-4 truncate">
                         {activity.name}
                       </p>
-                      <p className="text-sm text-muted-foreground">
+                      <p className="text-xs sm:text-sm text-muted-foreground truncate">
                         {activity.songs_count} músicas •{" "}
                         {formatTimeAgo(activity.last_synced_at)} atrás
                       </p>
                     </div>
                   </div>
                   <Badge
+                    className="self-start sm:self-center shrink-0 text-xs"
                     variant={
                       activity.status === "completed" ? "default" : "secondary"
                     }

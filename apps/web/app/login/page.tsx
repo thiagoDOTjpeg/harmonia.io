@@ -58,13 +58,13 @@ export default function LoginPage() {
     <div className="flex min-h-screen flex-col">
       <Header />
 
-      <main className="flex-1 flex items-center justify-center py-16 relative overflow-hidden">
+      <main className="flex-1 flex items-center justify-center py-8 sm:py-16 px-4 relative overflow-hidden">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-primary/10 rounded-full blur-[120px] animate-pulse-smooth pointer-events-none" />
 
-        <Card className="w-full max-w-md mx-4 card-neo relative z-10">
+        <Card className="w-full max-w-md card-neo relative z-10">
           <CardHeader className="space-y-1">
             <HarmoniaLogo className="h-7 w-auto text-harmonia-lime mb-2" />
-            <CardTitle className="text-3xl font-display tracking-tight">
+            <CardTitle className="text-2xl sm:text-3xl font-display tracking-tight">
               Entrar na sua conta
             </CardTitle>
             <CardDescription className="leading-relaxed">

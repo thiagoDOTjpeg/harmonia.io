@@ -201,8 +201,8 @@ export default function PlaylistManagePage() {
     stats.total > 0 ? Math.round((stats.synced / stats.total) * 100) : 0;
 
   return (
-    <div className="p-8 space-y-8">
-      <div className="flex items-center justify-between">
+    <div className="p-4 sm:p-6 md:p-8 space-y-6 sm:space-y-8">
+      <div className="flex flex-wrap items-center justify-between gap-2">
         <Button variant="ghost" size="sm" asChild className="-ml-2">
           <Link href="/dashboard/playlists">
             <ArrowLeft className="mr-2 h-4 w-4" />
@@ -224,13 +224,13 @@ export default function PlaylistManagePage() {
       </div>
 
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-        <div className="flex items-start gap-4">
-          <div className="h-16 w-16 shrink-0 rounded-xl bg-primary/10 flex items-center justify-center">
-            <Music2 className="h-8 w-8 text-primary" />
+        <div className="flex items-start gap-4 min-w-0">
+          <div className="h-12 w-12 sm:h-16 sm:w-16 shrink-0 rounded-xl bg-primary/10 flex items-center justify-center">
+            <Music2 className="h-6 w-6 sm:h-8 sm:w-8 text-primary" />
           </div>
-          <div className="space-y-1.5">
-            <div className="flex items-center gap-3 flex-wrap">
-              <h1 className="text-3xl font-bold">
+          <div className="space-y-1.5 min-w-0">
+            <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
+              <h1 className="text-2xl sm:text-3xl font-bold truncate">
                 {playlist.youtube_title || "Playlist sem título"}
               </h1>
               <Badge
@@ -456,10 +456,10 @@ export default function PlaylistManagePage() {
                 return (
                   <div
                     key={item.id}
-                    className="p-4 flex flex-col lg:flex-row lg:items-center justify-between gap-4 hover:bg-muted/30 transition-colors"
+                    className="p-3 sm:p-4 flex flex-col lg:flex-row lg:items-center justify-between gap-3 sm:gap-4 hover:bg-muted/30 transition-colors"
                   >
-                    <div className="flex items-center gap-3 min-w-0 flex-1">
-                      <span className="text-xs font-mono text-muted-foreground w-6 text-right shrink-0">
+                    <div className="flex items-center gap-2.5 sm:gap-3 min-w-0 flex-1">
+                      <span className="text-xs font-mono text-muted-foreground w-5 sm:w-6 text-right shrink-0">
                         {(item.position ?? idx) + 1}
                       </span>
 
@@ -473,23 +473,23 @@ export default function PlaylistManagePage() {
                         <img
                           src={`https://i.ytimg.com/vi/${track.youtube_video_id}/mqdefault.jpg`}
                           alt={track.youtube_title}
-                          className="h-14 w-24 rounded-md object-cover bg-muted border border-border"
+                          className="h-12 w-20 sm:h-14 sm:w-24 rounded-md object-cover bg-muted border border-border"
                         />
                         <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity rounded-md flex items-center justify-center">
-                          <Play className="h-5 w-5 text-white fill-white" />
+                          <Play className="h-4 w-4 sm:h-5 sm:w-5 text-white fill-white" />
                         </div>
                       </a>
 
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-2">
                           <p
-                            className="font-medium text-sm truncate"
+                            className="font-medium text-xs sm:text-sm truncate"
                             title={track.youtube_title}
                           >
                             {track.youtube_title}
                           </p>
                         </div>
-                        <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground">
+                        <div className="flex items-center gap-2 mt-0.5 sm:mt-1 text-[11px] sm:text-xs text-muted-foreground">
                           <span className="truncate">
                             {track.youtube_channel || "Canal desconhecido"}
                           </span>
@@ -509,7 +509,7 @@ export default function PlaylistManagePage() {
 
                     <ArrowRight className="hidden lg:block h-4 w-4 text-muted-foreground shrink-0" />
 
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between lg:justify-end gap-3 flex-1 min-w-0 pl-9 lg:pl-0">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between lg:justify-end gap-3 flex-1 min-w-0 pl-0 lg:pl-0">
                       {hasSpotifyMatch ? (
                         <div className="min-w-0 flex-1 lg:text-right">
                           <div className="flex items-center lg:justify-end gap-2 flex-wrap">

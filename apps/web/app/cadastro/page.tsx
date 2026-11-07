@@ -72,9 +72,9 @@ export default function CadastroPage() {
   return (
     <div className="flex min-h-screen flex-col">
       <Header />
-      <main className="flex-1 flex items-center justify-center py-16">
+      <main className="flex-1 flex items-center justify-center py-8 sm:py-16 px-4">
         <div className="absolute top-[40%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary/5 rounded-full blur-[100px] pointer-events-none" />
-        <Card className="w-full max-w-md mx-4">
+        <Card className="w-full max-w-md">
           <CardHeader className="space-y-1">
             <HarmoniaLogo className="h-7 w-auto text-harmonia-lime mb-2" />
             <CardTitle className="text-2xl">Criar sua conta</CardTitle>

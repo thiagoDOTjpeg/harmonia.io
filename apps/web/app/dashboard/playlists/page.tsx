@@ -45,15 +45,15 @@ export default function PlaylistsPage() {
   }
 
   return (
-    <div className="p-8 space-y-8">
-      <div className="flex items-center justify-between">
+    <div className="p-4 sm:p-6 md:p-8 space-y-6 sm:space-y-8">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold">Minhas Playlists</h1>
-          <p className="text-muted-foreground mt-1">
+          <h1 className="text-2xl sm:text-3xl font-bold">Minhas Playlists</h1>
+          <p className="text-sm sm:text-base text-muted-foreground mt-1">
             Gerencie suas playlists sincronizadas e ajuste o match das músicas
           </p>
         </div>
-        <Button asChild>
+        <Button asChild className="w-full sm:w-auto shrink-0">
           <Link href="/dashboard/nova">
             <Plus className="mr-2 h-4 w-4" />
             Nova Sincronização

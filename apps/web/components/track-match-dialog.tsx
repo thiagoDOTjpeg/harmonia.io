@@ -131,7 +131,7 @@ export function TrackMatchDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl max-h-[90vh] flex flex-col">
+      <DialogContent className="max-w-[95vw] sm:max-w-3xl max-h-[92vh] flex flex-col p-4 sm:p-6">
         <DialogHeader>
           <DialogTitle className="text-xl flex items-center gap-2">
             <Music2 className="h-5 w-5 text-primary" />
@@ -361,22 +361,24 @@ export function TrackMatchDialog({
           </ScrollArea>
         </div>
 
-        <DialogFooter className="flex flex-col sm:flex-row gap-2 sm:justify-between items-center pt-2">
+        <DialogFooter className="flex flex-col-reverse sm:flex-row gap-2 sm:justify-between items-stretch sm:items-center pt-2">
           <Button
             type="button"
             variant="ghost"
             onClick={() => onOpenChange(false)}
             disabled={matchTrackMutation.isPending}
+            className="w-full sm:w-auto"
           >
             Cancelar
           </Button>
 
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
             <Button
               type="button"
               variant="outline"
               disabled={!selectedCandidate || matchTrackMutation.isPending}
               onClick={() => handleConfirmMatch(false)}
+              className="w-full sm:w-auto"
             >
               <Database className="mr-2 h-4 w-4" />
               Salvar p/ Próximo Sync
@@ -386,6 +388,7 @@ export function TrackMatchDialog({
               type="button"
               disabled={!selectedCandidate || matchTrackMutation.isPending}
               onClick={() => handleConfirmMatch(true)}
+              className="w-full sm:w-auto"
             >
               <Zap className="mr-2 h-4 w-4" />
               {matchTrackMutation.isPending

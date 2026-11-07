@@ -46,16 +46,16 @@ export default function ConfiguracoesPage() {
   };
 
   return (
-    <div className="p-8 space-y-8">
+    <div className="p-4 sm:p-6 md:p-8 space-y-6 sm:space-y-8">
       <div>
-        <h1 className="text-3xl font-bold">Configurações</h1>
-        <p className="text-muted-foreground mt-1">
+        <h1 className="text-2xl sm:text-3xl font-bold">Configurações</h1>
+        <p className="text-sm sm:text-base text-muted-foreground mt-1">
           Gerencie suas preferências e informações da conta
         </p>
       </div>
 
       <Tabs defaultValue="conta">
-        <TabsList className="mb-6">
+        <TabsList className="mb-6 w-full sm:w-auto grid grid-cols-3 sm:inline-flex">
           <TabsTrigger value="conta">Conta</TabsTrigger>
           <TabsTrigger value="integracoes">Integrações</TabsTrigger>
           <TabsTrigger value="suporte">Suporte</TabsTrigger>

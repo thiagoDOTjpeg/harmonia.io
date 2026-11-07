@@ -2,7 +2,7 @@ import { Card, CardContent, CardHeader } from "@harmonia/ui/components/card";
 
 export default function DashboardSkeleton() {
   return (
-    <div className="p-8 space-y-8">
+    <div className="p-4 sm:p-6 md:p-8 space-y-6 sm:space-y-8">
       <div className="space-y-2">
         <div className="h-9 bg-muted rounded w-48 animate-pulse"></div>
         <div className="h-5 bg-muted rounded w-72 animate-pulse"></div>

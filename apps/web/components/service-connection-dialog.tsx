@@ -107,7 +107,7 @@ export function ServiceConnectionDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px] bg-card border-border">
+      <DialogContent className="max-w-[92vw] sm:max-w-[500px] bg-card border-border">
         <DialogHeader>
           <div className="flex items-center gap-3 mb-2">
             <div

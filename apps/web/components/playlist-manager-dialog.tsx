@@ -33,9 +33,9 @@ export function PlaylistManagerDialog({
 }: PlaylistManagerDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl max-h-[80vh]">
+      <DialogContent className="max-w-[92vw] sm:max-w-3xl max-h-[85vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-2xl">
+          <DialogTitle className="text-xl sm:text-2xl">
             {playlist.youtube_title}
           </DialogTitle>
           <DialogDescription>
@@ -44,7 +44,7 @@ export function PlaylistManagerDialog({
         </DialogHeader>
 
         <div className="space-y-6">
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3">
             <Button variant="outline" size="sm" asChild>
               <a
                 href={`https://youtube.com/playlist?list=${playlist.youtube_playlist_id}`}
