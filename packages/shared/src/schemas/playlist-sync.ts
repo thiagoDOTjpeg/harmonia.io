@@ -1,4 +1,4 @@
-import { z } from "zod/v4";
+import { z } from "zod";
 
 export const createSyncPlaylistSchema = z.object({
   youtubePlaylistId: z.string().min(1, "Youtube playlist ID é obrigatório"),

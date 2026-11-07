@@ -13,10 +13,27 @@ import userRoutes from '../infrastructure/http/express/routes/user.route';
 dotenv.config();
 
 const app = express();
+const isDev = process.env.NODE_ENV === 'dev' || process.env.NODE_ENV === 'development';
 
 app.use(RequestIdMiddleware.handle);
 app.use(cors({ origin: true }));
 app.use(express.json());
+
+if (isDev) {
+  const swaggerUi = require('swagger-ui-express');
+  const { generateOpenApiDocument } = require('../infrastructure/docs/swaggerGenerator');
+  const openApiDocument = generateOpenApiDocument();
+
+  app.get('/docs/json', (_req, res) => {
+    res.json(openApiDocument);
+  });
+
+  app.use('/docs', swaggerUi.serve, swaggerUi.setup(openApiDocument, {
+    customCss: '.swagger-ui .topbar { display: none }',
+    customSiteTitle: 'Harmonia.io API Docs',
+  }));
+}
+
 
 app.use(userRoutes);
 app.use(authRoutes);
