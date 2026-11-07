@@ -20,7 +20,10 @@ import { EmailProvider } from '@/application/providers/EmailProvider';
 import { GoogleAuthProvider } from '@/application/providers/GoogleAuthProvider';
 import { SpotifyAuthProvider } from '@/application/providers/SpotifyAuthProvider';
 import { SyncMusicService } from '@/application/services/SyncMusicService';
+import { ConnectServiceUseCase } from '@/application/use_cases/auth/ConnectServiceUseCase';
 import { HandleOAuthCallbackUseCase } from '@/application/use_cases/auth/HandleOAuthCallbackUseCase';
+import { LoginWithOAuthUseCase } from '@/application/use_cases/auth/LoginWithOAuthUseCase';
+import { RegisterWithOAuthUseCase } from '@/application/use_cases/auth/RegisterWithOAuthUseCase';
 import { RequestPasswordResetUseCase } from '@/application/use_cases/auth/RequestPasswordResetUseCase';
 import { ResetPasswordUseCase } from '@/application/use_cases/auth/ResetPasswordUseCase';
 import { SetPasswordUseCase } from '@/application/use_cases/auth/SetPasswordUseCase';
@@ -135,25 +138,19 @@ export class Container {
 
   static getGoogleStrategy() {
     return new GoogleOAuthCallbackStrategy(
-      this.userRepository,
-      this.serviceConnectionRepository,
-      this.tokenManager,
-      this.clock,
-      this.AESEncrypter,
-      this.tokenSerializer,
-      this.googleClient
+      this.googleClient,
+      this.getRegisterWithOAuthUseCase(),
+      this.getLoginWithOAuthUseCase(),
+      this.getConnectServiceUseCase()
     );
   }
 
   static getSpotifyStrategy() {
     return new SpotifyOAuthCallbackStrategy(
-      this.userRepository,
-      this.serviceConnectionRepository,
-      this.tokenManager,
-      this.clock,
-      this.AESEncrypter,
-      this.tokenSerializer,
-      this.spotifyClient
+      this.spotifyClient,
+      this.getRegisterWithOAuthUseCase(),
+      this.getLoginWithOAuthUseCase(),
+      this.getConnectServiceUseCase()
     );
   }
 
@@ -301,6 +298,39 @@ export class Container {
 
   static getHandleOAuthCallback() {
     return new HandleOAuthCallbackUseCase(this.getOAuthStateStore(), this.getStrategyFactory())
+  }
+
+  static getRegisterWithOAuthUseCase() {
+    return new RegisterWithOAuthUseCase(
+      this.userRepository,
+      this.serviceConnectionRepository,
+      this.tokenManager,
+      this.clock,
+      this.AESEncrypter,
+      this.tokenSerializer
+    );
+  }
+
+  static getLoginWithOAuthUseCase() {
+    return new LoginWithOAuthUseCase(
+      this.userRepository,
+      this.serviceConnectionRepository,
+      this.tokenManager,
+      this.clock,
+      this.AESEncrypter,
+      this.tokenSerializer
+    );
+  }
+
+  static getConnectServiceUseCase() {
+    return new ConnectServiceUseCase(
+      this.userRepository,
+      this.serviceConnectionRepository,
+      this.tokenManager,
+      this.clock,
+      this.AESEncrypter,
+      this.tokenSerializer
+    );
   }
 
   static getStartLocalLogin() {

@@ -1,19 +1,12 @@
-import { IClock } from "@/application/ports/clock/IClock";
-import { IEncryptor } from "@/application/ports/crypto/IEncryptor";
-import { ITokenManager } from "@/application/ports/crypto/ITokenManager";
 import { ICodeExchanger } from "@/application/ports/oauth/ICodeExchanger";
-import { ITokenSerializer } from "@/application/ports/serializer/ITokenSerializer";
 import { IOAuthCallbackStrategy } from "@/application/ports/strategy/oauth/IOAuthCallbackStrategy";
-import { IServiceConnectionRepository } from "@/application/repositories/IServiceConnectionRepository";
-import { IUserRepository } from "@/application/repositories/IUserRepository";
-import { ServiceConnection } from "@/domain/entities/ServiceConnection";
-import { User } from "@/domain/entities/User";
-import { ERRORS } from "@/types/constant/errors";
-import { TokenEncrypted } from "@/types/encrypter";
+import { ConnectServiceUseCase } from "@/application/use_cases/auth/ConnectServiceUseCase";
+import { LoginWithOAuthUseCase } from "@/application/use_cases/auth/LoginWithOAuthUseCase";
+import { RegisterWithOAuthUseCase } from "@/application/use_cases/auth/RegisterWithOAuthUseCase";
+import { OAuthNormalizedData } from "@/types/oauth/callback";
 import { SpotifyOAuthResult } from "@/types/oauth/results";
 import { OAuthState } from "@/types/oauth/state";
-import { AppError, AuthResponse, InvalidCredentialsError, NotFoundError, OAuthMethod, ServiceProvider, UnathorizedError } from "@harmonia/shared";
-import { Prisma, ServiceProvider as PrismaServiceProvider } from "@prisma/client";
+import { AuthResponse, OAuthMethod, ServiceProvider } from "@harmonia/shared";
 
 const SCOPES = [
   'playlist-read-private',
@@ -25,16 +18,12 @@ const SCOPES = [
 
 export class SpotifyOAuthCallbackStrategy implements IOAuthCallbackStrategy {
   constructor(
-    private readonly users: IUserRepository,
-    private readonly serviceConnection: IServiceConnectionRepository,
-    private readonly tokens: ITokenManager,
-    private readonly clock: IClock,
-    private readonly aesEncrypter: IEncryptor,
-    private readonly tokenSerializer: ITokenSerializer<TokenEncrypted>,
     private readonly spotify: ICodeExchanger<SpotifyOAuthResult>,
+    private readonly registerWithOAuthUseCase: RegisterWithOAuthUseCase,
+    private readonly loginWithOAuthUseCase: LoginWithOAuthUseCase,
+    private readonly connectServiceUseCase: ConnectServiceUseCase,
+  ) { }
 
-  ) {
-  }
   async processCallback(
     code: string,
     OAuthState: OAuthState,
@@ -43,166 +32,30 @@ export class SpotifyOAuthCallbackStrategy implements IOAuthCallbackStrategy {
     const exchangeData = await this.spotify.exchangeCode(code);
     const { method, returnTo } = OAuthState;
 
-    const expiresAt = new Date(
-      this.clock.now().getTime() + Math.max(exchangeData.tokens.expires_in - 60, 0) * 1000
-    );
-
-    if (!exchangeData.profile.email || !exchangeData.profile.display_name) {
-      throw new InvalidCredentialsError(ERRORS.OAUTH_INVALID_CREDENTIALS)
-    }
-
-    const normalizedEmail = exchangeData.profile.email?.trim().toLowerCase();
+    const normalizedData: OAuthNormalizedData = {
+      provider: ServiceProvider.SPOTIFY,
+      providerAccountId: exchangeData.profile.id,
+      email: exchangeData.profile.email,
+      name: exchangeData.profile.display_name,
+      accessToken: exchangeData.tokens.access_token,
+      refreshToken: exchangeData.tokens.refresh_token,
+      expiresIn: exchangeData.tokens.expires_in,
+      scopes: SCOPES,
+      returnTo,
+    };
 
     switch (method) {
       case OAuthMethod.register:
-        return this.handleRegister(exchangeData, expiresAt, normalizedEmail, returnTo)
+        return this.registerWithOAuthUseCase.execute(normalizedData);
+
       case OAuthMethod.login:
-        return this.handleLogin(exchangeData, expiresAt, normalizedEmail, returnTo)
+        return this.loginWithOAuthUseCase.execute(normalizedData);
+
       case OAuthMethod.connect:
-        return this.handleConnect(exchangeData, expiresAt, normalizedEmail, returnTo, loggedUserId)
-      default:
-        throw new AppError(ERRORS.OAUTH_INVALID_METHOD)
+        return this.connectServiceUseCase.execute({
+          ...normalizedData,
+          loggedUserId,
+        });
     }
-  }
-
-  private async handleRegister(
-    exchangeData: SpotifyOAuthResult,
-    expiresAt: Date,
-    email: string,
-    returnTo?: string
-  ): Promise<AuthResponse> {
-
-    const existingUser = await this.users.findByEmail(email);
-    if (existingUser) {
-      throw new InvalidCredentialsError(ERRORS.OAUTH_USER_ALREADY_EXISTIS)
-    }
-
-    const persistUser = User.create({
-      email: exchangeData.profile.email,
-      name: exchangeData.profile.display_name,
-      passwordHash: null,
-    })
-
-    const savedUser = await this.users.save(persistUser)
-
-    const createdServiceConnection = await this.createServiceConnection(savedUser, exchangeData, expiresAt);
-    const jwt = this.tokens.sign({ sub: savedUser.id });
-    return {
-      token: jwt,
-      isPasswordSetupRequired: true,
-      user: {
-        id: createdServiceConnection.userId,
-        email: createdServiceConnection.email,
-        name: savedUser.name
-      },
-      method: OAuthMethod.register,
-      returnTo
-    }
-  }
-
-  private async handleLogin(
-    exchangeData: SpotifyOAuthResult,
-    expiresAt: Date,
-    email: string,
-    returnTo?: string
-  ): Promise<AuthResponse> {
-    const user = await this.users.findByEmail(email);
-    if (!user) {
-      throw new NotFoundError(ERRORS.OAUTH_USER_NOT_FOUND)
-
-    }
-
-    let serviceConnection: ServiceConnection;
-    const existingServiceConnection = await this.serviceConnection.findByServiceId(exchangeData.profile.id)
-    if (existingServiceConnection) {
-      if (existingServiceConnection.userId !== user.id) {
-        throw new InvalidCredentialsError(ERRORS.SPOTIFY_ACCOUNT_ALREADY_LINKED)
-      }
-      serviceConnection = await this.updateServiceConnection(user, exchangeData, expiresAt);
-    } else {
-      serviceConnection = await this.createServiceConnection(user, exchangeData, expiresAt);
-    }
-
-    const jwt = this.tokens.sign({ sub: user.id });
-    return {
-      token: jwt,
-      isPasswordSetupRequired: false,
-      user: {
-        id: serviceConnection.userId,
-        email: serviceConnection.email,
-        name: user.name
-      },
-      method: OAuthMethod.login,
-      returnTo
-    }
-  }
-
-  private async handleConnect(
-    exchangeData: SpotifyOAuthResult,
-    expiresAt: Date,
-    email: string,
-    returnTo?: string,
-    loggedUserId?: string
-  ): Promise<AuthResponse> {
-    if (!loggedUserId) {
-      throw new UnathorizedError(ERRORS.OAUTH_CONNECT_USER_INVALID)
-    }
-    const user = await this.users.findByUserId(loggedUserId);
-    if (!user) {
-      throw new NotFoundError(ERRORS.OAUTH_CONNECT_USER_NOT_FOUND);
-    }
-
-    let serviceConnection: ServiceConnection;
-    const existingServiceConnection = await this.serviceConnection.findByServiceId(exchangeData.profile.id)
-
-    if (existingServiceConnection) {
-      if (existingServiceConnection.userId !== user.id) {
-        throw new InvalidCredentialsError(ERRORS.SPOTIFY_ACCOUNT_ALREADY_LINKED)
-      }
-      serviceConnection = await this.updateServiceConnection(user, exchangeData, expiresAt);
-    } else {
-      serviceConnection = await this.createServiceConnection(user, exchangeData, expiresAt);
-    }
-    const jwt = this.tokens.sign({ sub: user.id });
-    return {
-      token: jwt,
-      isPasswordSetupRequired: false,
-      user: {
-        id: serviceConnection.userId,
-        email: serviceConnection.email,
-        name: user.name
-      },
-      method: OAuthMethod.connect,
-      returnTo
-    }
-  }
-
-  private async createServiceConnection(user: User, exchangeData: SpotifyOAuthResult, expiresAt: Date): Promise<ServiceConnection> {
-    const encryptedAccessToken = this.aesEncrypter.encrypt(exchangeData.tokens.access_token);
-    const encryptedRefreshToken = exchangeData.tokens.refresh_token ? this.aesEncrypter.encrypt(exchangeData?.tokens?.refresh_token) : null
-
-    const createdServiceConnection = await this.serviceConnection.createServiceConnection({
-      userId: user?.id,
-      providerAccountId: exchangeData.profile.id,
-      accessToken: this.tokenSerializer.serialize(encryptedAccessToken),
-      refreshToken: encryptedRefreshToken ? this.tokenSerializer.serialize(encryptedRefreshToken) : null,
-      expiresAt,
-      provider: ServiceProvider.SPOTIFY as unknown as PrismaServiceProvider,
-      scopes: SCOPES,
-      email: user.email,
-    });
-    return createdServiceConnection;
-  }
-  private async updateServiceConnection(user: User, exchangeData: SpotifyOAuthResult, expiresAt: Date): Promise<ServiceConnection> {
-    const encryptedAccessToken = this.aesEncrypter.encrypt(exchangeData.tokens.access_token);
-    const encryptedRefreshToken = exchangeData.tokens.refresh_token ? this.aesEncrypter.encrypt(exchangeData?.tokens?.refresh_token) : undefined
-
-    const updatedServiceConnection = await this.serviceConnection.updateServiceConnection({
-      accessToken: this.tokenSerializer.serialize(encryptedAccessToken),
-      refreshToken: encryptedRefreshToken ? this.tokenSerializer.serialize(encryptedRefreshToken) : Prisma.skip,
-      expiresAt,
-      updatedAt: new Date(),
-    }, exchangeData.profile.id)
-    return updatedServiceConnection;
   }
 }

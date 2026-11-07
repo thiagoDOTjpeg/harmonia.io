@@ -3,7 +3,7 @@ import { IOAuthCallbackFactory } from "@/application/ports/strategy/oauth/IOAuth
 import { ERRORS } from "@/types/constant/errors";
 import { OAuthCallbackData } from "@/types/oauth/callback";
 import { OAuthState } from "@/types/oauth/state";
-import { NotFoundError, OAuthMethod, ServiceProvider } from "@harmonia/shared";
+import { AppError, NotFoundError, OAuthMethod, ServiceProvider } from "@harmonia/shared";
 
 export class HandleOAuthCallbackUseCase {
   constructor(
@@ -14,6 +14,9 @@ export class HandleOAuthCallbackUseCase {
   async execute(provider: ServiceProvider, input: OAuthCallbackData) {
     const stateData = await this.stateStore.get(input.state);
     if (!stateData) throw new NotFoundError(ERRORS.STATE_NOT_FOUND);
+    if (!Object.values(OAuthMethod).includes(stateData.method)) {
+      throw new AppError(ERRORS.OAUTH_INVALID_METHOD);
+    }
     if (stateData.method === OAuthMethod.connect && !stateData.userId) {
       throw new NotFoundError(ERRORS.USER_NOT_CONNECTED);
     }
