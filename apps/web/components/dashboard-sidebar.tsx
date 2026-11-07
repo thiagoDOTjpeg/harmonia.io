@@ -18,12 +18,14 @@ const navigation = [
 export function DashboardSidebar() {
   const pathname = usePathname();
   const { logout } = useAuthContext();
-  const { clearUser } = useUser();
+  const { clearUser, user } = useUser();
 
-  const handelLogout = () => {
+  const handleLogout = () => {
     logout();
     clearUser();
   };
+
+  const userInitial = user?.name?.charAt(0)?.toUpperCase() ?? "?";
 
   return (
     <aside className="w-64 border-r border-border bg-card flex flex-col">
@@ -100,27 +102,40 @@ export function DashboardSidebar() {
         })}
       </nav>
 
-      <div className="p-4 space-y-2 border-t border-border">
-        <Button
-          variant="outline"
-          className="w-full justify-start bg-linear-to-r from-[#00FF88]/10 to-[#00CCFF]/10 border-primary/20 hover:border-primary/40"
-          asChild
+      <div className="p-4 space-y-1 border-t border-border">
+        <a
+          href="https://buymeacoffee.com/harmoniaio"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center gap-2 px-3 py-2 rounded-lg text-xs text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
         >
-          <a
-            href="https://buymeacoffee.com/harmoniaio"
-            target="_blank"
-            rel="noopener noreferrer"
+          <Coffee className="h-4 w-4" />
+          Buy Me a Coffee
+        </a>
+
+        <div className="flex items-center gap-3 px-3 py-2 mt-2 border-t border-border pt-3">
+          <div className="h-8 w-8 rounded-full bg-primary/20 flex items-center justify-center shrink-0">
+            <span className="text-xs font-bold text-primary">{userInitial}</span>
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="text-sm font-medium truncate">{user?.name ?? "—"}</p>
+            <p className="text-xs text-muted-foreground truncate">
+              {user?.email ?? ""}
+            </p>
+          </div>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="shrink-0 h-8 w-8"
+            onClick={handleLogout}
+            title="Sair"
+            asChild
           >
-            <Coffee className="mr-2 h-4 w-4" />
-            Buy Me a Coffee
-          </a>
-        </Button>
-        <Button variant="ghost" className="w-full justify-start" asChild>
-          <Link href="/" onClick={handelLogout}>
-            <LogOut className="mr-2 h-4 w-4" />
-            Sair
-          </Link>
-        </Button>
+            <Link href="/">
+              <LogOut className="h-4 w-4" />
+            </Link>
+          </Button>
+        </div>
       </div>
     </aside>
   );
