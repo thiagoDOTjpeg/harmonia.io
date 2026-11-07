@@ -72,6 +72,10 @@ export class SyncYouTubePlaylistToSpotifyUseCase {
         syncedPlaylist.id
       );
       const existingTrackIds = new Set(existingPlaylistTracks.map((pt) => pt.trackId));
+      const existingPlaylistTracksMap = new Map(
+        existingPlaylistTracks.map((pt) => [pt.trackId, pt])
+      );
+      const tracksNeedingSpotifySync = new Set<string>();
 
       let syncedCount = 0;
       let failedCount = 0;
@@ -110,6 +114,23 @@ export class SyncYouTubePlaylistToSpotifyUseCase {
 
             if (!spotifyMatch) {
               this.logger.warn({ videoTitle: video.title, videoId: video.videoId }, 'Match failed');
+              const existingPt = existingPlaylistTracksMap.get(track.id);
+              if (!existingPt) {
+                try {
+                  await this.playlistTrackRepository.create({
+                    playlistId: syncedPlaylist.id,
+                    trackId: track.id,
+                    position: i,
+                    status: 'failed',
+                  });
+                } catch (error: any) {
+                  if (!error.message?.includes('Unique constraint')) {
+                    throw error;
+                  }
+                }
+              } else if (existingPt.status !== 'failed') {
+                await this.playlistTrackRepository.updateStatus(existingPt.id, 'failed');
+              }
               failedCount++;
               continue;
             }
@@ -166,6 +187,21 @@ export class SyncYouTubePlaylistToSpotifyUseCase {
                 );
               }
 
+              if (!existingTrackIds.has(track.id)) {
+                try {
+                  await this.playlistTrackRepository.create({
+                    playlistId: syncedPlaylist.id,
+                    trackId: track.id,
+                    position: i,
+                    status: 'synced',
+                  });
+                } catch (error: any) {
+                  if (!error.message?.includes('Unique constraint')) {
+                    throw error;
+                  }
+                }
+              }
+
               duplicateCount++;
               continue;
             }
@@ -192,6 +228,7 @@ export class SyncYouTubePlaylistToSpotifyUseCase {
             }
           }
 
+          const existingPt = existingPlaylistTracksMap.get(track.id);
           const isNewInPlaylist = !existingTrackIds.has(track.id);
 
           if (isNewInPlaylist) {
@@ -200,6 +237,7 @@ export class SyncYouTubePlaylistToSpotifyUseCase {
                 playlistId: syncedPlaylist.id,
                 trackId: track.id,
                 position: i,
+                status: 'synced',
               });
               newTracksCount++;
             } catch (error: any) {
@@ -208,9 +246,16 @@ export class SyncYouTubePlaylistToSpotifyUseCase {
               }
               this.logger.debug({ trackId: track.id }, 'Track already exists in playlist');
             }
+          } else if (
+            existingPt &&
+            (existingPt.status === 'failed' ||
+              (existingPt.status === 'pending' && track.matchSource === 'manual'))
+          ) {
+            tracksNeedingSpotifySync.add(track.id);
+            await this.playlistTrackRepository.updateStatus(existingPt.id, 'synced');
           }
 
-          if (track.hasSpotifyMatch() && isNewInPlaylist) {
+          if (track.hasSpotifyMatch() && (isNewInPlaylist || tracksNeedingSpotifySync.has(track.id))) {
             syncedCount++;
           }
         } catch (error) {
@@ -220,7 +265,7 @@ export class SyncYouTubePlaylistToSpotifyUseCase {
       }
 
       const uniqueTracksToAdd = Array.from(processedSpotifyTracks.values())
-        .filter((t) => !existingTrackIds.has(t.trackDbId))
+        .filter((t) => !existingTrackIds.has(t.trackDbId) || tracksNeedingSpotifySync.has(t.trackDbId))
         .map((t) => t.spotifyUri);
 
       if (uniqueTracksToAdd.length > 0) {

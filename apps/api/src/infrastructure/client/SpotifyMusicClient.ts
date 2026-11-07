@@ -1,10 +1,194 @@
 import { logger } from '@/infrastructure/logger';
-import { SpotifyCreatePlaylistResponse, SpotifySearchResponse, SpotifySearchResult } from '@/types/spotify';
+import { SearchCandidatesParams, SpotifyCreatePlaylistResponse, SpotifySearchResponse, SpotifySearchResult, SpotifyTrack } from '@/types/spotify';
+import { SpotifyTrackCandidateDTO } from '@harmonia/shared';
 import { ISpotifyMusicClient } from '../../application/ports/spotify/ISpotifyMusicClient';
 import { MusicMatchingService } from '../../domain/services/MusicMatchingService';
 
 
 export class SpotifyMusicClient implements ISpotifyMusicClient {
+  private mapTrackToCandidate(track: SpotifyTrack, matchScore: number): SpotifyTrackCandidateDTO {
+    return {
+      trackId: track.id,
+      uri: track.uri,
+      name: track.name,
+      artist: track.artists?.map((a) => a.name).join(', ') || 'Unknown',
+      album: track.album?.name ?? 'Unknown',
+      imageUrl: track.album?.images?.[0]?.url ?? null,
+      durationMs: track.duration_ms ?? null,
+      externalUrl: track.external_urls?.spotify ?? `https://open.spotify.com/track/${track.id}`,
+      matchScore: Math.round(matchScore * 100) / 100,
+    };
+  }
+
+  private extractSpotifyTrackId(input: string): string | null {
+    const trimmed = input.trim();
+    const match = trimmed.match(
+      /(?:spotify:track:|open\.spotify\.com\/(?:intl-[a-zA-Z-]+\/)?track\/)([a-zA-Z0-9]{22})/
+    );
+    if (match?.[1]) {
+      return match[1];
+    }
+    if (/^[a-zA-Z0-9]{22}$/.test(trimmed)) {
+      return trimmed;
+    }
+    return null;
+  }
+
+  private async fetchSpotifyTracksByQuery(query: string, limit: number, accessToken: string): Promise<SpotifyTrack[]> {
+    const response = await fetch(
+      `https://api.spotify.com/v1/search?${new URLSearchParams({
+        q: query,
+        type: 'track',
+        limit: String(limit),
+      })}`,
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      }
+    );
+
+    if (!response.ok) {
+      logger.error({ error: await response.text(), query }, 'Spotify candidate search failed');
+      return [];
+    }
+
+    const data = (await response.json()) as SpotifySearchResponse;
+    return data.tracks?.items || [];
+  }
+
+  async searchCandidates(params: SearchCandidatesParams, accessToken: string): Promise<SpotifyTrackCandidateDTO[]> {
+    const limit = params.limit ?? 8;
+    const rawQuery = params.query?.trim();
+    const youtubeTitle = params.youtubeTitle ?? '';
+    const channelTitle = params.channelTitle ?? '';
+
+    const referenceQuery = youtubeTitle
+      ? MusicMatchingService.generateSpotifyQuery(youtubeTitle, channelTitle)
+      : null;
+    const cleanedFromTitle = youtubeTitle
+      ? MusicMatchingService.cleanYouTubeTitle(youtubeTitle)
+      : null;
+
+    const computeBestScore = (track: SpotifyTrack, fallbackQuery?: string) => {
+      if (!referenceQuery) {
+        return MusicMatchingService.calculateMatchScore(
+          { title: fallbackQuery || '', artist: null },
+          { name: track.name, artists: track.artists || [] }
+        );
+      }
+
+      const primaryScore = MusicMatchingService.calculateMatchScore(
+        {
+          title: referenceQuery.expectedTitle,
+          artist: referenceQuery.expectedArtist,
+        },
+        {
+          name: track.name,
+          artists: track.artists || [],
+        }
+      );
+
+      let altScore = 0;
+      if (cleanedFromTitle?.artist) {
+        altScore = MusicMatchingService.calculateMatchScore(
+          {
+            title: cleanedFromTitle.title,
+            artist: cleanedFromTitle.artist,
+          },
+          {
+            name: track.name,
+            artists: track.artists || [],
+          }
+        );
+      }
+
+      const rawTitleScore = MusicMatchingService.calculateMatchScore(
+        {
+          title: youtubeTitle.replace(/[()[\]]/g, ' '),
+          artist: MusicMatchingService.extractArtistFromChannel(channelTitle),
+        },
+        {
+          name: track.name,
+          artists: track.artists || [],
+        }
+      );
+
+      return Math.max(primaryScore, altScore, rawTitleScore);
+    };
+
+    if (rawQuery) {
+      const directTrackId = this.extractSpotifyTrackId(rawQuery);
+      if (directTrackId) {
+        const response = await fetch(`https://api.spotify.com/v1/tracks/${directTrackId}`, {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        });
+
+        if (response.ok) {
+          const track = (await response.json()) as SpotifyTrack;
+          return [this.mapTrackToCandidate(track, 1.0)];
+        }
+      }
+
+      const items = await this.fetchSpotifyTracksByQuery(rawQuery, limit, accessToken);
+      return items.map((track) => {
+        const score = computeBestScore(track, rawQuery);
+        return this.mapTrackToCandidate(track, score);
+      });
+    }
+
+    if (!referenceQuery) {
+      return [];
+    }
+
+    const tracksMap = new Map<string, SpotifyTrack>();
+
+    const candidateQueries = new Set<string>();
+    candidateQueries.add(referenceQuery.query);
+
+    if (cleanedFromTitle?.artist && cleanedFromTitle.artist !== referenceQuery.expectedArtist) {
+      candidateQueries.add(`${cleanedFromTitle.artist} ${cleanedFromTitle.title}`.trim());
+    }
+
+    const broadQuery = [referenceQuery.expectedTitle, referenceQuery.expectedArtist]
+      .filter(Boolean)
+      .join(' ')
+      .trim();
+    if (broadQuery) {
+      candidateQueries.add(broadQuery);
+    }
+
+    const unstrippedTitle = youtubeTitle
+      .replace(/[()[\]]/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+    const channelArtist = MusicMatchingService.extractArtistFromChannel(channelTitle);
+    if (unstrippedTitle) {
+      candidateQueries.add(
+        channelArtist ? `${channelArtist} ${unstrippedTitle}` : unstrippedTitle
+      );
+    }
+
+    for (const q of candidateQueries) {
+      if (tracksMap.size >= limit) break;
+      const items = await this.fetchSpotifyTracksByQuery(q, limit, accessToken);
+      for (const item of items) {
+        if (!tracksMap.has(item.id)) {
+          tracksMap.set(item.id, item);
+        }
+      }
+    }
+
+    const candidates = Array.from(tracksMap.values()).map((track) => {
+      const score = computeBestScore(track);
+      return this.mapTrackToCandidate(track, score);
+    });
+
+    return candidates.sort((a, b) => b.matchScore - a.matchScore);
+  }
+
   async searchTrack(youtubeTitle: string, channelTitle: string, accessToken: string): Promise<SpotifySearchResult | null> {
     const query = MusicMatchingService.generateSpotifyQuery(youtubeTitle, channelTitle);
 
@@ -77,9 +261,9 @@ export class SpotifyMusicClient implements ISpotifyMusicClient {
     return null;
   }
 
-  async createPlaylist(name: string, accessToken: string, spotifyId: string, description?: string): Promise<string> {
+  async createPlaylist(name: string, accessToken: string, _spotifyId: string, description?: string): Promise<string> {
     const response = await fetch(
-      `https://api.spotify.com/v1/users/${spotifyId}/playlists`,
+      `https://api.spotify.com/v1/me/playlists`,
       {
         method: 'POST',
         headers: {
@@ -102,12 +286,12 @@ export class SpotifyMusicClient implements ISpotifyMusicClient {
     return data.id;
   }
 
-  async addTracksToPlaylist(playlistId: string, trackUris: string[], accessToken: string, spotifyId: string): Promise<void> {
+  async addTracksToPlaylist(playlistId: string, trackUris: string[], accessToken: string, _spotifyId: string): Promise<void> {
     const chunks = this.chunkArray(trackUris, 100);
 
     for (const chunk of chunks) {
       const response = await fetch(
-        `https://api.spotify.com/v1/playlists/${playlistId}/tracks`,
+        `https://api.spotify.com/v1/playlists/${playlistId}/items`,
         {
           method: 'POST',
           headers: {

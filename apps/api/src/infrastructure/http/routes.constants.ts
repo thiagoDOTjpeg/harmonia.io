@@ -33,6 +33,10 @@ export const USER_ROUTES = {
 
 export const PLAYLIST_ROUTES = {
   LIST: '/playlists',
+  DETAILS: '/playlists/:id',
+  DELETE: '/playlists/:id',
+  TRACK_CANDIDATES: '/playlists/:id/tracks/:trackId/candidates',
+  MATCH_TRACK: '/playlists/:id/tracks/:trackId/match',
 } as const;
 
 // ==================== SYNC ROUTES ====================

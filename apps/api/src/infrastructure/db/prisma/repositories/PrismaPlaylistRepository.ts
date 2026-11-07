@@ -24,6 +24,13 @@ export class PrismaPlaylistRepository implements IPlaylistRepository {
     );
   }
 
+  async findById(id: string): Promise<SyncedPlaylist | null> {
+    const playlist = await this.prisma.syncedPlaylist.findUnique({
+      where: { id },
+    });
+    return playlist ? this.toDomain(playlist) : null;
+  }
+
   async findByYoutubePlaylistId(userId: string, youtubePlaylistId: string): Promise<SyncedPlaylist | null> {
     const playlist = await this.prisma.syncedPlaylist.findFirst({
       where: {

@@ -24,17 +24,30 @@ export class PrismaPlaylistTrackRepository implements IPlaylistTrackRepository {
     return playlistTracks.map(pt => this.toDomain(pt));
   }
 
+  async findByPlaylistAndTrackId(playlistId: string, trackId: string): Promise<PlaylistTrack | null> {
+    const playlistTrack = await this.prisma.playlistTrack.findUnique({
+      where: {
+        playlistId_trackId: {
+          playlistId,
+          trackId,
+        },
+      },
+    });
+    return playlistTrack ? this.toDomain(playlistTrack) : null;
+  }
+
   async create(input: {
     playlistId: string;
     trackId: string;
     position?: number;
+    status?: 'pending' | 'synced' | 'failed';
   }): Promise<PlaylistTrack> {
     const playlistTrack = await this.prisma.playlistTrack.create({
       data: {
         playlistId: input.playlistId,
         trackId: input.trackId,
         position: input.position ?? null,
-        status: 'pending',
+        status: input.status ?? 'pending',
       },
     });
     return this.toDomain(playlistTrack);

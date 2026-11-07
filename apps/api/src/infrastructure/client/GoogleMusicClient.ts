@@ -74,7 +74,7 @@ export class GoogleMusicClient implements IGoogleMusicClient {
           videoId: item.snippet.resourceId.videoId,
           title: item.snippet.title,
           channelTitle: item.snippet.channelTitle || 'Unknown',
-          videoOwnerChannelTitle: item.snippet.videoOwnerChannelTitle
+          videoOwnerChannelTitle: item.snippet.videoOwnerChannelTitle || item.snippet.channelTitle || 'Unknown'
 
         });
       }

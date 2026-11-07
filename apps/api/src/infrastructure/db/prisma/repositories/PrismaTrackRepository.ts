@@ -34,6 +34,13 @@ export class PrismaTrackRepository implements ITrackRepository {
   }
 
 
+  async findById(id: string): Promise<Track | null> {
+    const track = await this.prisma.track.findUnique({
+      where: { id },
+    });
+    return track ? this.toDomain(track) : null;
+  }
+
   async findByYoutubeVideoId(youtubeVideoId: string): Promise<Track | null> {
     const track = await this.prisma.track.findUnique({
       where: { youtubeVideoId },
@@ -77,6 +84,25 @@ export class PrismaTrackRepository implements ITrackRepository {
     matchScore: number;
     matchSource: string;
   }): Promise<Track> {
+    const existingWithSpotifyId = await this.prisma.track.findUnique({
+      where: { spotifyTrackId: input.spotifyTrackId },
+    });
+
+    if (existingWithSpotifyId && existingWithSpotifyId.id !== trackId) {
+      await this.prisma.track.update({
+        where: { id: existingWithSpotifyId.id },
+        data: {
+          spotifyTrackId: null,
+          spotifyUri: null,
+          spotifyArtist: null,
+          spotifyAlbum: null,
+          matchScore: 0,
+          matchedAt: null,
+          matchSource: null,
+        },
+      });
+    }
+
     const track = await this.prisma.track.update({
       where: { id: trackId },
       data: {

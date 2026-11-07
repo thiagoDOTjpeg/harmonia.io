@@ -1,6 +1,8 @@
 import { Track } from '../../domain/entities/Track';
 
 export interface ITrackRepository {
+  findById?(id: string): Promise<Track | null>;
+
   findByYoutubeVideoId(youtubeVideoId: string): Promise<Track | null>;
 
   create(input: {

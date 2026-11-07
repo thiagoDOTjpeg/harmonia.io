@@ -1,5 +1,12 @@
 import { OAuthProviderToken } from "./oauth/tokens";
 
+export interface SearchCandidatesParams {
+  query?: string;
+  youtubeTitle?: string;
+  channelTitle?: string;
+  limit?: number;
+}
+
 export interface SpotifyPlaylist {
   id: string;
   name: string;
@@ -14,8 +21,12 @@ export interface SpotifyTrack {
   uri: string;
   name: string;
   artists: Array<{ name: string }>;
-  album: { name: string };
+  album: {
+    name: string;
+    images?: Array<{ url: string; height?: number; width?: number }>;
+  };
   duration_ms: number;
+  external_urls?: { spotify?: string };
 }
 
 export interface SpotifySearchResponse {
