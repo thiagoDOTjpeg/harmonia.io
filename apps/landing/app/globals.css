@@ -2,3 +2,17 @@
 @source "./**/*.{ts,tsx}";
 @source "../components/**/*.{ts,tsx}";
 
+@keyframes journeyProgressBar {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+.animate-journey-progress {
+  transform-origin: left;
+  animation: journeyProgressBar 5000ms linear forwards;
+}
+

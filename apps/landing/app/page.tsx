@@ -369,7 +369,22 @@ const TERMINAL_COMMANDS = {
 
 export default function HomePage() {
   const [open, setOpen] = useState(false);
+  const JOURNEY_STEP_DURATION = 5000;
   const [activeJourneyStep, setActiveJourneyStep] = useState<number>(0);
+  const [isJourneyPaused, setIsJourneyPaused] = useState(false);
+  const [journeyStepKey, setJourneyStepKey] = useState(0);
+
+  const journeyRemainingRef = useRef(JOURNEY_STEP_DURATION);
+  const journeyStartRef = useRef(Date.now());
+  const journeyManualRef = useRef(false);
+
+  const handleSelectJourneyStep = useCallback((step: number) => {
+    journeyManualRef.current = true;
+    journeyRemainingRef.current = JOURNEY_STEP_DURATION;
+    journeyStartRef.current = Date.now();
+    setActiveJourneyStep(step);
+    setJourneyStepKey((k) => k + 1);
+  }, []);
   const [terminalTab, setTerminalTab] = useState<"docker" | "local">("docker");
   const [copied, setCopied] = useState(false);
 
@@ -524,6 +539,53 @@ export default function HomePage() {
       window.removeEventListener("scroll", handleScrollSync);
     };
   }, [open, glideToSection]);
+
+  useEffect(() => {
+    if (activeSection !== "jornada" || isJourneyPaused) {
+      return;
+    }
+
+    journeyStartRef.current = Date.now();
+    let timerFired = false;
+
+    const timer = setTimeout(() => {
+      timerFired = true;
+      journeyRemainingRef.current = JOURNEY_STEP_DURATION;
+      setActiveJourneyStep((prev) => (prev + 1) % JOURNEY_STEPS.length);
+      setJourneyStepKey((k) => k + 1);
+    }, journeyRemainingRef.current);
+
+    return () => {
+      clearTimeout(timer);
+      if (journeyManualRef.current) {
+        journeyManualRef.current = false;
+        journeyRemainingRef.current = JOURNEY_STEP_DURATION;
+      } else if (!timerFired) {
+        const elapsed = Date.now() - journeyStartRef.current;
+        journeyRemainingRef.current = Math.max(
+          500,
+          journeyRemainingRef.current - elapsed
+        );
+      }
+    };
+  }, [activeSection, isJourneyPaused, journeyStepKey]);
+
+  useEffect(() => {
+    if (activeSection !== "jornada") return;
+
+    const onVisibilityChange = () => {
+      if (document.visibilityState === "hidden") {
+        setIsJourneyPaused(true);
+      } else {
+        setIsJourneyPaused(false);
+      }
+    };
+
+    document.addEventListener("visibilitychange", onVisibilityChange);
+    return () => {
+      document.removeEventListener("visibilitychange", onVisibilityChange);
+    };
+  }, [activeSection]);
 
   const {
     register,
@@ -881,8 +943,7 @@ export default function HomePage() {
                   className="text-3xl font-semibold tracking-tight sm:text-5xl"
                 />
                 <p className="text-sm text-muted-foreground sm:text-base">
-                  Clique em cada etapa abaixo para inspecionar como o Harmonia
-                  conduz seus dados do YouTube até o Spotify.
+                  Acompanhe o fluxo automático dos estágios ou clique em cada um para inspecionar os detalhes técnicos.
                 </p>
               </div>
             </StageItem>
@@ -899,23 +960,36 @@ export default function HomePage() {
                     <button
                       key={item.step}
                       type="button"
-                      onClick={() => setActiveJourneyStep(idx)}
-                      className={`relative w-full text-left rounded-2xl border p-5 transition-all duration-300 ${
+                      onClick={() => handleSelectJourneyStep(idx)}
+                      onMouseEnter={() => setIsJourneyPaused(true)}
+                      onMouseLeave={() => setIsJourneyPaused(false)}
+                      className={`relative w-full text-left rounded-2xl border p-5 transition-all duration-300 overflow-hidden ${
                         isActive
-                          ? "card-sculpted border-primary/40"
+                          ? "card-sculpted border-primary/40 shadow-[0_0_25px_rgba(34,197,94,0.08)]"
                           : "border-white/[0.06] bg-zinc-950/40 hover:border-white/15 hover:bg-zinc-900/40 opacity-75 hover:opacity-100"
                       }`}
                     >
                       {isActive && (
-                        <motion.span
-                          layoutId="journeyActiveBar"
-                          className="absolute left-0 top-4 bottom-4 w-1 rounded-r-full bg-primary"
-                          transition={{
-                            type: "spring",
-                            stiffness: 380,
-                            damping: 30,
-                          }}
-                        />
+                        <>
+                          <motion.span
+                            layoutId="journeyActiveBar"
+                            className="absolute left-0 top-4 bottom-4 w-1 rounded-r-full bg-primary"
+                            transition={{
+                              type: "spring",
+                              stiffness: 380,
+                              damping: 30,
+                            }}
+                          />
+                          <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-white/[0.06] overflow-hidden">
+                            <div
+                              key={`journey-progress-${journeyStepKey}`}
+                              className="animate-journey-progress h-full w-full bg-primary"
+                              style={{
+                                animationPlayState: isJourneyPaused ? "paused" : "running",
+                              }}
+                            />
+                          </div>
+                        </>
                       )}
                       <div className="flex items-center justify-between mb-1.5">
                         <div className="flex items-center gap-2.5">
@@ -952,7 +1026,11 @@ export default function HomePage() {
                 step={2}
                 className="lg:col-span-6"
               >
-                <div className="card-sculpted relative overflow-hidden rounded-3xl p-6 sm:p-7 min-h-[340px] flex flex-col justify-between bg-grid-subtle">
+                <div
+                  onMouseEnter={() => setIsJourneyPaused(true)}
+                  onMouseLeave={() => setIsJourneyPaused(false)}
+                  className="card-sculpted relative overflow-hidden rounded-3xl p-6 sm:p-7 min-h-[340px] flex flex-col justify-between bg-grid-subtle"
+                >
                   <div className="flex items-center justify-between border-b border-white/10 pb-4">
                     <div className="flex items-center gap-2">
                       <span className="h-2 w-2 rounded-full bg-primary animate-pulse" />
@@ -960,9 +1038,16 @@ export default function HomePage() {
                         {JOURNEY_STEPS[activeJourneyStep].codeLabel}
                       </span>
                     </div>
-                    <span className="rounded-full border border-white/10 bg-zinc-900 px-2.5 py-0.5 font-mono text-[11px] text-muted-foreground">
-                      Etapa {activeJourneyStep + 1} de 3
-                    </span>
+                    <div className="flex items-center gap-2">
+                      {isJourneyPaused && (
+                        <span className="rounded-full border border-primary/20 bg-primary/10 px-2 py-0.5 font-mono text-[10px] text-primary">
+                          pausado
+                        </span>
+                      )}
+                      <span className="rounded-full border border-white/10 bg-zinc-900 px-2.5 py-0.5 font-mono text-[11px] text-muted-foreground">
+                        Etapa {activeJourneyStep + 1} de 3
+                      </span>
+                    </div>
                   </div>
 
                   <AnimatePresence mode="wait">
@@ -1186,7 +1271,7 @@ export default function HomePage() {
                     <button
                       type="button"
                       onClick={() =>
-                        setActiveJourneyStep((prev) => (prev + 2) % 3)
+                        handleSelectJourneyStep((activeJourneyStep + 2) % 3)
                       }
                       className="text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
                     >
@@ -1195,7 +1280,7 @@ export default function HomePage() {
                     <button
                       type="button"
                       onClick={() =>
-                        setActiveJourneyStep((prev) => (prev + 1) % 3)
+                        handleSelectJourneyStep((activeJourneyStep + 1) % 3)
                       }
                       className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
                     >
