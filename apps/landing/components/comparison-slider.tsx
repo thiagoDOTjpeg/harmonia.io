@@ -145,10 +145,10 @@ function VerdictBadge({ verdict, reason }: { verdict: OtherVerdict; reason: stri
 
   return (
     <span
-      className={`inline-flex shrink-0 items-center gap-1 rounded-md border px-1.5 py-0.5 font-mono text-[10px] ${styles[verdict]}`}
+      className={`inline-flex shrink-0 items-center gap-1 rounded-md border px-1 sm:px-1.5 py-0.5 font-mono text-[9px] sm:text-[10px] ${styles[verdict]}`}
     >
-      <Icon className="h-3 w-3" />
-      {reason}
+      <Icon className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
+      <span className="truncate max-w-[65px] sm:max-w-none">{reason}</span>
     </span>
   );
 }
@@ -163,7 +163,7 @@ function PanelLayer({ variant }: { variant: "other" | "harmonia" }) {
         isHarmonia ? "bg-zinc-950" : "bg-[#0d0b0b]"
       }`}
     >
-      <div className="flex items-center justify-between border-b border-white/[0.07] px-4 py-3 sm:px-6">
+      <div className="flex items-center justify-between border-b border-white/[0.07] px-3 py-2.5 sm:px-6 sm:py-3">
         <div className="flex items-center gap-2">
           {isHarmonia ? (
             <HarmoniaMark className="h-3 w-auto text-harmonia-lime" />
@@ -175,7 +175,7 @@ function PanelLayer({ variant }: { variant: "other" | "harmonia" }) {
           </span>
         </div>
         <span
-          className={`font-mono text-[11px] ${
+          className={`font-mono text-[10px] sm:text-[11px] ${
             isHarmonia ? "text-harmonia-lime" : "text-red-300/80"
           }`}
         >
@@ -189,40 +189,40 @@ function PanelLayer({ variant }: { variant: "other" | "harmonia" }) {
         {ROWS.map((row) => (
           <div
             key={row.ytTitle}
-            className="grid grid-cols-12 items-center gap-3 px-4 py-2.5 sm:px-6"
+            className="grid grid-cols-12 items-center gap-2 sm:gap-3 px-3 py-2 sm:px-6 sm:py-2.5"
           >
-            <div className="col-span-6 flex min-w-0 items-center gap-2.5">
-              <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md border border-red-500/25 bg-red-500/10">
-                <Play className="h-2.5 w-2.5 fill-red-400 text-red-400" />
+            <div className="col-span-6 flex min-w-0 items-center gap-2 sm:gap-2.5">
+              <span className="flex h-5 w-5 sm:h-6 sm:w-6 shrink-0 items-center justify-center rounded-md border border-red-500/25 bg-red-500/10">
+                <Play className="h-2 w-2 sm:h-2.5 sm:w-2.5 fill-red-400 text-red-400" />
               </span>
               <div className="min-w-0">
-                <p className="truncate text-xs text-zinc-300">{row.ytTitle}</p>
-                <p className="truncate text-[10px] text-muted-foreground">
+                <p className="truncate text-[11px] sm:text-xs text-zinc-300">{row.ytTitle}</p>
+                <p className="truncate text-[9px] sm:text-[10px] text-muted-foreground">
                   {row.ytChannel}
                 </p>
               </div>
             </div>
 
-            <div className="col-span-6 flex min-w-0 items-center justify-between gap-2">
+            <div className="col-span-6 flex min-w-0 items-center justify-between gap-1.5 sm:gap-2">
               {isHarmonia ? (
                 <>
                   <div className="min-w-0">
-                    <p className="truncate text-xs font-medium text-foreground">
+                    <p className="truncate text-[11px] sm:text-xs font-medium text-foreground">
                       {row.harmonia.title}
                     </p>
-                    <p className="truncate text-[10px] text-muted-foreground">
+                    <p className="truncate text-[9px] sm:text-[10px] text-muted-foreground">
                       {row.harmonia.detail}
                     </p>
                   </div>
                   {row.harmonia.manual ? (
-                    <span className="inline-flex shrink-0 items-center gap-1 rounded-md border border-harmonia-lime/30 bg-harmonia-lime/10 px-1.5 py-0.5 font-mono text-[10px] text-harmonia-lime">
-                      <UserCheck className="h-3 w-3" />
-                      Revisada
+                    <span className="inline-flex shrink-0 items-center gap-0.5 sm:gap-1 rounded-md border border-harmonia-lime/30 bg-harmonia-lime/10 px-1 sm:px-1.5 py-0.5 font-mono text-[9px] sm:text-[10px] text-harmonia-lime">
+                      <UserCheck className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
+                      <span className="hidden xs:inline sm:inline">Revisada</span>
                     </span>
                   ) : (
-                    <span className="inline-flex shrink-0 items-center gap-1 rounded-md border border-harmonia-lime/30 bg-harmonia-lime/10 px-1.5 py-0.5 font-mono text-[10px] text-harmonia-lime">
-                      <Check className="h-3 w-3" />
-                      {Math.round(row.harmonia.score * 100)}%
+                    <span className="inline-flex shrink-0 items-center gap-0.5 sm:gap-1 rounded-md border border-harmonia-lime/30 bg-harmonia-lime/10 px-1 sm:px-1.5 py-0.5 font-mono text-[9px] sm:text-[10px] text-harmonia-lime">
+                      <Check className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
+                      <span>{Math.round(row.harmonia.score * 100)}%</span>
                     </span>
                   )}
                 </>
@@ -230,7 +230,7 @@ function PanelLayer({ variant }: { variant: "other" | "harmonia" }) {
                 <>
                   <div className="min-w-0">
                     <p
-                      className={`truncate text-xs font-medium ${
+                      className={`truncate text-[11px] sm:text-xs font-medium ${
                         row.other.verdict === "missing"
                           ? "italic text-zinc-500"
                           : row.other.verdict === "ok"
@@ -240,7 +240,7 @@ function PanelLayer({ variant }: { variant: "other" | "harmonia" }) {
                     >
                       {row.other.title}
                     </p>
-                    <p className="truncate text-[10px] text-muted-foreground">
+                    <p className="truncate text-[9px] sm:text-[10px] text-muted-foreground">
                       {row.other.detail}
                     </p>
                   </div>

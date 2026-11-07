@@ -203,7 +203,7 @@ function HeroAnimatedHeadline({ active }: { active: boolean }) {
   const part4Start = commaTime + 0.06; // ~1.23s
 
   return (
-    <h1 className="text-4xl font-semibold tracking-[-0.035em] text-foreground sm:text-6xl md:text-[72px] md:leading-[1.06]">
+    <h1 className="text-3xl font-semibold tracking-[-0.035em] text-foreground sm:text-5xl md:text-[72px] leading-[1.14] md:leading-[1.06]">
       <WrittenChars
         text={part1}
         startDelay={tStart}
@@ -242,9 +242,9 @@ function HeroAnimatedHeadline({ active }: { active: boolean }) {
           ease: [0.42, 0, 0.2, 1],
         }}
         whileHover={{ scale: 1.05, rotate: 0 }}
-        className="inline-flex items-center gap-1.5 rounded-2xl border border-red-500/30 bg-red-500/10 px-3.5 py-0.5 text-[0.82em] font-medium text-red-300 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.14)] align-baseline will-change-transform"
+        className="inline-flex items-center gap-1 sm:gap-1.5 rounded-2xl border border-red-500/30 bg-red-500/10 px-2.5 sm:px-3.5 py-0.5 text-[0.78em] sm:text-[0.82em] font-medium text-red-300 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.14)] align-baseline will-change-transform"
       >
-        <Play className="h-4 w-4 fill-red-400 text-red-400 sm:h-6 sm:w-6" />
+        <Play className="h-3.5 w-3.5 fill-red-400 text-red-400 sm:h-5 sm:w-5 md:h-6 md:w-6" />
         YouTube
       </motion.span>
 
@@ -286,9 +286,9 @@ function HeroAnimatedHeadline({ active }: { active: boolean }) {
           ease: [0.42, 0, 0.2, 1],
         }}
         whileHover={{ scale: 1.05, rotate: 0 }}
-        className="inline-flex items-center gap-1.5 rounded-2xl border border-emerald-500/30 bg-emerald-500/10 px-3.5 py-0.5 text-[0.82em] font-medium text-emerald-300 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.14)] align-baseline will-change-transform"
+        className="inline-flex items-center gap-1 sm:gap-1.5 rounded-2xl border border-emerald-500/30 bg-emerald-500/10 px-2.5 sm:px-3.5 py-0.5 text-[0.78em] sm:text-[0.82em] font-medium text-emerald-300 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.14)] align-baseline will-change-transform"
       >
-        <Radio className="h-4 w-4 text-emerald-400 sm:h-6 sm:w-6" />
+        <Radio className="h-3.5 w-3.5 text-emerald-400 sm:h-5 sm:w-5 md:h-6 md:w-6" />
         Spotify
       </motion.span>
 
@@ -299,7 +299,7 @@ function HeroAnimatedHeadline({ active }: { active: boolean }) {
         active={active}
       />
 
-      <span className="block mt-1.5 font-editorial italic font-normal text-foreground/95">
+      <span className="block mt-1 sm:mt-1.5 font-editorial italic font-normal text-foreground/95">
         <WrittenChars
           text={part4}
           startDelay={part4Start}
@@ -566,7 +566,7 @@ export default function HomePage() {
       />
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="border-white/10 bg-zinc-950 sm:max-w-md shadow-2xl">
+        <DialogContent className="border-white/10 bg-zinc-950 max-w-[92vw] sm:max-w-md shadow-2xl">
           <DialogHeader>
             <DialogTitle className="text-lg font-semibold tracking-tight">
               Solicitar acesso ao Harmonia
@@ -672,7 +672,7 @@ export default function HomePage() {
            ========================================================= */}
         <section
           id="hero"
-          className="relative flex min-h-screen w-full flex-col justify-between border-b border-white/[0.08] pt-24 pb-8"
+          className="relative flex min-h-[100dvh] w-full flex-col justify-between border-b border-white/[0.08] pt-20 pb-8 sm:pt-24"
         >
           <div
             aria-hidden="true"
@@ -806,7 +806,7 @@ export default function HomePage() {
            ========================================================= */}
         <section
           id="palco"
-          className="relative flex min-h-screen w-full flex-col justify-between border-b border-white/[0.08] pt-20 pb-6"
+          className="relative flex min-h-[100dvh] w-full flex-col justify-between border-b border-white/[0.08] py-16 sm:py-20"
         >
           <div
             aria-hidden="true"
@@ -861,7 +861,7 @@ export default function HomePage() {
            ========================================================= */}
         <section
           id="jornada"
-          className="relative flex min-h-screen w-full flex-col justify-between border-b border-white/[0.08] pt-20 pb-6"
+          className="relative flex min-h-[100dvh] w-full flex-col justify-between border-b border-white/[0.08] py-16 sm:py-20"
         >
           <div
             aria-hidden="true"
@@ -1229,7 +1229,7 @@ export default function HomePage() {
            ========================================================= */}
         <section
           id="arquitetura"
-          className="relative flex min-h-screen w-full flex-col justify-between border-b border-white/[0.08] pt-20 pb-6"
+          className="relative flex min-h-[100dvh] w-full flex-col justify-between border-b border-white/[0.08] py-16 sm:py-20"
         >
           <div className="relative z-10 my-auto mx-auto w-full max-w-6xl px-4 sm:px-6">
             <StageItem active={activeSection === "arquitetura"} step={0}>
@@ -1466,7 +1466,7 @@ export default function HomePage() {
            ========================================================= */}
         <section
           id="self-host"
-          className="relative flex min-h-screen w-full flex-col justify-between pt-22"
+          className="relative flex min-h-[100dvh] w-full flex-col justify-between pt-16 sm:pt-22"
         >
           <div className="relative z-10 my-auto mx-auto w-full max-w-6xl px-4 py-8 sm:px-6 space-y-10">
             <div className="grid grid-cols-1 gap-10 lg:grid-cols-12 lg:items-center">
