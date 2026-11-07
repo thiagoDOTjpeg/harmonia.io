@@ -18,8 +18,10 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { usePlaylist } from "@/hooks/use-playlist";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { CheckCircle2, Link2, Music2, Zap } from "lucide-react";
 import { useForm } from "react-hook-form";
 import z from "zod";
 
@@ -49,6 +51,24 @@ const AddSyncPlaylistSchema = z.object({
 });
 
 type AddSyncPlaylistData = z.infer<typeof AddSyncPlaylistSchema>;
+
+const steps = [
+  {
+    icon: Link2,
+    title: "Cole a URL",
+    description: "Copie o link da playlist pública do YouTube",
+  },
+  {
+    icon: Music2,
+    title: "Configure",
+    description: "Dê um nome e escolha como sincronizar",
+  },
+  {
+    icon: Zap,
+    title: "Execute",
+    description: "As músicas são adicionadas automaticamente no Spotify",
+  },
+];
 
 export default function NovaPage() {
   const { isLoading, postSyncPlaylist } = usePlaylist();
@@ -97,7 +117,7 @@ export default function NovaPage() {
                     <FormControl>
                       <Input
                         type="url"
-                        placeholder="https://www.youtube.com/playlist?list=..."
+                        placeholder="https://www.youtube.com/playlist?list=PLxxxx..."
                         {...field}
                       />
                     </FormControl>
@@ -109,14 +129,12 @@ export default function NovaPage() {
                 )}
               />
 
-              {/* <FormField
+              <FormField
                 control={form.control}
                 name="playlistName"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>
-                      Nome da Playlist no Spotify (opcional)
-                    </FormLabel>
+                    <FormLabel>Nome da Playlist no Spotify (opcional)</FormLabel>
                     <FormControl>
                       <Input
                         type="text"
@@ -146,7 +164,7 @@ export default function NovaPage() {
                             <RadioGroupItem value="manual" />
                           </FormControl>
                           <FormLabel className="font-normal cursor-pointer">
-                            Manual - Sincronizar apenas quando solicitado
+                            Manual — sincronizar apenas quando solicitado
                           </FormLabel>
                         </FormItem>
                         <FormItem className="flex items-center space-x-2 space-y-0">
@@ -154,20 +172,15 @@ export default function NovaPage() {
                             <RadioGroupItem value="automatic" />
                           </FormControl>
                           <FormLabel className="font-normal cursor-pointer">
-                            Automática - Sincronizar automaticamente a cada 24
-                            horas
+                            Automática — sincronizar a cada 24 horas
                           </FormLabel>
                         </FormItem>
                       </RadioGroup>
                     </FormControl>
-                    <FormDescription>
-                      A sincronização automática está disponível nos planos Pro
-                      e Premium
-                    </FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
-              /> */}
+              />
 
               <Button disabled={isLoading} type="submit" className="w-full">
                 Iniciar Sincronização
@@ -176,6 +189,30 @@ export default function NovaPage() {
           </Form>
         </CardContent>
       </Card>
+
+      <div className="max-w-2xl">
+        <p className="text-sm font-medium text-muted-foreground mb-4 uppercase tracking-wider">
+          Como funciona
+        </p>
+        <div className="grid grid-cols-3 gap-4">
+          {steps.map((step, index) => (
+            <div key={index} className="flex flex-col items-center text-center gap-3">
+              <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+                <step.icon className="h-5 w-5 text-primary" />
+              </div>
+              <div>
+                <p className="text-sm font-medium">{step.title}</p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {step.description}
+                </p>
+              </div>
+              {index < steps.length - 1 && (
+                <CheckCircle2 className="hidden" />
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }
