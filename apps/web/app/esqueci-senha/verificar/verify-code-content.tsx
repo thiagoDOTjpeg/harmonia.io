@@ -2,14 +2,14 @@
 
 import { Footer } from "@/components/footer";
 import { Header } from "@/components/header";
-import { Button } from "@/components/ui/button";
+import { Button } from "@harmonia/ui/components/button";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
+} from "@harmonia/ui/components/card";
 import {
   Form,
   FormControl,
@@ -17,8 +17,8 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
+} from "@harmonia/ui/components/form";
+import { Input } from "@harmonia/ui/components/input";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowLeft, Mail, Shield } from "lucide-react";
 import Link from "next/link";

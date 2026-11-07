@@ -1,5 +1,5 @@
 import { queryKeys } from "@/hooks/queries/query-keys";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "@harmonia/ui/hooks/use-toast";
 import { ApiError } from "@/lib/services/api";
 import { userService } from "@/lib/services/user-service";
 import { useMutation, useQueryClient } from "@tanstack/react-query";

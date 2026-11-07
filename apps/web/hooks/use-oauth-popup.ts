@@ -5,7 +5,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { queryKeys } from "./queries/query-keys";
-import { toast } from "./use-toast";
+import { toast } from "@harmonia/ui/hooks/use-toast";
 
 export function useOAuthPopup() {
   const router = useRouter();

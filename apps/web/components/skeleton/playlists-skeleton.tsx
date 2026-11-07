@@ -1,6 +1,6 @@
 import { Music2 } from "lucide-react";
-import { Button } from "../ui/button";
-import { Card, CardHeader } from "../ui/card";
+import { Button } from "@harmonia/ui/components/button";
+import { Card, CardHeader } from "@harmonia/ui/components/card";
 
 export default function PlaylistsSkeleton() {
   return (

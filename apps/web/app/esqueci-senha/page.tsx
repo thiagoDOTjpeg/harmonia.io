@@ -2,16 +2,16 @@
 
 import { Footer } from "@/components/footer";
 import { Header } from "@/components/header";
-import { Button } from "@/components/ui/button";
+import { Button } from "@harmonia/ui/components/button";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+} from "@harmonia/ui/components/card";
+import { Input } from "@harmonia/ui/components/input";
+import { Label } from "@harmonia/ui/components/label";
 import { useAuthContext } from "@/context/AuthContext";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowLeft, CheckCircle2, Mail } from "lucide-react";

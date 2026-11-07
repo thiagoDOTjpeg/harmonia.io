@@ -1,15 +1,15 @@
 "use client";
 
 import DashboardSkeleton from "@/components/skeleton/dashboard-skeleton";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Badge } from "@/components/ui/badge";
+import { Alert, AlertDescription, AlertTitle } from "@harmonia/ui/components/alert";
+import { Badge } from "@harmonia/ui/components/badge";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
+} from "@harmonia/ui/components/card";
 import { useUserSummary } from "@/hooks/queries";
 import { formatTimeAgo } from "@/lib/utils";
 import { AlertCircle, Clock, Music2, TrendingUp } from "lucide-react";
@@ -122,16 +122,19 @@ export default function DashboardPage() {
           {summary?.recent_syncs && summary.recent_syncs.length > 0 ? (
             <div className="space-y-4">
               {summary.recent_syncs.map((activity, index) => (
-                <div
+                <Link
                   key={index}
-                  className="flex items-center justify-between py-3 border-b border-border last:border-0"
+                  href={`/dashboard/playlists/${activity.id}`}
+                  className="flex items-center justify-between py-3 px-2 -mx-2 rounded-lg hover:bg-muted/40 transition-colors border-b border-border last:border-0"
                 >
                   <div className="flex items-center gap-4">
                     <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center">
                       <Music2 className="h-6 w-6 text-primary" />
                     </div>
                     <div>
-                      <p className="font-medium">{activity.name}</p>
+                      <p className="font-medium hover:underline underline-offset-4">
+                        {activity.name}
+                      </p>
                       <p className="text-sm text-muted-foreground">
                         {activity.songs_count} músicas •{" "}
                         {formatTimeAgo(activity.last_synced_at)} atrás
@@ -147,7 +150,7 @@ export default function DashboardPage() {
                       ? "Sincronizado"
                       : "Sincronização Parcial"}
                   </Badge>
-                </div>
+                </Link>
               ))}
             </div>
           ) : (

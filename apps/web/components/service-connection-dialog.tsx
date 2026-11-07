@@ -1,14 +1,14 @@
 "use client";
 
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Badge } from "@harmonia/ui/components/badge";
+import { Button } from "@harmonia/ui/components/button";
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
+} from "@harmonia/ui/components/dialog";
 import { useAuthContext } from "@/context/AuthContext";
 import { useServiceConnections } from "@/hooks/queries";
 import { useUser } from "@/hooks/use-user";

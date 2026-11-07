@@ -1,15 +1,15 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
+import { Button } from "@harmonia/ui/components/button";
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { UserPlaylist } from "@harmonia/shared";
+} from "@harmonia/ui/components/dialog";
+import { ScrollArea } from "@harmonia/ui/components/scroll-area";
+import { UserPlaylistDTO } from "@harmonia/shared";
 import { ExternalLink, Music2, Play } from "lucide-react";
 
 interface Song {
@@ -23,7 +23,7 @@ interface Song {
 interface PlaylistManagerDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  playlist: UserPlaylist;
+  playlist: UserPlaylistDTO;
 }
 
 export function PlaylistManagerDialog({

@@ -1,17 +1,17 @@
 "use client";
 
 import { ServiceConnectionDialog } from "@/components/service-connection-dialog";
-import { Button } from "@/components/ui/button";
+import { Button } from "@harmonia/ui/components/button";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+} from "@harmonia/ui/components/card";
+import { Input } from "@harmonia/ui/components/input";
+import { Label } from "@harmonia/ui/components/label";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@harmonia/ui/components/tabs";
 import { useUserSummary } from "@/hooks/queries";
 import { useUser } from "@/hooks/use-user";
 import { ServiceProvider } from "@harmonia/shared";

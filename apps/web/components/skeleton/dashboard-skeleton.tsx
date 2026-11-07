@@ -1,4 +1,4 @@
-import { Card, CardContent, CardHeader } from "../ui/card";
+import { Card, CardContent, CardHeader } from "@harmonia/ui/components/card";
 
 export default function DashboardSkeleton() {
   return (

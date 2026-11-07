@@ -1,6 +1,9 @@
 import { Github, Globe, Linkedin } from "lucide-react";
 import Link from "next/link";
 
+const LANDING_URL =
+  process.env.NEXT_PUBLIC_LANDING_URL || "http://localhost:3002";
+
 export function Footer() {
   return (
     <footer className="border-t border-border bg-card">
@@ -77,7 +80,7 @@ export function Footer() {
             <ul className="space-y-2 text-sm text-muted-foreground">
               <li>
                 <Link
-                  href="/docs"
+                  href={`${LANDING_URL}/docs`}
                   className="hover:text-foreground transition-colors"
                 >
                   Documentation

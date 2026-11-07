@@ -1,12 +1,15 @@
-import { Button } from "@/components/ui/button";
+import { Button } from "@harmonia/ui";
 import { Github } from "lucide-react";
 import Link from "next/link";
 
-export function Header({ setOpen }: { setOpen: React.Dispatch<boolean> }) {
+const LANDING_URL =
+  process.env.NEXT_PUBLIC_LANDING_URL || "http://localhost:3002";
+
+export function Header() {
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60">
       <div className="container m-auto flex h-16 items-center justify-between">
-        <Link href="/" className="flex items-center gap-3">
+        <Link href={LANDING_URL} className="flex items-center gap-3">
           <svg
             viewBox="0 0 40 40"
             className="h-8 w-8"
@@ -52,13 +55,13 @@ export function Header({ setOpen }: { setOpen: React.Dispatch<boolean> }) {
 
         <nav className="hidden md:flex items-center gap-6">
           <Link
-            href="/#como-funciona"
+            href={`${LANDING_URL}/#como-funciona`}
             className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors uppercase tracking-wider"
           >
             Como Funciona
           </Link>
           <Link
-            href="/docs"
+            href={`${LANDING_URL}/docs`}
             className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors uppercase tracking-wider"
           >
             Docs
@@ -73,13 +76,6 @@ export function Header({ setOpen }: { setOpen: React.Dispatch<boolean> }) {
         </nav>
 
         <div className="flex items-center gap-3">
-          <Button
-            variant="ghost"
-            className="hover:text-primary"
-            onClick={() => setOpen(true)}
-          >
-            Pedir Acesso
-          </Button>
           <Button
             asChild
             className="bg-linear-to-r from-primary to-secondary text-primary-foreground hover:opacity-90 transition-opacity glow-primary"

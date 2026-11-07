@@ -1,13 +1,13 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
+import { Button } from "@harmonia/ui/components/button";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
+} from "@harmonia/ui/components/card";
 import {
   Form,
   FormControl,
@@ -16,9 +16,9 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+} from "@harmonia/ui/components/form";
+import { Input } from "@harmonia/ui/components/input";
+import { RadioGroup, RadioGroupItem } from "@harmonia/ui/components/radio-group";
 import { usePlaylist } from "@/hooks/use-playlist";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { CheckCircle2, Link2, Music2, Zap } from "lucide-react";

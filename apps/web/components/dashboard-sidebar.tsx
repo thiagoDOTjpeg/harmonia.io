@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
+import { Button } from "@harmonia/ui/components/button";
 import { useAuthContext } from "@/context/AuthContext";
 import { useUser } from "@/hooks/use-user";
 import { cn } from "@/lib/utils";
