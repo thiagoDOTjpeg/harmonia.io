@@ -1,181 +1,155 @@
+import { HarmoniaLogo } from "@harmonia/ui";
 import { Github, Globe, Linkedin } from "lucide-react";
 import Link from "next/link";
 
 export function Footer() {
   return (
-    <footer className="border-t border-border bg-card">
-      <div className="container py-12 m-auto">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-          <div className="space-y-3">
-            <div className="flex items-center gap-3">
-              <svg
-                viewBox="0 0 40 40"
-                className="h-6 w-6"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <defs>
-                  <linearGradient
-                    id="footer-logo-grad"
-                    x1="0%"
-                    y1="0%"
-                    x2="100%"
-                    y2="0%"
-                  >
-                    <stop
-                      offset="0%"
-                      style={{
-                        stopColor: "oklch(0.75 0.25 155)",
-                        stopOpacity: 1,
-                      }}
-                    />
-                    <stop
-                      offset="50%"
-                      style={{
-                        stopColor: "oklch(0.75 0.20 210)",
-                        stopOpacity: 1,
-                      }}
-                    />
-                    <stop
-                      offset="100%"
-                      style={{
-                        stopColor: "oklch(0.60 0.25 295)",
-                        stopOpacity: 1,
-                      }}
-                    />
-                  </linearGradient>
-                </defs>
-                <path
-                  d="M 10 20 Q 15 12, 20 20 T 30 20"
-                  fill="none"
-                  stroke="url(#footer-logo-grad)"
-                  strokeWidth="3"
-                  strokeLinecap="round"
-                />
-                <path
-                  d="M 10 20 Q 15 26, 20 20 T 30 20"
-                  fill="none"
-                  stroke="url(#footer-logo-grad)"
-                  strokeWidth="3"
-                  strokeLinecap="round"
-                  opacity="0.6"
-                />
-                <circle cx="20" cy="20" r="3" fill="oklch(0.75 0.25 155)" />
-              </svg>
-              <span className="font-bold font-display">
-                Harmonia<span className="text-primary">.io</span>
-              </span>
+    <footer className="border-t border-border/80 bg-background">
+      <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6">
+        <div className="grid grid-cols-1 gap-10 md:grid-cols-12">
+          <div className="space-y-3 md:col-span-5">
+            <div className="flex items-center gap-2.5">
+              <HarmoniaLogo className="h-7.5 w-auto text-harmonia-lime" />
             </div>
-            <p className="text-sm text-muted-foreground">
-              Sincronização de playlists open source.
+            <p className="max-w-xs text-xs leading-relaxed text-muted-foreground">
+              Sincronização open-source de playlists do YouTube para o Spotify.
+              Auto-hospedável, privado e projetado com arquitetura limpa.
             </p>
+            <div className="flex items-center gap-2 pt-1 text-[11px] font-mono text-muted-foreground">
+              <span className="inline-block h-1.5 w-1.5 rounded-full bg-harmonia-lime" />
+              Licença MIT · v0.1.0
+            </div>
           </div>
 
-          <div>
-            <h3 className="font-semibold mb-3 font-display uppercase tracking-wider text-sm">
+          <div className="md:col-span-2">
+            <h3 className="mb-3 text-xs font-medium text-foreground">
               Projeto
             </h3>
-            <ul className="space-y-2 text-sm text-muted-foreground">
+            <ul className="space-y-2 text-xs text-muted-foreground">
               <li>
                 <Link
                   href="/docs"
                   className="hover:text-foreground transition-colors"
                 >
-                  Documentation
+                  Documentação
                 </Link>
               </li>
               <li>
                 <Link
-                  href="https://github.com/thiagogritti/harmonia"
-                  target="_blank"
+                  href="/docs/arquitetura"
                   className="hover:text-foreground transition-colors"
                 >
-                  GitHub
+                  Arquitetura
                 </Link>
               </li>
               <li>
                 <Link
-                  href="https://github.com/thiagogritti/harmonia/contribute"
-                  target="_blank"
+                  href="/docs/roadmap"
                   className="hover:text-foreground transition-colors"
                 >
-                  Contributing
+                  Roadmap
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/docs/contribuindo"
+                  className="hover:text-foreground transition-colors"
+                >
+                  Como Contribuir
                 </Link>
               </li>
             </ul>
           </div>
 
-          <div>
-            <h3 className="font-semibold mb-3 font-display uppercase tracking-wider text-sm">
-              Legal
+          <div className="md:col-span-2">
+            <h3 className="mb-3 text-xs font-medium text-foreground">
+              Código & Licença
             </h3>
-            <ul className="space-y-2 text-sm text-muted-foreground">
+            <ul className="space-y-2 text-xs text-muted-foreground">
               <li>
                 <Link
-                  href="https://github.com/thiagogritti/harmonia/blob/main/LICENSE"
+                  href="https://github.com/thiagoDOTjpeg/harmonia.io"
                   target="_blank"
+                  rel="noreferrer"
                   className="hover:text-foreground transition-colors"
                 >
-                  License (MIT)
+                  Repositório GitHub
                 </Link>
               </li>
               <li>
                 <Link
-                  href="#"
+                  href="https://github.com/thiagoDOTjpeg/harmonia.io/blob/main/LICENSE"
+                  target="_blank"
+                  rel="noreferrer"
                   className="hover:text-foreground transition-colors"
                 >
-                  Política de Privacidade
+                  Licença MIT
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/docs/setup"
+                  className="hover:text-foreground transition-colors"
+                >
+                  Guia de Setup
                 </Link>
               </li>
             </ul>
           </div>
 
-          <div>
-            <h3 className="font-semibold mb-3 font-display uppercase tracking-wider text-sm">
-              Contato
+          <div className="md:col-span-3">
+            <h3 className="mb-3 text-xs font-medium text-foreground">
+              Autor & Contato
             </h3>
-            <ul className="space-y-2 text-sm text-muted-foreground">
+            <ul className="space-y-2 text-xs text-muted-foreground">
               <li>
                 <Link
                   href="mailto:contato@harmonia.io"
-                  className="hover:text-foreground transition-colors"
+                  className="font-mono hover:text-foreground transition-colors"
                 >
                   contato@harmonia.io
                 </Link>
               </li>
               <li className="flex items-center gap-3 pt-2">
                 <Link
-                  href="https://github.com/thiagogritti"
+                  href="https://github.com/thiagoDOTjpeg"
                   target="_blank"
-                  className="hover:text-primary transition-colors"
+                  rel="noreferrer"
+                  aria-label="GitHub"
+                  className="rounded-md border border-border p-1.5 text-muted-foreground hover:border-foreground/30 hover:text-foreground transition-colors"
                 >
-                  <Github className="h-4 w-4" />
+                  <Github className="h-3.5 w-3.5" />
                 </Link>
                 <Link
                   href="https://linkedin.com/in/thiagogritti"
                   target="_blank"
-                  className="hover:text-primary transition-colors"
+                  rel="noreferrer"
+                  aria-label="LinkedIn"
+                  className="rounded-md border border-border p-1.5 text-muted-foreground hover:border-foreground/30 hover:text-foreground transition-colors"
                 >
-                  <Linkedin className="h-4 w-4" />
+                  <Linkedin className="h-3.5 w-3.5" />
                 </Link>
                 <Link
                   href="https://thiagogritti.dev"
                   target="_blank"
-                  className="hover:text-primary transition-colors"
+                  rel="noreferrer"
+                  aria-label="Website"
+                  className="rounded-md border border-border p-1.5 text-muted-foreground hover:border-foreground/30 hover:text-foreground transition-colors"
                 >
-                  <Globe className="h-4 w-4" />
+                  <Globe className="h-3.5 w-3.5" />
                 </Link>
               </li>
             </ul>
           </div>
         </div>
 
-        <div className="mt-8 pt-8 border-t border-border text-center text-sm text-muted-foreground space-y-2">
-          <p className="font-display">
-            Built with ❤️ by developers, for developers
-          </p>
+        <div className="mt-10 flex flex-col items-center justify-between gap-4 border-t border-border/60 pt-6 text-xs text-muted-foreground sm:flex-row">
           <p>
-            &copy; {new Date().getFullYear()} Thiago Gritti - Open Source
-            Project
+            &copy; {new Date().getFullYear()} Thiago Gritti. Código aberto sob
+            licença MIT.
+          </p>
+          <p className="font-mono text-[11px] text-muted-foreground/80">
+            Construído para desenvolvedores e curadores de música.
           </p>
         </div>
       </div>

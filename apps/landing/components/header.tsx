@@ -1,101 +1,108 @@
-import { Button } from "@harmonia/ui";
+"use client";
+
+import { Button, HarmoniaLogo } from "@harmonia/ui";
+import { motion } from "framer-motion";
 import { Github } from "lucide-react";
 import Link from "next/link";
 import type React from "react";
 
-export function Header({ setOpen }: { setOpen: React.Dispatch<boolean> }) {
+interface HeaderProps {
+  setOpen: React.Dispatch<boolean>;
+  activeSection?: string;
+  onNavigate?: (sectionId: string) => void;
+}
+
+const NAV_ITEMS = [
+  { id: "palco", label: "Comparativo" },
+  { id: "jornada", label: "Como funciona" },
+  { id: "arquitetura", label: "Arquitetura" },
+  { id: "self-host", label: "Self-Host" },
+];
+
+export function Header({
+  setOpen,
+  activeSection = "hero",
+  onNavigate,
+}: HeaderProps) {
+  const handleNavClick = (
+    e: React.MouseEvent<HTMLAnchorElement>,
+    id: string
+  ) => {
+    if (onNavigate) {
+      e.preventDefault();
+      onNavigate(id);
+    }
+  };
+
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60">
-      <div className="container m-auto flex h-16 items-center justify-between">
-        <Link href="/" className="flex items-center gap-3">
-          <svg
-            viewBox="0 0 40 40"
-            className="h-8 w-8"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <defs>
-              <linearGradient id="logo-grad" x1="0%" y1="0%" x2="100%" y2="0%">
-                <stop
-                  offset="0%"
-                  style={{ stopColor: "oklch(0.75 0.25 155)", stopOpacity: 1 }}
-                />
-                <stop
-                  offset="50%"
-                  style={{ stopColor: "oklch(0.75 0.20 210)", stopOpacity: 1 }}
-                />
-                <stop
-                  offset="100%"
-                  style={{ stopColor: "oklch(0.60 0.25 295)", stopOpacity: 1 }}
-                />
-              </linearGradient>
-            </defs>
-            <path
-              d="M 10 20 Q 15 12, 20 20 T 30 20"
-              fill="none"
-              stroke="url(#logo-grad)"
-              strokeWidth="3"
-              strokeLinecap="round"
-            />
-            <path
-              d="M 10 20 Q 15 26, 20 20 T 30 20"
-              fill="none"
-              stroke="url(#logo-grad)"
-              strokeWidth="3"
-              strokeLinecap="round"
-              opacity="0.6"
-            />
-            <circle cx="20" cy="20" r="3" fill="oklch(0.75 0.25 155)" />
-          </svg>
-          <span className="text-xl font-bold font-display tracking-tight">
-            Harmonia<span className="text-primary">.io</span>
-          </span>
+    <motion.header
+      initial={{ y: -24, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
+      className="fixed inset-x-0 top-5 z-50 w-full px-4 sm:px-6 pointer-events-none"
+    >
+      <div className="mx-auto flex h-12 max-w-3xl items-center justify-between rounded-full border border-white/[0.08] bg-zinc-950/80 px-4 sm:px-5 backdrop-blur-md pointer-events-auto">
+        <Link
+          href="/#hero"
+          onClick={(e) => handleNavClick(e, "hero")}
+          className="flex items-center hover:opacity-90 transition-opacity py-1"
+          aria-label="Harmonia Início"
+        >
+          <HarmoniaLogo className="h-7 sm:h-7.5 w-auto text-harmonia-lime" />
         </Link>
 
         <nav className="hidden md:flex items-center gap-6">
-          <Link
-            href="/#como-funciona"
-            className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors uppercase tracking-wider"
-          >
-            Como Funciona
-          </Link>
+          {NAV_ITEMS.map((item) => {
+            const isActive = activeSection === item.id;
+            return (
+              <a
+                key={item.id}
+                href={`#${item.id}`}
+                onClick={(e) => handleNavClick(e, item.id)}
+                className={`relative py-1 text-xs transition-colors duration-200 ${
+                  isActive
+                    ? "text-foreground font-medium"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                {item.label}
+                {isActive && (
+                  <motion.span
+                    layoutId="headerActiveIndicator"
+                    className="absolute -bottom-1 left-1/2 h-1 w-1 -translate-x-1/2 rounded-full bg-harmonia-lime"
+                    transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                  />
+                )}
+              </a>
+            );
+          })}
           <Link
             href="/docs"
-            className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors uppercase tracking-wider"
+            className="text-xs text-muted-foreground hover:text-foreground transition-colors"
           >
             Docs
-          </Link>
-          <Link
-            href="https://github.com/thiagoDOTjpeg/harmonia.io"
-            target="_blank"
-            className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors uppercase tracking-wider"
-          >
-            GitHub
           </Link>
         </nav>
 
         <div className="flex items-center gap-3">
+          <Link
+            href="https://github.com/thiagoDOTjpeg/harmonia.io"
+            target="_blank"
+            rel="noreferrer"
+            aria-label="GitHub"
+            className="text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <Github className="h-4 w-4" />
+          </Link>
           <Button
-            variant="ghost"
-            className="hover:text-primary"
+            size="sm"
+            className="h-7 rounded-full px-3.5 text-xs font-semibold bg-harmonia-lime text-harmonia-green hover:bg-harmonia-lime/90 transition-all shadow-[0_0_14px_rgba(217,242,122,0.22)]"
             onClick={() => setOpen(true)}
           >
-            Pedir Acesso
-          </Button>
-          <Button
-            asChild
-            className="bg-linear-to-r from-primary to-secondary text-primary-foreground hover:opacity-90 transition-opacity glow-primary"
-          >
-            <Link
-              href="https://github.com/thiagoDOTjpeg/harmonia.io"
-              target="_blank"
-            >
-              <Github className="mr-2 h-4 w-4" />
-              Star on GitHub
-            </Link>
+            Pedir acesso
           </Button>
         </div>
       </div>
-    </header>
+    </motion.header>
   );
 }
-
