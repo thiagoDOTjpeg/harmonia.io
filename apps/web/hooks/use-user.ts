@@ -1,104 +1,28 @@
-import { userService } from "@/lib/services/user-service";
-import { useAuthStore } from "@/lib/store/auth-store";
-import { useUserStore } from "@/lib/store/user-store";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
-import useQueryUser from "./queries/use-query-user";
-import { toast } from "./use-toast";
+import { useRevokeConnectionMutation } from "@/hooks/mutations/use-revoke-connection";
+import { useCurrentUser } from "@/hooks/queries/use-current-user";
+import { useQueryClient } from "@tanstack/react-query";
 
 export function useUser() {
-  const router = useRouter();
-  const { token } = useAuthStore();
-  const queryUser = useQueryUser(token!);
-  const { setServiceConnections, setPlaylists, setSummary, summary, setHasHydrated, _hasHydrated, playlists, serviceConnections, clearUser, setUser, user } = useUserStore();
-  const [isLoading, setIsLoading] = useState(false);
-
-  const { } = queryUser.userPlaylist()
+  const queryClient = useQueryClient();
+  const { data: user, isLoading: isLoadingUser } = useCurrentUser();
+  const revokeConnectionMutation = useRevokeConnectionMutation();
 
   const revokeConnection = async (serviceConnectionId: string) => {
-    if (!token) {
-      toast({ variant: "destructive", title: "Não autenticado" });
-      router.push("/")
-      return null;
-    }
-
-    setIsLoading(true);
     try {
-      await userService.revokeConnection(serviceConnectionId, token);
-      setServiceConnections(null);
-      setSummary(null)
-    } catch (error) {
-      const message = error instanceof Error ? error.message : "Erro desconhecido"
-      toast({ variant: "destructive", title: "Erro", description: message })
-      return null
-    } finally {
-      setIsLoading(false);
-    }
-
-  }
-
-  const getPlaylists = async () => {
-    if (!token) {
-      toast({ variant: "destructive", title: "Não autenticado" });
-      router.push("/")
+      await revokeConnectionMutation.mutateAsync(serviceConnectionId);
+    } catch {
       return null;
-    }
-
-    setIsLoading(true)
-    try {
-      const data = await userService.getPlaylists(token);
-      setPlaylists(data);
-
-    } catch (err) {
-      const message = err instanceof Error ? err.message : "Erro desconhecido"
-      toast({ variant: "destructive", title: "Erro", description: message })
-      return null
-    } finally {
-      setIsLoading(false);
-    }
-  }
-
-  const getSummary = async () => {
-    if (!token) {
-      toast({ variant: "destructive", title: "Não autenticado" });
-      router.push("/")
-      return null;
-    }
-
-    setIsLoading(true);
-    try {
-      const data = await userService.getSummary(token);
-      setSummary(data)
-
-    } catch (err) {
-      const message = err instanceof Error ? err.message : "Erro desconhecido";
-      toast({ variant: "destructive", title: "Erro", description: message });
-      return null;
-    } finally {
-      setIsLoading(false);
     }
   };
 
-  const getServiceConnections = async () => {
-    if (!token) {
-      toast({ variant: "destructive", title: "Não autenticado" });
-      router.push("/")
-      return null;
-    }
+  const clearUser = () => {
+    queryClient.clear();
+  };
 
-    setIsLoading(true)
-    try {
-      const data = await userService.getServiceConnections(token);
-      setServiceConnections(data)
-
-    } catch (err) {
-      const message = err instanceof Error ? err.message : "Erro desconhecido";
-      toast({ variant: "destructive", title: "Erro", description: message });
-      return null;
-    } finally {
-      setIsLoading(false);
-    }
-  }
-
-  return { getSummary, getPlaylists, getServiceConnections, isLoading, _hasHydrated, summary, user, playlists, serviceConnections, setHasHydrated, setServiceConnections, setPlaylists, setUser, setSummary, revokeConnection, clearUser };
+  return {
+    user: user ?? null,
+    isLoading: isLoadingUser || revokeConnectionMutation.isPending,
+    revokeConnection,
+    clearUser,
+  };
 }

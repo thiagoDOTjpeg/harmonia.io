@@ -1,187 +1,146 @@
-import { ApiError } from "@/lib/services/api";
-import { authService } from "@/lib/services/auth-service";
-import { useAuthStore } from "@/lib/store/auth-store";
-import { useUserStore } from "@/lib/store/user-store";
-import { LoginDTO, RegisterDTO, RequestAccessDTO, RequestResetPasswordDTO, ResetPasswordDTO, SetPasswordDTO } from "@harmonia/shared";
+import {
+  useLoginMutation,
+  useLogoutMutation,
+  useRegisterMutation,
+  useRequestAccessMutation,
+  useRequestResetPasswordMutation,
+  useResetPasswordMutation,
+  useSetPasswordMutation,
+} from "@/hooks/mutations/use-auth-mutations";
+import { setOnUnauthorizedCallback } from "@/lib/services/api";
+import {
+  LoginDTO,
+  RegisterDTO,
+  RequestAccessDTO,
+  RequestResetPasswordDTO,
+  ResetPasswordDTO,
+  SetPasswordDTO,
+} from "@harmonia/shared";
+import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useCallback, useEffect } from "react";
 import { useOAuthPopup } from "./use-oauth-popup";
-import { toast } from "./use-toast";
 
 export function useAuth() {
   const router = useRouter();
-  const { setToken, clearAuth, token } = useAuthStore();
-  const { setUser, clearUser } = useUserStore();
+  const queryClient = useQueryClient();
   const { openOAuthPopup, isLoading: oauthLoading } = useOAuthPopup();
-  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    // Cleanup legacy localStorage keys if present
+    localStorage.removeItem("auth-storage");
+    localStorage.removeItem("user-storage");
+    localStorage.removeItem("harmonia:token");
+    localStorage.removeItem("harmonia:user");
+
+    setOnUnauthorizedCallback(() => {
+      queryClient.clear();
+      if (
+        typeof window !== "undefined" &&
+        (window.location.pathname.startsWith("/dashboard") ||
+          window.location.pathname.startsWith("/definir-senha"))
+      ) {
+        router.push("/login");
+      }
+    });
+
+    return () => {
+      setOnUnauthorizedCallback(null);
+    };
+  }, [queryClient, router]);
+
+  const loginMutation = useLoginMutation({
+    onSuccess: () => {
+      router.push("/dashboard");
+    },
+  });
+
+  const registerMutation = useRegisterMutation({
+    onSuccess: () => {
+      router.push("/dashboard");
+    },
+  });
+
+  const logoutMutation = useLogoutMutation({
+    onSuccess: () => {
+      router.push("/login");
+    },
+  });
+
+  const requestAccessMutation = useRequestAccessMutation();
+
+  const setPasswordMutation = useSetPasswordMutation({
+    onSuccess: () => {
+      router.push("/dashboard");
+    },
+  });
+
+  const requestResetPasswordMutation = useRequestResetPasswordMutation();
+  const resetPasswordMutation = useResetPasswordMutation();
 
   const requestAccess = async (data: RequestAccessDTO) => {
-    setIsLoading(true);
-
     try {
-      await authService.requestAccess(data);
-    } catch (error) {
-      toast({
-        variant: 'destructive',
-        title: "Erro ao fazer o pedido de acesso",
-        description: "Ocorreu um erro fazer o pedido de acesso ao sistema",
-        duration: 5000
-      })
-      return { error: true }
-    } finally {
-      setIsLoading(false);
+      await requestAccessMutation.mutateAsync(data);
+    } catch {
+      return { error: true };
     }
-  }
+  };
 
   const setPassword = async (data: SetPasswordDTO) => {
-    setIsLoading(true);
-
     try {
-      await authService.setPassword(data, token!);
-
-      router.push("/dashboard");
-    } catch (error) {
-      toast({
-        variant: 'destructive',
-        title: "Erro ao fazer login",
-        description: "Ocorreu um erro fazer o pedido de reset de senha",
-        duration: 5000
-      })
-      return { error: true }
-    } finally {
-      setIsLoading(false);
+      await setPasswordMutation.mutateAsync(data);
+    } catch {
+      return { error: true };
     }
-  }
+  };
 
   const requestResetPassword = async (data: RequestResetPasswordDTO) => {
-    setIsLoading(true);
-
     try {
-      await authService.requestResetPassword(data);
-    } catch (error) {
-      toast({
-        variant: 'destructive',
-        title: "Erro ao fazer login",
-        description: "Ocorreu um erro fazer o pedido de reset de senha",
-        duration: 5000
-      })
-      return { error: true }
-    } finally {
-      setIsLoading(false);
+      await requestResetPasswordMutation.mutateAsync(data);
+    } catch {
+      return { error: true };
     }
-  }
+  };
 
   const resetPassword = async (data: ResetPasswordDTO) => {
-    setIsLoading(true);
-
     try {
-      await authService.resetPassword(data);
-    } catch (error) {
-      toast({
-        variant: 'destructive',
-        title: "Erro ao fazer login",
-        description: "Ocorreu um erro fazer o pedido de reset de senha",
-        duration: 5000
-      })
-      return { error: true }
-    } finally {
-      setIsLoading(false);
+      await resetPasswordMutation.mutateAsync(data);
+    } catch {
+      return { error: true };
     }
-  }
+  };
 
   const login = async (data: LoginDTO) => {
-    setIsLoading(true);
-
     try {
-      const response = await authService.login(data);
-      setUser(response.user)
-      setToken(response.token)
-
-      toast({
-        title: "Login realizado com sucesso!",
-        description: "Bem-vindo(a) ao Harmonia.io",
-        duration: 3000
-      })
-
-      router.push("/dashboard");
+      await loginMutation.mutateAsync(data);
       return { success: true };
-    } catch (error) {
-      let errorMessage = "Erro ao fazer login. Tente novamente.";
-
-      if (error instanceof ApiError) {
-        switch (error.code) {
-          case 'missing_email_or_password':
-            errorMessage = 'O email e senha precisam ser preenchidos'
-            break;
-          case 'invalid_credentials':
-            errorMessage = 'Senha ou email estão errados'
-            break;
-          default:
-            errorMessage = error.message;
-        }
-      }
-
-      toast({
-        variant: 'destructive',
-        title: "Erro ao fazer login",
-        description: errorMessage,
-        duration: 5000
-      })
-    } finally {
-      setIsLoading(false);
+    } catch {
+      return undefined;
     }
-  }
-
-  const logout = () => {
-    clearAuth();
-    clearUser();
-    router.push("/login");
   };
 
   const register = async (data: RegisterDTO) => {
-    setIsLoading(true);
-
     try {
-      const response = await authService.register(data);
-      setUser(response.user)
-      setToken(response.token)
-
-      toast({
-        title: "Conta criada com sucesso!",
-        description: "Bem-vindo(a) ao Harmonia.io",
-        duration: 3000
-      });
-
-      router.push('/dashboard');
-    } catch (error) {
-      let errorMessage = 'Erro ao criar conta. Tente novamente.';
-
-      if (error instanceof ApiError) {
-        switch (error.code) {
-          case 'email_already_exists':
-            errorMessage = 'Este email já está cadastrado';
-            break;
-          case 'invalid_email':
-            errorMessage = 'Email inválido';
-            break;
-          case 'weak_password':
-            errorMessage = 'Senha muito fraca';
-            break;
-          default:
-            errorMessage = error.message;
-        }
-      }
-
-      toast({
-        variant: "destructive",
-        title: "Erro ao criar conta",
-        description: errorMessage,
-        duration: 5000
-      });
-    } finally {
-      setIsLoading(false);
+      await registerMutation.mutateAsync(data);
+    } catch {
+      return undefined;
     }
   };
+
+  const logout = useCallback(() => {
+    logoutMutation.mutate();
+  }, [logoutMutation]);
+
+  const isLoading =
+    loginMutation.isPending ||
+    registerMutation.isPending ||
+    logoutMutation.isPending ||
+    requestAccessMutation.isPending ||
+    setPasswordMutation.isPending ||
+    requestResetPasswordMutation.isPending ||
+    resetPasswordMutation.isPending ||
+    oauthLoading;
+
   return {
     register,
     login,
@@ -191,6 +150,6 @@ export function useAuth() {
     setPassword,
     requestResetPassword,
     resetPassword,
-    isLoading: isLoading || oauthLoading
-  }
+    isLoading,
+  };
 }

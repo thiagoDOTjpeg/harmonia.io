@@ -1,6 +1,6 @@
 import { Toaster } from "@/components/ui/toaster";
 import { AuthProvider } from "@/context/AuthContext";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { QueryProvider } from "@/context/QueryProvider";
 import { Analytics } from "@vercel/analytics/next";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
@@ -19,22 +19,20 @@ export const metadata: Metadata = {
   },
 };
 
-const queryClient = new QueryClient();
-
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   return (
-    <QueryClientProvider client={queryClient}>
-      <html lang="pt-BR" className="dark" suppressHydrationWarning>
-        <body className={`font-sans antialiased`}>
+    <html lang="pt-BR" className="dark" suppressHydrationWarning>
+      <body className={`font-sans antialiased`}>
+        <QueryProvider>
           <AuthProvider>{children}</AuthProvider>
           <Toaster />
           <Analytics />
-        </body>
-      </html>
-    </QueryClientProvider>
+        </QueryProvider>
+      </body>
+    </html>
   );
 }
