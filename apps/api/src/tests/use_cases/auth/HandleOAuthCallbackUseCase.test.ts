@@ -7,7 +7,7 @@ import { createMockStateStore } from "@/tests/factories/MockStateStoreFactory";
 import { createMockOAuthStrategyFactory } from "@/tests/factories/MockStrategyFactory";
 import { ERRORS } from "@/types/constant/errors";
 import { OAuthState } from "@/types/oauth/state";
-import { AuthResponse, NotFoundError, OAuthMethod, ServiceProvider } from "@harmonia/shared";
+import { AppError, AuthResponse, NotFoundError, OAuthMethod, ServiceProvider } from "@harmonia/shared";
 
 describe("HandleOAuthCallbackUseCase", () => {
   let useCase: HandleOAuthCallbackUseCase;
@@ -96,5 +96,26 @@ describe("HandleOAuthCallbackUseCase", () => {
     expect(mockStateStore.delete).not.toHaveBeenCalled();
     expect(mockStrategyFactory.getStrategy).not.toHaveBeenCalled();
     expect(mockStrategy.processCallback).not.toHaveBeenCalled()
+  })
+
+  it("should throw an error if the method in state data is invalid", async () => {
+    const input = {
+      provider: ServiceProvider.GOOGLE,
+      code: "123456",
+      state: "123456"
+    }
+    const error = new AppError(ERRORS.OAUTH_INVALID_METHOD);
+    const stateData = {
+      method: "invalid-method" as OAuthMethod,
+    }
+    mockStrategyFactory.getStrategy.mockReturnValue(mockStrategy);
+    mockStateStore.get.mockResolvedValue(stateData);
+
+    await expect(useCase.execute(input.provider, { code: input.code, state: input.state })).rejects.toThrow(error);
+
+    expect(mockStateStore.get).toHaveBeenCalledWith(input.state);
+    expect(mockStateStore.delete).not.toHaveBeenCalled();
+    expect(mockStrategyFactory.getStrategy).not.toHaveBeenCalled();
+    expect(mockStrategy.processCallback).not.toHaveBeenCalled();
   })
 })
