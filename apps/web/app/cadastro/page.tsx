@@ -90,7 +90,6 @@ export default function CadastroPage() {
               }}
               className="space-y-4"
             >
-              {/* Nome */}
               <div className="space-y-2">
                 <Label htmlFor="name">Nome completo</Label>
                 <Input
@@ -108,7 +107,6 @@ export default function CadastroPage() {
                 )}
               </div>
 
-              {/* Email */}
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
                 <Input
@@ -126,7 +124,6 @@ export default function CadastroPage() {
                 )}
               </div>
 
-              {/* Senha */}
               <div className="space-y-2">
                 <Label htmlFor="password">Senha</Label>
                 <Input
@@ -144,7 +141,6 @@ export default function CadastroPage() {
                 )}
               </div>
 
-              {/* Termos */}
               <div className="flex items-start space-x-2">
                 <Checkbox
                   id="terms"
@@ -176,7 +172,6 @@ export default function CadastroPage() {
                 </p>
               )}
 
-              {/* Erro geral */}
               {errors.root && (
                 <Alert variant="destructive">
                   <AlertCircle className="h-4 w-4" />

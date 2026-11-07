@@ -202,7 +202,6 @@ export default function PlaylistManagePage() {
 
   return (
     <div className="p-8 space-y-8">
-      {/* Navegação superior */}
       <div className="flex items-center justify-between">
         <Button variant="ghost" size="sm" asChild className="-ml-2">
           <Link href="/dashboard/playlists">
@@ -224,7 +223,6 @@ export default function PlaylistManagePage() {
         </Button>
       </div>
 
-      {/* Cabeçalho da Playlist */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
         <div className="flex items-start gap-4">
           <div className="h-16 w-16 shrink-0 rounded-xl bg-primary/10 flex items-center justify-center">
@@ -310,7 +308,6 @@ export default function PlaylistManagePage() {
         </div>
       </div>
 
-      {/* Cards de Resumo */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card>
           <CardHeader className="pb-2 flex flex-row items-center justify-between">
@@ -398,7 +395,6 @@ export default function PlaylistManagePage() {
         </Card>
       </div>
 
-      {/* Gerenciador de Faixas */}
       <Card>
         <CardHeader className="space-y-4">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -462,7 +458,6 @@ export default function PlaylistManagePage() {
                     key={item.id}
                     className="p-4 flex flex-col lg:flex-row lg:items-center justify-between gap-4 hover:bg-muted/30 transition-colors"
                   >
-                    {/* Lado Esquerdo: Vídeo do YouTube */}
                     <div className="flex items-center gap-3 min-w-0 flex-1">
                       <span className="text-xs font-mono text-muted-foreground w-6 text-right shrink-0">
                         {(item.position ?? idx) + 1}
@@ -514,7 +509,6 @@ export default function PlaylistManagePage() {
 
                     <ArrowRight className="hidden lg:block h-4 w-4 text-muted-foreground shrink-0" />
 
-                    {/* Lado Direito: Status no Spotify & Ações */}
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between lg:justify-end gap-3 flex-1 min-w-0 pl-9 lg:pl-0">
                       {hasSpotifyMatch ? (
                         <div className="min-w-0 flex-1 lg:text-right">
@@ -583,7 +577,6 @@ export default function PlaylistManagePage() {
                         </div>
                       )}
 
-                      {/* Botões de ação da faixa */}
                       <div className="flex items-center gap-2 shrink-0">
                         {hasSpotifyMatch && item.status === "pending" && (
                           <Button

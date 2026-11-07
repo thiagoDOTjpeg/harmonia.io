@@ -145,7 +145,6 @@ export function TrackMatchDialog({
         </DialogHeader>
 
         <div className="space-y-4 flex-1 overflow-hidden flex flex-col">
-          {/* Vídeo de referência do YouTube */}
           <div className="rounded-lg border border-border bg-muted/30 p-3 flex items-center justify-between gap-4">
             <div className="flex items-center gap-3 min-w-0">
               <img
@@ -198,7 +197,6 @@ export function TrackMatchDialog({
             </Button>
           </div>
 
-          {/* Busca manual ou por Link/URI do Spotify */}
           <form onSubmit={handleSearchSubmit} className="flex gap-2">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -225,7 +223,6 @@ export function TrackMatchDialog({
             )}
           </form>
 
-          {/* Cabeçalho da lista de candidatos */}
           <div className="flex items-center justify-between text-xs text-muted-foreground px-1">
             <span className="flex items-center gap-1.5 font-medium text-foreground">
               <Sparkles className="h-3.5 w-3.5 text-primary" />
@@ -240,7 +237,6 @@ export function TrackMatchDialog({
             )}
           </div>
 
-          {/* Lista de candidatos */}
           <ScrollArea className="h-[290px] rounded-lg border border-border">
             <div className="p-3 space-y-2">
               {isLoading || isFetching ? (

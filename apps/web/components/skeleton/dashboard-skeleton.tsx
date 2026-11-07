@@ -3,13 +3,11 @@ import { Card, CardContent, CardHeader } from "@harmonia/ui/components/card";
 export default function DashboardSkeleton() {
   return (
     <div className="p-8 space-y-8">
-      {/* Header Skeleton */}
       <div className="space-y-2">
         <div className="h-9 bg-muted rounded w-48 animate-pulse"></div>
         <div className="h-5 bg-muted rounded w-72 animate-pulse"></div>
       </div>
 
-      {/* Stats Cards Skeleton */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {[...Array(4)].map((_, i) => (
           <Card key={i}>
@@ -25,7 +23,6 @@ export default function DashboardSkeleton() {
         ))}
       </div>
 
-      {/* Quick Actions & Services Skeleton */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {[...Array(2)].map((_, i) => (
           <Card key={i}>
@@ -45,7 +42,6 @@ export default function DashboardSkeleton() {
         ))}
       </div>
 
-      {/* Recent Activity Skeleton */}
       <Card>
         <CardHeader>
           <div className="h-6 bg-muted rounded w-48 animate-pulse mb-2"></div>

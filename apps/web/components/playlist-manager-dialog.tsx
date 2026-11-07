@@ -44,7 +44,6 @@ export function PlaylistManagerDialog({
         </DialogHeader>
 
         <div className="space-y-6">
-          {/* Platform Links */}
           <div className="flex items-center gap-3">
             <Button variant="outline" size="sm" asChild>
               <a
@@ -70,7 +69,6 @@ export function PlaylistManagerDialog({
             </Button>
           </div>
 
-          {/* Songs List */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-semibold">

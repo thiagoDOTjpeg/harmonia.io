@@ -105,13 +105,6 @@ export function ServiceConnectionDialog({
     }
   };
 
-  // const handleReauthorize = async () => {
-  //   setIsLoading(true);
-  //   // Simulate reauthorization
-  //   await new Promise((resolve) => setTimeout(resolve, 1500));
-  //   setIsLoading(false);
-  // };
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[500px] bg-card border-border">
@@ -135,7 +128,6 @@ export function ServiceConnectionDialog({
         </DialogHeader>
 
         <div className="space-y-6 py-4">
-          {/* Connection Status */}
           <div className="flex items-center justify-between p-4 rounded-lg border border-border bg-background/50">
             <div className="flex items-center gap-3">
               {isConnected ? (
@@ -157,7 +149,7 @@ export function ServiceConnectionDialog({
               {isConnected ? "Ativo" : "Inativo"}
             </Badge>
           </div>
-          {/* Connected Account Info */}
+
           {isConnected && (
             <div className="space-y-3">
               <h4 className="text-sm font-medium uppercase tracking-wider text-muted-foreground">
@@ -210,28 +202,15 @@ export function ServiceConnectionDialog({
           </div>
           <div className="space-y-2 pt-2">
             {isConnected ? (
-              <>
-                {/* <Button
-                  variant="outline"
-                  className="w-full justify-start bg-transparent"
-                  onClick={handleReauthorize}
-                  disabled={isLoading}
-                >
-                  <RefreshCw
-                    className={`mr-2 h-4 w-4 ${isLoading ? "animate-spin" : ""}`}
-                  />
-                  Reautorizar Conexão
-                </Button> */}
-                <Button
-                  variant="outline"
-                  className="w-full justify-start bg-transparent text-destructive hover:text-destructive"
-                  onClick={handleDisconnect}
-                  disabled={isLoading}
-                >
-                  <Unplug className="mr-2 h-4 w-4" />
-                  Desconectar {config.name}
-                </Button>
-              </>
+              <Button
+                variant="outline"
+                className="w-full justify-start bg-transparent text-destructive hover:text-destructive"
+                onClick={handleDisconnect}
+                disabled={isLoading}
+              >
+                <Unplug className="mr-2 h-4 w-4" />
+                Desconectar {config.name}
+              </Button>
             ) : (
               <Button
                 className="w-full"
