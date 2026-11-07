@@ -24,7 +24,7 @@ const instrumentSerif = Instrument_Serif({
 });
 
 export const metadata: Metadata = {
-  title: "Harmonia — Suas playlists do YouTube no Spotify, sem ruído",
+  title: "harmonia ",
   description:
     "Sincronize playlists do YouTube para o Spotify com score de confiança, curadoria visual e processamento assíncrono open-source.",
   icons: {
@@ -38,7 +38,7 @@ export const metadata: Metadata = {
   },
   manifest: "/site.webmanifest",
   openGraph: {
-    title: "Harmonia — Suas playlists do YouTube no Spotify, sem ruído",
+    title: "harmonia",
     description:
       "Sincronize playlists do YouTube para o Spotify com score de confiança, curadoria visual e processamento assíncrono open-source.",
     url: "https://harmonia.io",
@@ -56,7 +56,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Harmonia — Suas playlists do YouTube no Spotify, sem ruído",
+    title: "Harmonia",
     description:
       "Sincronize playlists do YouTube para o Spotify com score de confiança, curadoria visual e processamento assíncrono open-source.",
     images: ["/og-image.png"],
