@@ -2,6 +2,7 @@
 
 import { Footer } from "@/components/footer";
 import { Header } from "@/components/header";
+import { HarmoniaLogo } from "@harmonia/ui";
 import { Button } from "@harmonia/ui/components/button";
 import {
   Card,
@@ -62,6 +63,7 @@ export default function LoginPage() {
 
         <Card className="w-full max-w-md mx-4 card-neo relative z-10">
           <CardHeader className="space-y-1">
+            <HarmoniaLogo className="h-7 w-auto text-harmonia-lime mb-2" />
             <CardTitle className="text-3xl font-display tracking-tight">
               Entrar na sua conta
             </CardTitle>

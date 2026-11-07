@@ -2,6 +2,7 @@
 
 import { Footer } from "@/components/footer";
 import { Header } from "@/components/header";
+import { HarmoniaLogo } from "@harmonia/ui";
 import { Alert, AlertDescription } from "@harmonia/ui/components/alert";
 import { Button } from "@harmonia/ui/components/button";
 import {
@@ -75,6 +76,7 @@ export default function CadastroPage() {
         <div className="absolute top-[40%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary/5 rounded-full blur-[100px] pointer-events-none" />
         <Card className="w-full max-w-md mx-4">
           <CardHeader className="space-y-1">
+            <HarmoniaLogo className="h-7 w-auto text-harmonia-lime mb-2" />
             <CardTitle className="text-2xl">Criar sua conta</CardTitle>
             <CardDescription>
               Comece gratuitamente. Não é necessário cartão de crédito.
