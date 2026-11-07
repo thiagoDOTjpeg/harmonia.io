@@ -16,7 +16,7 @@ const app = express();
 const isDev = process.env.NODE_ENV === 'dev' || process.env.NODE_ENV === 'development';
 
 app.use(RequestIdMiddleware.handle);
-app.use(cors({ origin: true }));
+app.use(cors({ origin: true, credentials: true }));
 app.use(express.json());
 
 if (isDev) {

@@ -10,6 +10,9 @@
 export const AUTH_ROUTES = {
   REGISTER: '/auth/register',
   LOGIN: '/auth/login',
+  REFRESH: '/auth/refresh',
+  LOGOUT: '/auth/logout',
+  ME: '/auth/me',
   REQUEST_RESET: '/auth/request-reset',
   RESET_PASSWORD: '/auth/reset-password',
   SET_PASSWORD: '/auth/set-password',

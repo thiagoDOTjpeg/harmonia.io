@@ -1,14 +1,16 @@
 import { TokenResponse } from '@/types/token';
 import { InvalidCredentialsError } from '@harmonia/shared';
-import jwt from 'jsonwebtoken';
+import jwt, { SignOptions } from 'jsonwebtoken';
 import { ITokenManager } from '../../application/ports/crypto/ITokenManager';
 
 export class JwtTokenManager implements ITokenManager {
   private readonly secret = process.env.JWT_SECRET || 'dev-secret';
-  private readonly expiresIn = '7d';
+  private readonly defaultExpiresIn = '15m';
 
-  sign(payload: object): string {
-    return jwt.sign(payload, this.secret, { expiresIn: this.expiresIn });
+  sign(payload: object, expiresIn: string = this.defaultExpiresIn): string {
+    return jwt.sign(payload, this.secret, {
+      expiresIn: expiresIn as SignOptions['expiresIn'],
+    });
   }
 
   decode(token: string): TokenResponse {

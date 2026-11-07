@@ -1,6 +1,6 @@
 import { TokenResponse } from "@/types/token";
 
 export interface ITokenManager {
-  sign(payload: object): string;
+  sign(payload: object, expiresIn?: string): string;
   decode(token: string): TokenResponse;
 }

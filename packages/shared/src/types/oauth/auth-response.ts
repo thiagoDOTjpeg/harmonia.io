@@ -1,7 +1,7 @@
 import { OAuthMethod } from "../../enum/oauth";
 
 export interface AuthResponse {
-  token: string;
+  token?: string;
   user: {
     id: string;
     email: string | null;
