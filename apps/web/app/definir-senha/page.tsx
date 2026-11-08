@@ -72,21 +72,21 @@ export default function DefinirSenhaPage() {
   };
 
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="flex min-h-screen flex-col bg-background bg-grid-subtle">
       <Header />
 
-      <main className="flex-1 flex items-center justify-center py-16 px-4">
-        <Card className="w-full max-w-md">
-          <CardHeader className="space-y-1">
-            <CardTitle className="text-2xl bg-linear-to-r from-[#00FF88] via-[#00CCFF] to-[#7B2FF7] bg-clip-text text-transparent">
+      <main className="flex-1 flex items-center justify-center py-10 sm:py-16 px-4 relative">
+        <Card className="w-full max-w-md card-sculpted border border-white/[0.08] shadow-2xl relative z-10 rounded-2xl">
+          <CardHeader className="space-y-1 pb-4 border-b border-border/60">
+            <CardTitle className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
               Defina sua senha
             </CardTitle>
-            <CardDescription>
+            <CardDescription className="text-xs text-muted-foreground mt-1">
               Você entrou com OAuth. Defina uma senha para poder fazer login com
               email e senha também.
             </CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="pt-6">
             <Form {...form}>
               <form
                 onSubmit={form.handleSubmit(onSubmit)}
@@ -187,7 +187,7 @@ export default function DefinirSenhaPage() {
 
                 <Button
                   type="submit"
-                  className="w-full"
+                  className="w-full bg-harmonia-lime text-harmonia-green font-bold hover:brightness-105 active:scale-[0.99] transition-all text-xs h-10 shadow-sm cursor-pointer"
                   disabled={!form.formState.isValid}
                 >
                   Definir senha e continuar

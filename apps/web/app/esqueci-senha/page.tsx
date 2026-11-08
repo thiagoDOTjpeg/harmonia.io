@@ -2,6 +2,8 @@
 
 import { Footer } from "@/components/footer";
 import { Header } from "@/components/header";
+import { useAuthContext } from "@/context/AuthContext";
+import { HarmoniaLogo } from "@harmonia/ui";
 import { Button } from "@harmonia/ui/components/button";
 import {
   Card,
@@ -12,9 +14,8 @@ import {
 } from "@harmonia/ui/components/card";
 import { Input } from "@harmonia/ui/components/input";
 import { Label } from "@harmonia/ui/components/label";
-import { useAuthContext } from "@/context/AuthContext";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ArrowLeft, CheckCircle2, Mail } from "lucide-react";
+import { ArrowLeft, ArrowRight, CheckCircle2, Loader2, Mail, ShieldCheck } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -54,7 +55,6 @@ export default function ForgotPasswordPage() {
     if (!formData) return;
 
     const result = await requestResetPassword(formData);
-    console.log(result?.error);
     if (!result?.error) {
       router.push(
         `/esqueci-senha/verificar?email=${encodeURIComponent(formData.email)}`
@@ -67,41 +67,33 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="flex min-h-screen flex-col bg-background bg-grid-subtle">
       <Header />
 
-      <main className="flex-1 flex items-center justify-center py-16 relative overflow-hidden">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary/5 rounded-full blur-[100px] pointer-events-none" />
-
-        <Card className="w-full max-w-md mx-4 card-neo relative z-10">
+      <main className="flex-1 flex items-center justify-center py-10 sm:py-16 px-4 relative">
+        <Card className="w-full max-w-md card-sculpted border border-white/[0.08] shadow-2xl relative z-10 rounded-2xl">
           {step === "input" ? (
             <>
-              <CardHeader className="space-y-1">
-                <div className="flex items-center gap-2 mb-2">
-                  <Link href="/login">
-                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                      <ArrowLeft className="h-4 w-4" />
-                    </Button>
-                  </Link>
-                  <div className="h-12 w-12 rounded-xl bg-linear-to-r from-primary/20 to-primary/5 flex items-center justify-center border border-primary/20">
-                    <Mail className="h-6 w-6 text-primary" />
-                  </div>
+              <CardHeader className="space-y-2 pb-6 border-b border-border/60">
+                <div className="flex items-center justify-between">
+                  <HarmoniaLogo className="h-6 w-auto text-harmonia-lime" />
+                  <span className="text-[10px] font-mono font-semibold px-2 py-0.5 rounded-full bg-harmonia-lime/10 text-harmonia-lime border border-harmonia-lime/30 uppercase tracking-wider">
+                    Segurança
+                  </span>
                 </div>
-                <CardTitle className="text-3xl font-display tracking-tight">
-                  Esqueceu sua senha?
-                </CardTitle>
-                <CardDescription className="leading-relaxed">
-                  Digite seu email e enviaremos um código de verificação para
-                  redefinir sua senha
-                </CardDescription>
+                <div>
+                  <CardTitle className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
+                    Recuperação de Acesso
+                  </CardTitle>
+                  <CardDescription className="text-xs text-muted-foreground mt-1 leading-relaxed">
+                    Informe seu email cadastrado para enviarmos um token de validação.
+                  </CardDescription>
+                </div>
               </CardHeader>
-              <CardContent>
+              <CardContent className="pt-6">
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-                  <div className="space-y-2">
-                    <Label
-                      htmlFor="email"
-                      className="font-display uppercase tracking-wider text-xs"
-                    >
+                  <div className="space-y-1.5">
+                    <Label htmlFor="email" className="text-xs font-semibold text-zinc-300">
                       Email
                     </Label>
                     <Input
@@ -109,25 +101,27 @@ export default function ForgotPasswordPage() {
                       type="email"
                       placeholder="seu@email.com"
                       {...register("email")}
-                      className="bg-muted/50 border-border focus:border-primary transition-colors"
+                      className="bg-background/80 border-border/80 text-xs sm:text-sm focus-visible:ring-harmonia-lime h-9.5"
                     />
                     {errors.email && (
-                      <p className="text-sm text-destructive">
+                      <p className="text-xs text-destructive">
                         {errors.email.message}
                       </p>
                     )}
                   </div>
                   <Button
                     type="submit"
-                    className="w-full bg-linear-to-r from-primary to-secondary text-primary-foreground hover:opacity-90 glow-primary font-display uppercase tracking-wider"
+                    className="w-full bg-harmonia-lime text-harmonia-green font-bold hover:brightness-105 active:scale-[0.99] transition-all text-xs h-10 shadow-sm cursor-pointer"
                   >
                     Continuar
+                    <ArrowRight className="h-4 w-4 ml-1.5" />
                   </Button>
-                  <div className="text-center">
+                  <div className="text-center pt-2">
                     <Link
                       href="/login"
-                      className="text-sm text-muted-foreground hover:text-primary transition-colors"
+                      className="text-xs text-muted-foreground hover:text-foreground transition-colors inline-flex items-center gap-1"
                     >
+                      <ArrowLeft className="h-3 w-3" />
                       Voltar para o login
                     </Link>
                   </div>
@@ -136,50 +130,53 @@ export default function ForgotPasswordPage() {
             </>
           ) : (
             <>
-              <CardHeader className="space-y-1">
-                <div className="flex items-center gap-2 mb-2">
+              <CardHeader className="space-y-2 pb-6 border-b border-border/60">
+                <div className="flex items-center gap-2 mb-1">
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="h-8 w-8 p-0"
+                    className="h-7 w-7 p-0 text-muted-foreground"
                     onClick={handleGoBack}
                   >
                     <ArrowLeft className="h-4 w-4" />
                   </Button>
-                  <div className="h-12 w-12 rounded-xl bg-linear-to-br from-primary/20 to-primary/5 flex items-center justify-center border border-primary/20">
-                    <CheckCircle2 className="h-6 w-6 text-primary" />
-                  </div>
+                  <CardTitle className="text-lg font-bold text-foreground">
+                    Confirmar Endereço
+                  </CardTitle>
                 </div>
-                <CardTitle className="text-3xl font-display tracking-tight">
-                  Confirmar email
-                </CardTitle>
-                <CardDescription className="leading-relaxed">
-                  Você confirma que deseja enviar o código de recuperação para
-                  este email?
+                <CardDescription className="text-xs text-muted-foreground leading-relaxed">
+                  Confirma o envio do código de autorização para o endereço abaixo?
                 </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="flex items-center gap-3 p-4 rounded-lg bg-primary/10 border border-primary/20">
-                  <Mail className="h-5 w-5 text-primary shrink-0" />
+              <CardContent className="pt-6 space-y-5">
+                <div className="flex items-center gap-3 p-3.5 rounded-lg bg-background/80 border border-border/80 font-mono text-xs text-foreground">
+                  <Mail className="h-4 w-4 text-harmonia-lime shrink-0" />
                   <span className="font-semibold break-all">
                     {formData?.email}
                   </span>
                 </div>
 
-                <div className="flex flex-col gap-3">
+                <div className="flex flex-col gap-2.5">
                   <Button
                     onClick={handleConfirm}
                     disabled={isLoading}
-                    className="w-full bg-linear-to-r from-primary to-secondary text-primary-foreground hover:opacity-90 glow-primary font-display uppercase tracking-wider"
+                    className="w-full bg-harmonia-lime text-harmonia-green font-bold hover:brightness-105 active:scale-[0.99] transition-all text-xs h-10 shadow-sm cursor-pointer"
                   >
-                    Sim, enviar código
+                    {isLoading ? (
+                      <span className="flex items-center gap-2">
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        Disparando código...
+                      </span>
+                    ) : (
+                      "Sim, enviar código"
+                    )}
                   </Button>
                   <Button
                     variant="outline"
                     onClick={handleGoBack}
-                    className="w-full bg-transparent border-border hover:bg-muted"
+                    className="w-full border-border/80 bg-background/60 hover:bg-muted/80 text-xs h-9 font-medium"
                   >
-                    Não, corrigir email
+                    Corrigir email
                   </Button>
                 </div>
               </CardContent>

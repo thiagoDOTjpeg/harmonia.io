@@ -2,6 +2,8 @@
 
 import { Footer } from "@/components/footer";
 import { Header } from "@/components/header";
+import { useAuthContext } from "@/context/AuthContext";
+import { OAuthMethod, ServiceProvider } from "@harmonia/shared";
 import { HarmoniaLogo } from "@harmonia/ui";
 import { Alert, AlertDescription } from "@harmonia/ui/components/alert";
 import { Button } from "@harmonia/ui/components/button";
@@ -9,24 +11,21 @@ import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@harmonia/ui/components/card";
 import { Checkbox } from "@harmonia/ui/components/checkbox";
 import { Input } from "@harmonia/ui/components/input";
 import { Label } from "@harmonia/ui/components/label";
-import { useAuthContext } from "@/context/AuthContext";
-import { OAuthMethod, ServiceProvider } from "@harmonia/shared";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { AlertCircle, Loader2 } from "lucide-react";
+import { AlertCircle, ArrowRight, Loader2, ShieldCheck } from "lucide-react";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
 import z from "zod";
 
 const RegisterFormSchema = z.object({
-  name: z.string(),
-  email: z.string().email(),
+  name: z.string().min(2, "Insira seu nome completo"),
+  email: z.string().email("Insira um endereço de email válido"),
   password: z.string().min(8, "A senha deve ter no mínimo 8 caracteres"),
   acceptTerms: z.boolean().refine((val) => val === true, {
     message: "Você deve aceitar os termos de serviço",
@@ -70,19 +69,93 @@ export default function CadastroPage() {
   };
 
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="flex min-h-screen flex-col bg-background bg-grid-subtle">
       <Header />
-      <main className="flex-1 flex items-center justify-center py-8 sm:py-16 px-4">
-        <div className="absolute top-[40%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary/5 rounded-full blur-[100px] pointer-events-none" />
-        <Card className="w-full max-w-md">
-          <CardHeader className="space-y-1">
-            <HarmoniaLogo className="h-7 w-auto text-harmonia-lime mb-2" />
-            <CardTitle className="text-2xl">Criar sua conta</CardTitle>
-            <CardDescription>
-              Comece gratuitamente. Não é necessário cartão de crédito.
-            </CardDescription>
+
+      <main className="flex-1 flex items-center justify-center py-10 sm:py-16 px-4 relative">
+        <Card className="w-full max-w-md card-sculpted border border-white/[0.08] shadow-2xl relative z-10 rounded-2xl">
+          <CardHeader className="space-y-2 pb-6 border-b border-border/60">
+            <div className="flex items-center justify-between">
+              <HarmoniaLogo className="h-6 w-auto text-harmonia-lime" />
+              <span className="text-[10px] font-mono font-semibold px-2 py-0.5 rounded-full bg-harmonia-lime/10 text-harmonia-lime border border-harmonia-lime/30 uppercase tracking-wider">
+                Novo Registro
+              </span>
+            </div>
+            <div>
+              <CardTitle className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
+                Criar Conta no Console
+              </CardTitle>
+              <CardDescription className="text-xs text-muted-foreground mt-1 leading-relaxed">
+                Comece gratuitamente com sincronização contínua de playlists.
+              </CardDescription>
+            </div>
           </CardHeader>
-          <CardContent>
+
+          <CardContent className="pt-6 space-y-6">
+            {/* OAuth Quick Register */}
+            <div className="space-y-2.5">
+              <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                Cadastro Instantâneo com SSO
+              </span>
+              <div className="grid grid-cols-2 gap-3">
+                <Button
+                  variant="outline"
+                  type="button"
+                  className="w-full border-border/80 bg-background/60 hover:bg-muted/80 hover:border-zinc-700 text-xs font-medium cursor-pointer transition-colors"
+                  onClick={() =>
+                    openOAuthPopup(ServiceProvider.GOOGLE, OAuthMethod.register)
+                  }
+                  disabled={isLoading}
+                >
+                  {isLoading ? (
+                    <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />
+                  ) : (
+                    <svg className="mr-2 h-3.5 w-3.5" viewBox="0 0 24 24">
+                      <path
+                        fill="currentColor"
+                        d="M12 0C5.372 0 0 5.373 0 12s5.372 12 12 12c6.627 0 12-5.373 12-12S18.627 0 12 0zm.14 19.018c-3.868 0-7-3.14-7-7.018c0-3.878 3.132-7.018 7-7.018c1.89 0 3.47.697 4.682 1.829l-1.974 1.978v-.004c-.735-.702-1.667-1.062-2.708-1.062c-2.31 0-4.187 1.956-4.187 4.273c0 2.315 1.877 4.277 4.187 4.277c2.096 0 3.522-1.202 3.816-2.852H12.14v-2.737h6.585c.088.47.135.96.135 1.474c0 4.01-2.677 6.86-6.72 6.86z"
+                      />
+                    </svg>
+                  )}
+                  Google
+                </Button>
+
+                <Button
+                  variant="outline"
+                  type="button"
+                  className="w-full border-border/80 bg-background/60 hover:bg-muted/80 hover:border-zinc-700 text-xs font-medium cursor-pointer transition-colors"
+                  onClick={() =>
+                    openOAuthPopup(ServiceProvider.SPOTIFY, OAuthMethod.register)
+                  }
+                  disabled={isLoading}
+                >
+                  {isLoading ? (
+                    <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />
+                  ) : (
+                    <svg className="mr-2 h-3.5 w-3.5 text-emerald-400" viewBox="0 0 24 24">
+                      <path
+                        fill="currentColor"
+                        d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.495 17.303c-.216.353-.674.468-1.027.253c-2.815-1.72-6.359-2.109-10.533-1.155c-.404.092-.809-.163-.901-.567c-.092-.404.163-.809.567-.901c4.571-1.045 8.494-.602 11.641 1.343c.353.216.468.674.253 1.027zm1.468-3.264c-.272.443-.85.583-1.293.311c-3.222-1.98-8.134-2.553-11.946-1.396c-.498.152-1.027-.134-1.179-.633c-.152-.498.134-1.027.633-1.179c4.359-1.323 9.775-.684 13.474 1.594c.443.272.583.85.311 1.293zm.126-3.41c-3.864-2.295-10.238-2.506-13.918-1.388c-.593.18-1.22-.162-1.4-.755c-.18-.593.162-1.22.755-1.4c4.237-1.286 11.28-1.042 15.727 1.597c.533.316.708 1.008.392 1.541c-.316.533-1.008.708-1.541.392z"
+                      />
+                    </svg>
+                  )}
+                  Spotify
+                </Button>
+              </div>
+            </div>
+
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t border-border/80" />
+              </div>
+              <div className="relative flex justify-center text-[10px] uppercase">
+                <span className="bg-card px-3 text-muted-foreground font-mono">
+                  Ou preencha seus dados
+                </span>
+              </div>
+            </div>
+
+            {/* Email / Password Registration Form */}
             <form
               onSubmit={(e) => {
                 e.preventDefault();
@@ -90,25 +163,28 @@ export default function CadastroPage() {
               }}
               className="space-y-4"
             >
-              <div className="space-y-2">
-                <Label htmlFor="name">Nome completo</Label>
+              <div className="space-y-1.5">
+                <Label htmlFor="name" className="text-xs font-semibold text-zinc-300">
+                  Nome completo
+                </Label>
                 <Input
                   id="name"
                   type="text"
-                  placeholder="João Silva"
+                  placeholder="Ex: Ana Souza"
                   autoComplete="name"
                   {...register("name")}
                   disabled={isLoading}
+                  className="bg-background/80 border-border/80 text-xs sm:text-sm focus-visible:ring-harmonia-lime h-9.5"
                 />
                 {errors.name && (
-                  <p className="text-sm text-destructive">
-                    {errors.name.message}
-                  </p>
+                  <p className="text-xs text-destructive">{errors.name.message}</p>
                 )}
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
+              <div className="space-y-1.5">
+                <Label htmlFor="email" className="text-xs font-semibold text-zinc-300">
+                  Email
+                </Label>
                 <Input
                   id="email"
                   type="email"
@@ -116,32 +192,32 @@ export default function CadastroPage() {
                   autoComplete="email"
                   {...register("email")}
                   disabled={isLoading}
+                  className="bg-background/80 border-border/80 text-xs sm:text-sm focus-visible:ring-harmonia-lime h-9.5"
                 />
                 {errors.email && (
-                  <p className="text-sm text-destructive">
-                    {errors.email.message}
-                  </p>
+                  <p className="text-xs text-destructive">{errors.email.message}</p>
                 )}
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="password">Senha</Label>
+              <div className="space-y-1.5">
+                <Label htmlFor="password" className="text-xs font-semibold text-zinc-300">
+                  Senha
+                </Label>
                 <Input
                   id="password"
                   type="password"
-                  placeholder="Mínimo 6 caracteres"
+                  placeholder="Mínimo 8 caracteres"
                   autoComplete="new-password"
                   {...register("password")}
                   disabled={isLoading}
+                  className="bg-background/80 border-border/80 text-xs sm:text-sm focus-visible:ring-harmonia-lime h-9.5"
                 />
                 {errors.password && (
-                  <p className="text-sm text-destructive">
-                    {errors.password.message}
-                  </p>
+                  <p className="text-xs text-destructive">{errors.password.message}</p>
                 )}
               </div>
 
-              <div className="flex items-start space-x-2">
+              <div className="flex items-start space-x-2 pt-1">
                 <Checkbox
                   id="terms"
                   checked={acceptTerms}
@@ -151,25 +227,25 @@ export default function CadastroPage() {
                     })
                   }
                   disabled={isLoading}
+                  className="mt-0.5 border-border/80 data-[state=checked]:bg-harmonia-lime data-[state=checked]:text-harmonia-green"
                 />
                 <label
                   htmlFor="terms"
-                  className="text-sm text-muted-foreground leading-tight cursor-pointer"
+                  className="text-xs text-muted-foreground leading-normal cursor-pointer select-none"
                 >
-                  Aceito os{" "}
-                  <Link href="#" className="text-primary hover:underline">
+                  Concordo com os{" "}
+                  <Link href="#" className="text-harmonia-lime hover:underline font-medium">
                     Termos de Serviço
                   </Link>{" "}
-                  e{" "}
-                  <Link href="#" className="text-primary hover:underline">
+                  e a{" "}
+                  <Link href="#" className="text-harmonia-lime hover:underline font-medium">
                     Política de Privacidade
                   </Link>
+                  .
                 </label>
               </div>
               {errors.acceptTerms && (
-                <p className="text-sm text-destructive">
-                  {errors.acceptTerms.message}
-                </p>
+                <p className="text-xs text-destructive">{errors.acceptTerms.message}</p>
               )}
 
               {errors.root && (
@@ -179,83 +255,41 @@ export default function CadastroPage() {
                 </Alert>
               )}
 
-              <Button type="submit" className="w-full" disabled={isLoading}>
+              <Button
+                type="submit"
+                disabled={isLoading}
+                className="w-full bg-harmonia-lime text-harmonia-green font-bold hover:brightness-105 active:scale-[0.99] transition-all text-xs h-10 shadow-sm cursor-pointer"
+              >
                 {isLoading ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  <span className="flex items-center gap-2">
+                    <Loader2 className="h-4 w-4 animate-spin" />
                     Criando conta...
-                  </>
+                  </span>
                 ) : (
-                  "Criar Conta"
+                  <span className="flex items-center gap-1.5">
+                    Criar Conta no Console
+                    <ArrowRight className="h-4 w-4" />
+                  </span>
                 )}
               </Button>
             </form>
 
-            <div className="relative my-6">
-              <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t border-border" />
-              </div>
-              <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-card px-2 text-muted-foreground">
-                  Ou cadastre-se com
-                </span>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <Button
-                variant="outline"
-                type="button"
-                onClick={() =>
-                  openOAuthPopup(ServiceProvider.GOOGLE, OAuthMethod.register)
-                }
-                disabled={isLoading}
+            <div className="pt-2 border-t border-border/60 flex items-center justify-between text-[11px] text-muted-foreground">
+              <span className="flex items-center gap-1.5">
+                <ShieldCheck className="h-3.5 w-3.5 text-harmonia-lime" />
+                Sem cartão de crédito • 100% Gratuito
+              </span>
+              <Link
+                href="/login"
+                className="hover:text-foreground text-harmonia-lime underline underline-offset-4"
               >
-                {isLoading ? (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                ) : (
-                  <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
-                    <path
-                      fill="currentColor"
-                      d="M12 0C5.372 0 0 5.373 0 12s5.372 12 12 12c6.627 0 12-5.373 12-12S18.627 0 12 0zm.14 19.018c-3.868 0-7-3.14-7-7.018c0-3.878 3.132-7.018 7-7.018c1.89 0 3.47.697 4.682 1.829l-1.974 1.978v-.004c-.735-.702-1.667-1.062-2.708-1.062c-2.31 0-4.187 1.956-4.187 4.273c0 2.315 1.877 4.277 4.187 4.277c2.096 0 3.522-1.202 3.816-2.852H12.14v-2.737h6.585c.088.47.135.96.135 1.474c0 4.01-2.677 6.86-6.72 6.86z"
-                    />
-                  </svg>
-                )}
-                Google
-              </Button>
-              <Button
-                variant="outline"
-                type="button"
-                onClick={() =>
-                  openOAuthPopup(ServiceProvider.SPOTIFY, OAuthMethod.register)
-                }
-                disabled={isLoading}
-              >
-                {isLoading ? (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                ) : (
-                  <svg
-                    className="mr-2 h-4 w-4"
-                    viewBox="0 0 24 24"
-                    fill="currentColor"
-                  >
-                    <path d="M12 0c-6.627 0-12 5.373-12 12s5.373 12 12 12 12-5.373 12-12-5.373-12-12-12zm6.273 17.15c-.273.409-.773.545-1.182.273-2.682-1.636-6.091-2-10.045-1.091-.455.091-.818-.273-.909-.727-.091-.455.273-.818.727-.909 4.364-1 8.273-.545 11.273 1.364.409.273.545.773.273 1.182zm1.636-3.818c-.364.545-.909.727-1.455.364-3.182-1.909-7.273-2.364-11.818-1.091-.545.091-.909-.364-1-.909-.091-.545.364-.909.909-1 4.727-1.364 9.364-.818 12.818 1.364.545.273.727.818.364 1.364zm.455-4.091c-.455.636-1.182.818-1.818.364-3.636-2.182-8.182-2.727-12.727-1.455-.636.091-1.091-.364-1.182-.909-.091-.636.364-1.091.909-1.182 5.091-1.364 10.182-.818 14.364 1.727.636.273.818.909.455 1.545z" />
-                  </svg>
-                )}
-                Spotify
-              </Button>
-            </div>
-          </CardContent>
-          <CardFooter className="flex flex-col space-y-4">
-            <div className="text-sm text-muted-foreground text-center">
-              Já tem uma conta?{" "}
-              <Link href="/login" className="text-primary hover:underline">
-                Faça login
+                Já tenho conta →
               </Link>
             </div>
-          </CardFooter>
+          </CardContent>
         </Card>
       </main>
+
       <Footer />
     </div>
   );

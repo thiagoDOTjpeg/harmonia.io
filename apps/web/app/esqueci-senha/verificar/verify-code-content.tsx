@@ -126,13 +126,11 @@ export default function VerifyCodeContent() {
   };
 
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="flex min-h-screen flex-col bg-background bg-grid-subtle">
       <Header />
 
-      <main className="flex-1 flex items-center justify-center pt-32 pb-16 relative overflow-hidden">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-secondary/5 rounded-full blur-[100px] pointer-events-none" />
-
-        <Card className="w-full max-w-md mx-4 card-neo relative z-20">
+      <main className="flex-1 flex items-center justify-center py-10 sm:py-16 px-4 relative">
+        <Card className="w-full max-w-md card-sculpted border border-white/[0.08] shadow-2xl relative z-10 rounded-2xl">
           <CardHeader className="space-y-1">
             <div className="flex items-center gap-2 mb-2">
               <Link href="/esqueci-senha">
@@ -205,7 +203,7 @@ export default function VerifyCodeContent() {
                   <Button
                     type="submit"
                     disabled={code.some((digit) => !digit)}
-                    className="w-full bg-linear-to-r from-secondary to-accent text-secondary-foreground hover:opacity-90 glow-secondary font-display uppercase tracking-wider"
+                    className="w-full bg-harmonia-lime text-harmonia-green font-bold hover:brightness-105 active:scale-[0.99] transition-all text-xs h-10 shadow-sm cursor-pointer"
                   >
                     Verificar código
                   </Button>
@@ -271,7 +269,7 @@ export default function VerifyCodeContent() {
                   />
                   <Button
                     type="submit"
-                    className="w-full bg-linear-to-r from-secondary to-accent text-secondary-foreground hover:opacity-90 glow-secondary font-display uppercase tracking-wider"
+                    className="w-full bg-harmonia-lime text-harmonia-green font-bold hover:brightness-105 active:scale-[0.99] transition-all text-xs h-10 shadow-sm cursor-pointer"
                   >
                     Redefinir senha
                   </Button>

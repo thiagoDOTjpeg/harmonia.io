@@ -1,10 +1,9 @@
 "use client";
 
+import { ConsoleHeader } from "@/components/console-header";
+import { ConsoleSubnav } from "@/components/console-subnav";
 import { DashboardSidebar } from "@/components/dashboard-sidebar";
 import { OnboardingTourProvider } from "@/components/onboarding-tour";
-import { Button, HarmoniaLogo } from "@harmonia/ui";
-import { Menu } from "lucide-react";
-import Link from "next/link";
 import React, { useState } from "react";
 
 export default function DashboardLayout({
@@ -16,34 +15,23 @@ export default function DashboardLayout({
 
   return (
     <OnboardingTourProvider>
-      <div className="flex min-h-screen flex-col md:flex-row bg-background">
-        <header className="sticky top-0 z-40 flex h-14 items-center justify-between border-b border-border bg-card/95 px-4 backdrop-blur md:hidden">
-          <Link
-            href="/dashboard"
-            className="hover:opacity-90 transition-opacity"
-            aria-label="Harmonia Dashboard"
-          >
-            <HarmoniaLogo className="h-6 w-auto text-harmonia-lime" />
-          </Link>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-9 w-9 text-foreground"
-            onClick={() => setMobileOpen(true)}
-            aria-label="Abrir menu de navegação"
-          >
-            <Menu className="h-5 w-5" />
-          </Button>
-        </header>
+      <div className="flex min-h-screen flex-col bg-background">
+        {/* Global Enterprise Console Header (Cloudflare style) */}
+        <ConsoleHeader onOpenMobileSidebar={() => setMobileOpen(true)} />
 
-        <DashboardSidebar
-          mobileOpen={mobileOpen}
-          onCloseMobile={() => setMobileOpen(false)}
-        />
+        {/* Subnav Tabs Bar */}
+        <ConsoleSubnav />
 
-        <main className="flex-1 overflow-y-auto min-w-0 bg-background">
-          {children}
-        </main>
+        <div className="flex flex-1 min-h-[calc(100vh-6.5rem)]">
+          <DashboardSidebar
+            mobileOpen={mobileOpen}
+            onCloseMobile={() => setMobileOpen(false)}
+          />
+
+          <main className="flex-1 overflow-y-auto min-w-0 bg-background/90">
+            {children}
+          </main>
+        </div>
       </div>
     </OnboardingTourProvider>
   );
