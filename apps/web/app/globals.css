@@ -1,3 +1,41 @@
 @import "@harmonia/ui/styles/globals.css";
 @source "./**/*.{ts,tsx}";
 @source "../components/**/*.{ts,tsx}";
+
+@keyframes authSlideFromRight {
+  0% {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes authSlideFromLeft {
+  0% {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.animate-auth-slide-right {
+  animation: authSlideFromRight 0.28s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.animate-auth-slide-left {
+  animation: authSlideFromLeft 0.28s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-auth-slide-right,
+  .animate-auth-slide-left {
+    animation: none;
+  }
+}
+
