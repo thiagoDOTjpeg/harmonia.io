@@ -1,15 +1,9 @@
 "use client";
 
-import { Footer } from "@/components/footer";
-import { Header } from "@/components/header";
+import { AuthShowcase } from "@/components/auth-showcase";
+import { useAuthContext } from "@/context/AuthContext";
+import { HarmoniaLogo, HarmoniaMark } from "@harmonia/ui";
 import { Button } from "@harmonia/ui/components/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@harmonia/ui/components/card";
 import {
   Form,
   FormControl,
@@ -19,9 +13,9 @@ import {
   FormMessage,
 } from "@harmonia/ui/components/form";
 import { Input } from "@harmonia/ui/components/input";
-import { useAuthContext } from "@/context/AuthContext";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { AlertCircle, CheckCircle2, Eye, EyeOff } from "lucide-react";
+import { AlertCircle, ArrowLeft, ArrowRight, CheckCircle2, Eye, EyeOff, ShieldCheck } from "lucide-react";
+import Link from "next/link";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -60,158 +54,158 @@ export default function DefinirSenhaPage() {
   const password = form.watch("password");
   const confirmPassword = form.watch("confirmPassword");
 
-  const hasMinLength = password.length >= 8;
   const hasUpperCase = /[A-Z]/.test(password);
   const hasLowerCase = /[a-z]/.test(password);
   const hasNumber = /[0-9]/.test(password);
-  const passwordsMatch =
-    password === confirmPassword && confirmPassword.length > 0;
+  const hasMinLength = password.length >= 8;
+  const passwordsMatch = password === confirmPassword && password.length > 0;
 
-  const onSubmit = (data: PasswordFormData) => {
-    setPassword({ newPassword: data.confirmPassword });
+  const onSubmit = async (data: PasswordFormData) => {
+    await setPassword({ password: data.password });
   };
 
   return (
-    <div className="flex min-h-screen flex-col bg-background bg-grid-subtle">
-      <Header />
+    <div className="min-h-screen w-full grid grid-cols-1 lg:grid-cols-2 bg-background">
+      <AuthShowcase />
 
-      <main className="flex-1 flex items-center justify-center py-10 sm:py-16 px-4 relative">
-        <Card className="w-full max-w-md card-sculpted border border-white/[0.08] shadow-2xl relative z-10 rounded-2xl">
-          <CardHeader className="space-y-1 pb-4 border-b border-border/60">
-            <CardTitle className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
-              Defina sua senha
-            </CardTitle>
-            <CardDescription className="text-xs text-muted-foreground mt-1">
-              Você entrou com OAuth. Defina uma senha para poder fazer login com
-              email e senha também.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="pt-6">
-            <Form {...form}>
-              <form
-                onSubmit={form.handleSubmit(onSubmit)}
-                className="space-y-4"
+      <div className="flex flex-col justify-between p-6 sm:p-10 lg:p-14 bg-background relative overflow-y-auto">
+        <div className="flex items-center justify-between w-full mb-8">
+          <Link
+            href="/"
+            className="flex items-center gap-2 lg:hidden hover:opacity-90 transition-opacity"
+            aria-label="Harmonia Início"
+          >
+            <HarmoniaLogo className="h-6 w-auto text-harmonia-lime" />
+          </Link>
+          <div className="hidden lg:block" />
+
+          <Link
+            href="/dashboard"
+            className="text-xs text-muted-foreground hover:text-foreground inline-flex items-center gap-1 ml-auto font-medium"
+          >
+            Pular para o console →
+          </Link>
+        </div>
+
+        <div className="w-full max-w-sm sm:max-w-md mx-auto my-auto space-y-6">
+          <div className="space-y-1.5">
+            <div className="flex items-center gap-2 mb-3">
+              <div className="h-8 w-8 rounded-lg bg-harmonia-lime/10 border border-harmonia-lime/20 flex items-center justify-center text-harmonia-lime">
+                <HarmoniaMark className="h-4.5 w-auto" />
+              </div>
+              <span className="text-[11px] font-mono font-semibold px-2 py-0.5 rounded-full bg-harmonia-lime/10 text-harmonia-lime border border-harmonia-lime/30 uppercase tracking-wider">
+                Credencial
+              </span>
+            </div>
+            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground">
+              Defina sua Senha
+            </h1>
+            <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
+              Você acessou via provedor OAuth. Crie uma senha para acessar diretamente com email.
+            </p>
+          </div>
+
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              <FormField
+                control={form.control}
+                name="password"
+                render={({ field }) => (
+                  <FormItem className="space-y-1.5">
+                    <FormLabel className="text-xs font-semibold text-zinc-300">Nova Senha</FormLabel>
+                    <FormControl>
+                      <div className="relative">
+                        <Input
+                          type={showPassword ? "text" : "password"}
+                          placeholder="Mínimo 8 caracteres"
+                          className="bg-card/70 border-border/80 text-xs sm:text-sm focus-visible:ring-harmonia-lime h-10 pr-10"
+                          {...field}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowPassword(!showPassword)}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground cursor-pointer"
+                        >
+                          {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                        </button>
+                      </div>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="confirmPassword"
+                render={({ field }) => (
+                  <FormItem className="space-y-1.5">
+                    <FormLabel className="text-xs font-semibold text-zinc-300">Confirmar Nova Senha</FormLabel>
+                    <FormControl>
+                      <div className="relative">
+                        <Input
+                          type={showConfirmPassword ? "text" : "password"}
+                          placeholder="Digite a senha novamente"
+                          className="bg-card/70 border-border/80 text-xs sm:text-sm focus-visible:ring-harmonia-lime h-10 pr-10"
+                          {...field}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground cursor-pointer"
+                        >
+                          {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                        </button>
+                      </div>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <div className="p-3 rounded-lg border border-border/80 bg-muted/20 space-y-1.5 text-xs font-mono">
+                <PasswordRequirement met={hasMinLength} text="Pelo menos 8 caracteres" />
+                <PasswordRequirement met={hasUpperCase} text="Uma letra maiúscula" />
+                <PasswordRequirement met={hasLowerCase} text="Uma letra minúscula" />
+                <PasswordRequirement met={hasNumber} text="Um número" />
+                {confirmPassword && (
+                  <PasswordRequirement met={passwordsMatch} text="As senhas correspondem" />
+                )}
+              </div>
+
+              <Button
+                type="submit"
+                disabled={!form.formState.isValid}
+                className="w-full bg-harmonia-lime text-harmonia-green font-bold hover:brightness-105 active:scale-[0.99] transition-all text-xs sm:text-sm h-11 shadow-sm cursor-pointer"
               >
-                <FormField
-                  control={form.control}
-                  name="password"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Nova senha</FormLabel>
-                      <FormControl>
-                        <div className="relative">
-                          <Input
-                            type={showPassword ? "text" : "password"}
-                            placeholder="Digite sua nova senha"
-                            className="pr-10"
-                            {...field}
-                          />
-                          <button
-                            type="button"
-                            onClick={() => setShowPassword(!showPassword)}
-                            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                          >
-                            {showPassword ? (
-                              <EyeOff className="h-4 w-4" />
-                            ) : (
-                              <Eye className="h-4 w-4" />
-                            )}
-                          </button>
-                        </div>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                Definir Senha e Acessar
+                <ArrowRight className="h-4 w-4 ml-1.5" />
+              </Button>
+            </form>
+          </Form>
+        </div>
 
-                <FormField
-                  control={form.control}
-                  name="confirmPassword"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Confirme a senha</FormLabel>
-                      <FormControl>
-                        <div className="relative">
-                          <Input
-                            type={showConfirmPassword ? "text" : "password"}
-                            placeholder="Digite a senha novamente"
-                            className="pr-10"
-                            {...field}
-                          />
-                          <button
-                            type="button"
-                            onClick={() =>
-                              setShowConfirmPassword(!showConfirmPassword)
-                            }
-                            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                          >
-                            {showConfirmPassword ? (
-                              <EyeOff className="h-4 w-4" />
-                            ) : (
-                              <Eye className="h-4 w-4" />
-                            )}
-                          </button>
-                        </div>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <div className="space-y-2 p-3 rounded-lg bg-muted/50 border border-border">
-                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                    Requisitos da senha:
-                  </p>
-                  <div className="space-y-1.5">
-                    <PasswordRequirement
-                      met={hasMinLength}
-                      text="Mínimo de 8 caracteres"
-                    />
-                    <PasswordRequirement
-                      met={hasUpperCase}
-                      text="Uma letra maiúscula"
-                    />
-                    <PasswordRequirement
-                      met={hasLowerCase}
-                      text="Uma letra minúscula"
-                    />
-                    <PasswordRequirement met={hasNumber} text="Um número" />
-                    {confirmPassword && (
-                      <PasswordRequirement
-                        met={passwordsMatch}
-                        text="As senhas correspondem"
-                      />
-                    )}
-                  </div>
-                </div>
-
-                <Button
-                  type="submit"
-                  className="w-full bg-harmonia-lime text-harmonia-green font-bold hover:brightness-105 active:scale-[0.99] transition-all text-xs h-10 shadow-sm cursor-pointer"
-                  disabled={!form.formState.isValid}
-                >
-                  Definir senha e continuar
-                </Button>
-              </form>
-            </Form>
-          </CardContent>
-        </Card>
-      </main>
-
-      <Footer />
+        <div className="w-full max-w-sm sm:max-w-md mx-auto pt-8 flex items-center justify-between text-[11px] font-mono text-zinc-500 border-t border-border/50">
+          <span className="flex items-center gap-1.5">
+            <ShieldCheck className="h-3.5 w-3.5 text-harmonia-lime" />
+            Criptografia Bcrypt com Salt
+          </span>
+          <span className="text-zinc-600">Harmonia Cloud</span>
+        </div>
+      </div>
     </div>
   );
 }
 
 function PasswordRequirement({ met, text }: { met: boolean; text: string }) {
   return (
-    <div className="flex items-center gap-2 text-sm">
+    <div className="flex items-center gap-2 text-[11px]">
       {met ? (
-        <CheckCircle2 className="h-4 w-4 text-[#00FF88]" />
+        <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400" />
       ) : (
-        <AlertCircle className="h-4 w-4 text-muted-foreground" />
+        <AlertCircle className="h-3.5 w-3.5 text-muted-foreground" />
       )}
-      <span className={met ? "text-foreground" : "text-muted-foreground"}>
+      <span className={met ? "text-foreground font-medium" : "text-muted-foreground"}>
         {text}
       </span>
     </div>

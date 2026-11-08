@@ -1,15 +1,8 @@
 "use client";
 
-import { Footer } from "@/components/footer";
-import { Header } from "@/components/header";
+import { AuthShowcase } from "@/components/auth-showcase";
+import { HarmoniaLogo, HarmoniaMark } from "@harmonia/ui";
 import { Button } from "@harmonia/ui/components/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@harmonia/ui/components/card";
 import {
   Form,
   FormControl,
@@ -20,7 +13,7 @@ import {
 } from "@harmonia/ui/components/form";
 import { Input } from "@harmonia/ui/components/input";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ArrowLeft, Mail, Shield } from "lucide-react";
+import { ArrowLeft, ArrowRight, Mail, Shield, ShieldCheck } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
@@ -74,25 +67,18 @@ export default function VerifyCodeContent() {
   });
 
   useEffect(() => {
-    if (step === "code") {
-      inputRefs.current[0]?.focus();
-    } else if (step === "password") {
-      setTimeout(() => {
-        resetForm.setFocus("newPassword");
-      }, 100);
-    }
-  }, [step, resetForm]);
-
-  useEffect(() => {
-    verifyForm.setValue("code", code.join(""));
-  }, [code, verifyForm]);
+    inputRefs.current[0]?.focus();
+  }, []);
 
   const handleCodeChange = (index: number, value: string) => {
-    if (value && !/^\d$/.test(value)) return;
+    if (!/^\d*$/.test(value)) return;
 
     const newCode = [...code];
-    newCode[index] = value;
+    newCode[index] = value.slice(-1);
     setCode(newCode);
+
+    const fullCode = newCode.join("");
+    verifyForm.setValue("code", fullCode);
 
     if (value && index < 5) {
       inputRefs.current[index + 1]?.focus();
@@ -108,179 +94,185 @@ export default function VerifyCodeContent() {
     }
   };
 
-  const handleVerifyCode = (data: VerifyCodeFormData) => {
-    console.log("[v0] Verifying code:", data.code);
+  const handleVerifyCode = async (data: VerifyCodeFormData) => {
     setStep("password");
   };
 
-  const handleResetPassword = (data: ResetPasswordFormData) => {
-    console.log("[v0] Resetting password for:", email);
-    router.push("/login");
+  const handleResetPassword = async (data: ResetPasswordFormData) => {
+    router.push("/login?reset=success");
   };
 
-  const handleResendCode = () => {
-    console.log("[v0] Resending code to:", email);
+  const handleResendCode = async () => {
     setCode(["", "", "", "", "", ""]);
-    verifyForm.reset();
+    verifyForm.setValue("code", "");
     inputRefs.current[0]?.focus();
   };
 
   return (
-    <div className="flex min-h-screen flex-col bg-background bg-grid-subtle">
-      <Header />
+    <div className="min-h-screen w-full grid grid-cols-1 lg:grid-cols-2 bg-background">
+      <AuthShowcase />
 
-      <main className="flex-1 flex items-center justify-center py-10 sm:py-16 px-4 relative">
-        <Card className="w-full max-w-md card-sculpted border border-white/[0.08] shadow-2xl relative z-10 rounded-2xl">
-          <CardHeader className="space-y-1">
-            <div className="flex items-center gap-2 mb-2">
-              <Link href="/esqueci-senha">
-                <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                  <ArrowLeft className="h-4 w-4" />
-                </Button>
-              </Link>
-              <div className="h-12 w-12 rounded-xl bg-linear-to-br from-secondary/20 to-secondary/5 flex items-center justify-center border border-secondary/20">
-                <Shield className="h-6 w-6 text-secondary" />
+      <div className="flex flex-col justify-between p-6 sm:p-10 lg:p-14 bg-background relative overflow-y-auto">
+        <div className="flex items-center justify-between w-full mb-8">
+          <Link
+            href="/"
+            className="flex items-center gap-2 lg:hidden hover:opacity-90 transition-opacity"
+            aria-label="Harmonia Início"
+          >
+            <HarmoniaLogo className="h-6 w-auto text-harmonia-lime" />
+          </Link>
+          <div className="hidden lg:block" />
+
+          <Link
+            href="/esqueci-senha"
+            className="text-xs text-muted-foreground hover:text-foreground inline-flex items-center gap-1 ml-auto font-medium"
+          >
+            <ArrowLeft className="h-3.5 w-3.5" />
+            Voltar
+          </Link>
+        </div>
+
+        <div className="w-full max-w-sm sm:max-w-md mx-auto my-auto space-y-6">
+          <div className="space-y-1.5">
+            <div className="flex items-center gap-2 mb-3">
+              <div className="h-8 w-8 rounded-lg bg-harmonia-lime/10 border border-harmonia-lime/20 flex items-center justify-center text-harmonia-lime">
+                <HarmoniaMark className="h-4.5 w-auto" />
               </div>
+              <span className="text-[11px] font-mono font-semibold px-2 py-0.5 rounded-full bg-harmonia-lime/10 text-harmonia-lime border border-harmonia-lime/30 uppercase tracking-wider">
+                Verificação
+              </span>
             </div>
-            <CardTitle className="text-3xl font-display tracking-tight">
-              {step === "code" ? "Verificar código" : "Nova senha"}
-            </CardTitle>
-            <CardDescription className="leading-relaxed">
+            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground">
+              {step === "code" ? "Verificar Código" : "Criar Nova Senha"}
+            </h1>
+            <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
               {step === "code"
-                ? "Digite o código de 6 dígitos que foi enviado para seu email"
-                : "Crie uma nova senha segura para sua conta"}
-            </CardDescription>
-          </CardHeader>
+                ? `Digite o código de 6 dígitos enviado para ${email}`
+                : "Defina sua nova senha para acessar o console."}
+            </p>
+          </div>
 
-          <CardContent key={step}>
-            {step === "code" ? (
-              <Form {...verifyForm}>
-                <form
-                  onSubmit={verifyForm.handleSubmit(handleVerifyCode)}
-                  className="space-y-6"
-                >
-                  <FormField
-                    control={verifyForm.control}
-                    name="code"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="font-display uppercase tracking-wider text-xs text-center block">
-                          Código de verificação
-                        </FormLabel>
-                        <FormControl>
-                          <div className="space-y-4">
-                            <div className="flex gap-2 justify-center">
-                              {code.map((digit, index) => (
-                                <Input
-                                  key={index}
-                                  ref={(el) => {
-                                    inputRefs.current[index] = el;
-                                  }}
-                                  type="text"
-                                  inputMode="numeric"
-                                  maxLength={1}
-                                  value={digit}
-                                  onChange={(e) =>
-                                    handleCodeChange(index, e.target.value)
-                                  }
-                                  onKeyDown={(e) => handleKeyDown(index, e)}
-                                  className="w-12 h-14 text-center text-2xl font-bold bg-muted/50 border-border focus:border-secondary transition-colors"
-                                />
-                              ))}
-                            </div>
-                            <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
-                              <Mail className="h-4 w-4 text-secondary" />
-                              <span>
-                                Código enviado para <strong>{email}</strong>
-                              </span>
-                            </div>
-                          </div>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <Button
-                    type="submit"
-                    disabled={code.some((digit) => !digit)}
-                    className="w-full bg-harmonia-lime text-harmonia-green font-bold hover:brightness-105 active:scale-[0.99] transition-all text-xs h-10 shadow-sm cursor-pointer"
-                  >
-                    Verificar código
-                  </Button>
-                  <div className="text-center">
-                    <button
-                      type="button"
-                      onClick={handleResendCode}
-                      className="text-sm text-muted-foreground hover:text-secondary transition-colors"
-                    >
-                      Não recebeu o código?{" "}
-                      <span className="font-semibold">Reenviar</span>
-                    </button>
-                  </div>
-                </form>
-              </Form>
-            ) : (
-              <Form {...resetForm}>
-                <form
-                  onSubmit={resetForm.handleSubmit(handleResetPassword)}
-                  className="space-y-4"
-                >
-                  <FormField
-                    control={resetForm.control}
-                    name="newPassword"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="font-display uppercase tracking-wider text-xs">
-                          Nova senha
-                        </FormLabel>
-                        <FormControl>
-                          <Input
-                            type="password"
-                            placeholder="Digite sua nova senha"
-                            className="bg-muted/50 border-border focus:border-secondary transition-colors"
-                            autoComplete="new-password"
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={resetForm.control}
-                    name="confirmPassword"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="font-display uppercase tracking-wider text-xs">
-                          Confirmar senha
-                        </FormLabel>
-                        <FormControl>
-                          <Input
-                            type="password"
-                            placeholder="Digite novamente sua nova senha"
-                            className="bg-muted/50 border-border focus:border-secondary transition-colors"
-                            autoComplete="new-password"
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <Button
-                    type="submit"
-                    className="w-full bg-harmonia-lime text-harmonia-green font-bold hover:brightness-105 active:scale-[0.99] transition-all text-xs h-10 shadow-sm cursor-pointer"
-                  >
-                    Redefinir senha
-                  </Button>
-                </form>
-              </Form>
-            )}
-          </CardContent>
-        </Card>
-      </main>
+          {step === "code" ? (
+            <Form {...verifyForm}>
+              <form
+                onSubmit={verifyForm.handleSubmit(handleVerifyCode)}
+                className="space-y-6"
+              >
+                <FormField
+                  control={verifyForm.control}
+                  name="code"
+                  render={() => (
+                    <FormItem className="space-y-3">
+                      <FormControl>
+                        <div className="flex gap-2 justify-center">
+                          {code.map((digit, index) => (
+                            <Input
+                              key={index}
+                              ref={(el) => {
+                                inputRefs.current[index] = el;
+                              }}
+                              type="text"
+                              inputMode="numeric"
+                              maxLength={1}
+                              value={digit}
+                              onChange={(e) =>
+                                handleCodeChange(index, e.target.value)
+                              }
+                              onKeyDown={(e) => handleKeyDown(index, e)}
+                              className="w-11 sm:w-12 h-14 text-center text-2xl font-mono font-bold bg-card/70 border-border/80 focus-visible:ring-harmonia-lime"
+                            />
+                          ))}
+                        </div>
+                      </FormControl>
+                      <FormMessage className="text-center text-xs" />
+                    </FormItem>
+                  )}
+                />
 
-      <Footer />
+                <Button
+                  type="submit"
+                  disabled={code.some((digit) => !digit)}
+                  className="w-full bg-harmonia-lime text-harmonia-green font-bold hover:brightness-105 active:scale-[0.99] transition-all text-xs sm:text-sm h-11 shadow-sm cursor-pointer"
+                >
+                  Verificar Código e Avançar
+                  <ArrowRight className="h-4 w-4 ml-1.5" />
+                </Button>
+
+                <div className="text-center pt-2">
+                  <button
+                    type="button"
+                    onClick={handleResendCode}
+                    className="text-xs text-muted-foreground hover:text-harmonia-lime transition-colors cursor-pointer"
+                  >
+                    Não recebeu o código? <span className="font-semibold underline">Reenviar</span>
+                  </button>
+                </div>
+              </form>
+            </Form>
+          ) : (
+            <Form {...resetForm}>
+              <form
+                onSubmit={resetForm.handleSubmit(handleResetPassword)}
+                className="space-y-4"
+              >
+                <FormField
+                  control={resetForm.control}
+                  name="newPassword"
+                  render={({ field }) => (
+                    <FormItem className="space-y-1.5">
+                      <FormLabel className="text-xs font-semibold text-zinc-300">Nova Senha</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="password"
+                          placeholder="Mínimo 8 caracteres"
+                          className="bg-card/70 border-border/80 text-xs sm:text-sm focus-visible:ring-harmonia-lime h-10"
+                          autoComplete="new-password"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={resetForm.control}
+                  name="confirmPassword"
+                  render={({ field }) => (
+                    <FormItem className="space-y-1.5">
+                      <FormLabel className="text-xs font-semibold text-zinc-300">Confirmar Nova Senha</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="password"
+                          placeholder="Repita sua nova senha"
+                          className="bg-card/70 border-border/80 text-xs sm:text-sm focus-visible:ring-harmonia-lime h-10"
+                          autoComplete="new-password"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <Button
+                  type="submit"
+                  className="w-full bg-harmonia-lime text-harmonia-green font-bold hover:brightness-105 active:scale-[0.99] transition-all text-xs sm:text-sm h-11 shadow-sm cursor-pointer"
+                >
+                  Salvar Nova Senha e Conectar
+                  <ArrowRight className="h-4 w-4 ml-1.5" />
+                </Button>
+              </form>
+            </Form>
+          )}
+        </div>
+
+        <div className="w-full max-w-sm sm:max-w-md mx-auto pt-8 flex items-center justify-between text-[11px] font-mono text-zinc-500 border-t border-border/50">
+          <span className="flex items-center gap-1.5">
+            <ShieldCheck className="h-3.5 w-3.5 text-harmonia-lime" />
+            Criptografia Ponta a Ponta
+          </span>
+          <span className="text-zinc-600">Harmonia Cloud</span>
+        </div>
+      </div>
     </div>
   );
 }
