@@ -79,9 +79,6 @@ export default function LoginPage() {
               <div className="h-8 w-8 rounded-lg bg-harmonia-lime/10 border border-harmonia-lime/20 flex items-center justify-center text-harmonia-lime">
                 <HarmoniaMark className="h-4.5 w-auto" />
               </div>
-              <span className="text-[11px] font-mono font-semibold px-2 py-0.5 rounded-full bg-harmonia-lime/10 text-harmonia-lime border border-harmonia-lime/30 uppercase tracking-wider">
-                Enterprise SSO
-              </span>
             </div>
 
             <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground">
@@ -231,13 +228,10 @@ export default function LoginPage() {
           </form>
         </div>
 
-        {/* Bottom Security Assurance (Minimalist) */}
+        {/* Bottom Assurance (Minimalist) */}
         <div className="w-full max-w-sm sm:max-w-md mx-auto pt-8 flex items-center justify-between text-[11px] font-mono text-zinc-500 border-t border-border/50">
-          <span className="flex items-center gap-1.5">
-            <ShieldCheck className="h-3.5 w-3.5 text-harmonia-lime" />
-            OAuth 2.0 PKCE • TLS 1.3
-          </span>
           <span className="text-zinc-600">Harmonia Cloud</span>
+          <span className="text-zinc-600">v1.0.0</span>
         </div>
       </div>
     </div>
