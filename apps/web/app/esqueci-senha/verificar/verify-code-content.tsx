@@ -1,7 +1,7 @@
 "use client";
 
 import { AuthShowcase } from "@/components/auth-showcase";
-import { HarmoniaLogo, HarmoniaMark } from "@harmonia/ui";
+import { HarmoniaLogo } from "@harmonia/ui";
 import { Button } from "@harmonia/ui/components/button";
 import {
   Form,
@@ -13,7 +13,7 @@ import {
 } from "@harmonia/ui/components/form";
 import { Input } from "@harmonia/ui/components/input";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ArrowLeft, ArrowRight, Mail, Shield, ShieldCheck } from "lucide-react";
+import { ArrowLeft, ArrowRight, Eye, EyeOff, ShieldCheck } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
@@ -49,6 +49,8 @@ export default function VerifyCodeContent() {
 
   const [code, setCode] = useState(["", "", "", "", "", ""]);
   const [step, setStep] = useState<"code" | "password">("code");
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   const verifyForm = useForm<VerifyCodeFormData>({
@@ -112,8 +114,8 @@ export default function VerifyCodeContent() {
     <div className="min-h-screen w-full grid grid-cols-1 lg:grid-cols-2 bg-background">
       <AuthShowcase />
 
-      <div className="flex flex-col justify-between p-6 sm:p-10 lg:p-14 bg-background relative overflow-y-auto">
-        <div className="flex items-center justify-between w-full mb-8">
+      <div className="flex flex-col justify-between p-6 sm:p-10 lg:p-12 xl:p-16 bg-background relative overflow-y-auto">
+        <div className="flex items-center justify-between w-full mb-6 lg:mb-0">
           <Link
             href="/"
             className="flex items-center gap-2 lg:hidden hover:opacity-90 transition-opacity"
@@ -125,30 +127,22 @@ export default function VerifyCodeContent() {
 
           <Link
             href="/esqueci-senha"
-            className="text-xs text-muted-foreground hover:text-foreground inline-flex items-center gap-1 ml-auto font-medium"
+            className="text-sm text-zinc-300 hover:text-white inline-flex items-center gap-1.5 ml-auto font-medium transition-colors"
           >
-            <ArrowLeft className="h-3.5 w-3.5" />
+            <ArrowLeft className="h-4 w-4" />
             Voltar
           </Link>
         </div>
 
-        <div className="w-full max-w-sm sm:max-w-md mx-auto my-auto space-y-6">
-          <div className="space-y-1.5">
-            <div className="flex items-center gap-2 mb-3">
-              <div className="h-8 w-8 rounded-lg bg-harmonia-lime/10 border border-harmonia-lime/20 flex items-center justify-center text-harmonia-lime">
-                <HarmoniaMark className="h-4.5 w-auto" />
-              </div>
-              <span className="text-[11px] font-mono font-semibold px-2 py-0.5 rounded-full bg-harmonia-lime/10 text-harmonia-lime border border-harmonia-lime/30 uppercase tracking-wider">
-                Verificação
-              </span>
-            </div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground">
+        <div className="w-full max-w-sm sm:max-w-md mx-auto my-auto space-y-7">
+          <div className="space-y-2">
+            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white font-display">
               {step === "code" ? "Verificar Código" : "Criar Nova Senha"}
             </h1>
-            <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
+            <p className="text-sm sm:text-base text-zinc-300 leading-relaxed font-sans">
               {step === "code"
                 ? `Digite o código de 6 dígitos enviado para ${email}`
-                : "Defina sua nova senha para acessar o console."}
+                : "Defina sua nova senha de acesso."}
             </p>
           </div>
 
@@ -179,12 +173,12 @@ export default function VerifyCodeContent() {
                                 handleCodeChange(index, e.target.value)
                               }
                               onKeyDown={(e) => handleKeyDown(index, e)}
-                              className="w-11 sm:w-12 h-14 text-center text-2xl font-mono font-bold bg-card/70 border-border/80 focus-visible:ring-harmonia-lime"
+                              className="w-11 sm:w-12 h-14 text-center text-2xl font-mono font-bold bg-zinc-900/90 border-zinc-700 text-white hover:border-zinc-500 focus-visible:border-harmonia-lime focus-visible:ring-2 focus-visible:ring-harmonia-lime/30 transition-colors"
                             />
                           ))}
                         </div>
                       </FormControl>
-                      <FormMessage className="text-center text-xs" />
+                      <FormMessage className="text-center text-xs text-red-400" />
                     </FormItem>
                   )}
                 />
@@ -192,17 +186,19 @@ export default function VerifyCodeContent() {
                 <Button
                   type="submit"
                   disabled={code.some((digit) => !digit)}
-                  className="w-full bg-harmonia-lime text-harmonia-green font-bold hover:brightness-105 active:scale-[0.99] transition-all text-xs sm:text-sm h-11 shadow-sm cursor-pointer"
+                  className="w-full h-11 bg-harmonia-lime text-harmonia-green font-bold text-sm hover:brightness-105 active:scale-[0.99] transition-all shadow-sm cursor-pointer mt-2"
                 >
-                  Verificar Código e Avançar
-                  <ArrowRight className="h-4 w-4 ml-1.5" />
+                  <span className="flex items-center justify-center gap-2">
+                    Verificar Código e Avançar
+                    <ArrowRight className="h-4 w-4" />
+                  </span>
                 </Button>
 
                 <div className="text-center pt-2">
                   <button
                     type="button"
                     onClick={handleResendCode}
-                    className="text-xs text-muted-foreground hover:text-harmonia-lime transition-colors cursor-pointer"
+                    className="text-sm text-zinc-400 hover:text-harmonia-lime transition-colors cursor-pointer"
                   >
                     Não recebeu o código? <span className="font-semibold underline">Reenviar</span>
                   </button>
@@ -220,15 +216,25 @@ export default function VerifyCodeContent() {
                   name="newPassword"
                   render={({ field }) => (
                     <FormItem className="space-y-1.5">
-                      <FormLabel className="text-xs font-semibold text-zinc-300">Nova Senha</FormLabel>
+                      <FormLabel className="text-sm font-medium text-zinc-200">Nova Senha</FormLabel>
                       <FormControl>
-                        <Input
-                          type="password"
-                          placeholder="Mínimo 8 caracteres"
-                          className="bg-card/70 border-border/80 text-xs sm:text-sm focus-visible:ring-harmonia-lime h-10"
-                          autoComplete="new-password"
-                          {...field}
-                        />
+                        <div className="relative">
+                          <Input
+                            type={showNewPassword ? "text" : "password"}
+                            placeholder="Mínimo 8 caracteres"
+                            className="h-11 bg-zinc-900/90 border-zinc-700 hover:border-zinc-500 focus-visible:border-harmonia-lime focus-visible:ring-2 focus-visible:ring-harmonia-lime/30 text-sm text-white placeholder:text-zinc-500 pr-10 transition-colors"
+                            autoComplete="new-password"
+                            {...field}
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowNewPassword(!showNewPassword)}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-white transition-colors cursor-pointer p-1"
+                            aria-label={showNewPassword ? "Ocultar senha" : "Exibir senha"}
+                          >
+                            {showNewPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                          </button>
+                        </div>
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -239,15 +245,25 @@ export default function VerifyCodeContent() {
                   name="confirmPassword"
                   render={({ field }) => (
                     <FormItem className="space-y-1.5">
-                      <FormLabel className="text-xs font-semibold text-zinc-300">Confirmar Nova Senha</FormLabel>
+                      <FormLabel className="text-sm font-medium text-zinc-200">Confirmar Nova Senha</FormLabel>
                       <FormControl>
-                        <Input
-                          type="password"
-                          placeholder="Repita sua nova senha"
-                          className="bg-card/70 border-border/80 text-xs sm:text-sm focus-visible:ring-harmonia-lime h-10"
-                          autoComplete="new-password"
-                          {...field}
-                        />
+                        <div className="relative">
+                          <Input
+                            type={showConfirmPassword ? "text" : "password"}
+                            placeholder="Repita sua nova senha"
+                            className="h-11 bg-zinc-900/90 border-zinc-700 hover:border-zinc-500 focus-visible:border-harmonia-lime focus-visible:ring-2 focus-visible:ring-harmonia-lime/30 text-sm text-white placeholder:text-zinc-500 pr-10 transition-colors"
+                            autoComplete="new-password"
+                            {...field}
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-white transition-colors cursor-pointer p-1"
+                            aria-label={showConfirmPassword ? "Ocultar senha" : "Exibir senha"}
+                          >
+                            {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                          </button>
+                        </div>
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -255,22 +271,24 @@ export default function VerifyCodeContent() {
                 />
                 <Button
                   type="submit"
-                  className="w-full bg-harmonia-lime text-harmonia-green font-bold hover:brightness-105 active:scale-[0.99] transition-all text-xs sm:text-sm h-11 shadow-sm cursor-pointer"
+                  className="w-full h-11 bg-harmonia-lime text-harmonia-green font-bold text-sm hover:brightness-105 active:scale-[0.99] transition-all shadow-sm cursor-pointer mt-2"
                 >
-                  Salvar Nova Senha e Conectar
-                  <ArrowRight className="h-4 w-4 ml-1.5" />
+                  <span className="flex items-center justify-center gap-2">
+                    Salvar Nova Senha e Conectar
+                    <ArrowRight className="h-4 w-4" />
+                  </span>
                 </Button>
               </form>
             </Form>
           )}
         </div>
 
-        <div className="w-full max-w-sm sm:max-w-md mx-auto pt-8 flex items-center justify-between text-[11px] font-mono text-zinc-500 border-t border-border/50">
-          <span className="flex items-center gap-1.5">
+        <div className="w-full max-w-sm sm:max-w-md mx-auto pt-6 flex items-center justify-between text-xs font-mono text-zinc-400 border-t border-zinc-800/60">
+          <span className="flex items-center gap-1.5 text-zinc-300">
             <ShieldCheck className="h-3.5 w-3.5 text-harmonia-lime" />
             Criptografia Ponta a Ponta
           </span>
-          <span className="text-zinc-600">Harmonia Cloud</span>
+          <span>Harmonia • Open Source</span>
         </div>
       </div>
     </div>
