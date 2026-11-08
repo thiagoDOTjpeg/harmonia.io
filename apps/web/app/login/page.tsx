@@ -228,10 +228,9 @@ export default function LoginPage() {
           </form>
         </div>
 
-        {/* Bottom Assurance (Minimalist) */}
-        <div className="w-full max-w-sm sm:max-w-md mx-auto pt-8 flex items-center justify-between text-[11px] font-mono text-zinc-500 border-t border-border/50">
+        {/* Bottom Security Assurance (Minimalist) */}
+        <div className="w-full max-w-sm sm:max-w-md mx-auto pt-8 flex items-left justify-left text-[11px] font-mono text-zinc-500 border-t border-border/50">
           <span className="text-zinc-600">Harmonia Cloud</span>
-          <span className="text-zinc-600">v1.0.0</span>
         </div>
       </div>
     </div>

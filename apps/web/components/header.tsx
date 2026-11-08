@@ -1,8 +1,8 @@
 "use client";
 
-import { HarmoniaLogo } from "@harmonia/ui";
+import { HarmoniaLogo, HarmoniaMark } from "@harmonia/ui";
 import { Button } from "@harmonia/ui/components/button";
-import { Github } from "lucide-react";
+import { BookOpen, ExternalLink, Github, ShieldCheck } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 

@@ -23,16 +23,6 @@ export function Footer() {
             <Github className="h-3 w-3" />
             GitHub
           </Link>
-          <span>•</span>
-          <span className="text-emerald-400 font-mono flex items-center gap-1">
-            <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
-            Engine v1.0.0
-          </span>
-          <span>•</span>
-          <span className="text-muted-foreground/80 flex items-center gap-1">
-            <ShieldCheck className="h-3 w-3 text-harmonia-lime" />
-            OAuth 2.0 PKCE
-          </span>
         </div>
       </div>
     </footer>
